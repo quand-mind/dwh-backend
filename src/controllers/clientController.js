@@ -46,13 +46,14 @@ const getClients = async (req, res) => {
       for (const key of keys) {
         if (key.charAt(0) == 'i') {
           if(key == 'id') {
+            
+          } else if(key == 'iestado_civil'){
+            item['v'+key] = {values: ['C', 'S', 'N'],format: ['Casado', 'Soltero', 'No especificado']}
           } else if(key == 'isexo') {
             item['v'+key] = {values: ['M','F', 'N'], format:['Masculino', 'Femenino', 'No especificado']}
           } else if(key == 'iestado'){
             item['v'+key] = {values: ['V', 'E'], format:['Venezolano', 'Extranjero']}
-          } else if(key == 'iestado_civil'){
-            item['v'+key] == {values: ['C', 'S'],format: ['Casado', 'Soltero']}
-          }
+          } 
         }
       }
     }
@@ -96,10 +97,28 @@ const countClients = async (req, res) => {
   }
 }
 
+const getProducts = async (req, res) => {
+  try {
+    const products = await Client.getProducts(req.params.rif);
+    if (products.error) {
+      return res.status(products.code).send({
+        status: false,
+        message: products.error
+      });
+    }
+    
+    res.send(products) 
+    
+  } catch (error) {
+    
+  }
+}
+
 
 export default {
   getAllClients,
   getClients,
   countClients,
   getAllClientsAndSearch,
+  getProducts
 }

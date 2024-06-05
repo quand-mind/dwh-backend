@@ -8,6 +8,7 @@ router
     .get("/getAll", clientController.getAllClients)
     .get("/get/:page", clientController.getClients)
     .get("/searchOcurrences/:string", clientController.getAllClientsAndSearch)
+    .get("/getProducts/:rif", clientController.getProducts)
     .post("/countClients", clientController.countClients)
 
     

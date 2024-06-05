@@ -24,8 +24,51 @@ const getAllClients = async () => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const result = await sql.query`SELECT * FROM maclientes`
-   clientsData = result.recordsets[0]
+   const result = await sql.query`SELECT * FROM maVclientes_origen`
+   
+   const records = result.recordsets[0]
+   clientsData = []
+   for (const record of records){
+    var nombre1 = ''
+    var nombre2 = ''
+    var apellido1 = ''
+    var apellido2 = ''
+    var nombrecompleto = ''
+    var apellidocompleto = ''
+    if(record.xnombre1){
+      nombre1 = record.xnombre1
+    } else {
+      nombre1 = '------'
+    }
+    if(record.xnombre2){
+      nombre2 = record.xnombre2
+    } else {
+      nombre2 = ''
+    }
+    if(record.xapellido1){
+      apellido1 = record.xapellido1
+    } else {
+      apellido1 = '------'
+    }
+    if(record.xapellido2){
+      apellido2 = record.xapellido2
+    } else {
+      apellido2 = ''
+    }
+    if(nombre2.length > 0) {
+      nombrecompleto = nombre1 + ' ' + nombre2
+    } else {
+      nombrecompleto = nombre1
+    }
+    if(apellido2.length > 0) {
+      apellidocompleto = apellido1 + ' ' + apellido2
+    } else {
+      apellidocompleto = apellido1
+    }
+    record.xnombrecompleto = nombrecompleto + ' ' + apellidocompleto
+    clientsData.push(record)
+   }
+   
    allClients = result.recordsets[0]
    return clientsData
   } catch (err) {
@@ -59,7 +102,7 @@ const getAllClientsAndSearch = async (string) => {
         
         const findedValue = values.find( value => {
           if (typeof value === 'string'){
-            return value.toLowerCase().includes(string)
+            return value.toLowerCase().includes(string.toLowerCase())
           }
         })
         if(findedValue) {
@@ -105,9 +148,24 @@ const countClients = async () => {
     return err
   }
 }
+
+const getProducts = async (rif) => {
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   const result = await sql.query`SELECT * FROM maVclientes_productos WHERE cci_rif = ${rif}`
+   
+   return result.recordsets[0]
+  } catch (err) {
+   console.log('Error al Obtener los productos de los clientes', err)
+   return err
+  }
+}
 export default {
   getClients,
   countClients,
   getAllClientsAndSearch,
   getAllClients,
+  getProducts
 }
