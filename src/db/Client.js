@@ -27,7 +27,6 @@ const getAllClients = async () => {
    const result = await sql.query`SELECT * FROM maclientes`
    clientsData = result.recordsets[0]
    allClients = result.recordsets[0]
-   console.log(clientsData.length);
    return clientsData
   } catch (err) {
    console.log('Error al Obtener los clientes', err)
@@ -69,7 +68,6 @@ const getAllClientsAndSearch = async (string) => {
       }
 
     }
-    console.log(clientsData.length);
     return clientsData
     
   } catch (err) {
