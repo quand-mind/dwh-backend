@@ -9,6 +9,7 @@ import sql from 'mssql'
 
 import clientRoutes from './routes/clientRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import maestrosRoutes from './routes/maestrosRoutes.js';
 
 const { diskStorage } = multer;
 const app = express(); 
@@ -36,6 +37,7 @@ const DOCUMENTS_PATH = './public/documents';
 
 app.use("/clients", clientRoutes);
 app.use("/auth", authRoutes);
+app.use("/maestros", maestrosRoutes);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
