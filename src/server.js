@@ -8,6 +8,7 @@ import multer from 'multer';
 import sql from 'mssql'
 
 import clientRoutes from './routes/clientRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 const { diskStorage } = multer;
 const app = express(); 
@@ -34,6 +35,7 @@ const DOCUMENTS_PATH = './public/documents';
 // console.log(clientRoutes);
 
 app.use("/clients", clientRoutes);
+app.use("/auth", authRoutes);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
