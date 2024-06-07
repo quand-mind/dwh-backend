@@ -76,14 +76,12 @@ const getAllClients = async () => {
    return err
   }
 }
-const getAllClientsAndSearch = async (string) => {
-  
+const getAllClientsAndSearch = async (string, body) => {
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   clientsData = await allClients
-   if (string != '------'){
+    // make sure that any items are correctly URL encoded in the connection string
+    clientsData = await allClients
+    if (string != '------'){
      clientsData = []
-
       for (const item of allClients) {
         const keys = Object.keys(item)
         const values = Object.values(item)
@@ -108,6 +106,32 @@ const getAllClientsAndSearch = async (string) => {
         if(findedValue) {
           clientsData.push(item)
         } 
+      }
+      
+    }
+    const bodyKeys = Object.keys(body)
+    console.log(body);
+    if(bodyKeys.length > 0) {
+      for (const key of bodyKeys) {
+        let filterItems = []
+        if(key[0].includes('f')){
+          const value_splitted = body[key].split(' - ')
+          let date1 = new Date(value_splitted[0]);
+          let date2 = new Date(value_splitted[1]);
+          filterItems = clientsData.filter(item => item[key] > date1 && item[key] < date2 )
+        } else if(key.includes('_')) {
+          const value_splitted = key.split('_')
+          const clientsProducts = await getProductsByType(body[key])
+          const arrayClients = []
+          for( const product of clientsProducts) {
+            const validClient = clientsData.find(item => item.cci_rif == product.cci_rif)
+            arrayClients.push(validClient)
+          }
+          filterItems = arrayClients
+        } else{
+          filterItems = clientsData.filter(item => item[key] == body[key])
+        }
+        clientsData = filterItems
       }
 
     }
@@ -162,10 +186,25 @@ const getProducts = async (rif) => {
    return err
   }
 }
+
+const getProductsByType = async (ramo) => {
+  console.log(ramo);
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   const result = await sql.query`SELECT * FROM maVclientes_productos WHERE cramo = ${ramo}`
+   
+   return result.recordsets[0]
+  } catch (err) {
+   console.log('Error al Obtener los productos de los clientes', err)
+   return err
+  }
+}
 export default {
   getClients,
   countClients,
   getAllClientsAndSearch,
   getAllClients,
-  getProducts
+  getProducts,
 }

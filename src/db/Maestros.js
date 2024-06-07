@@ -33,6 +33,23 @@ const getAllRamos = async () => {
   }
 }
 
+const getOrigenes = async () => {
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   const result = await sql.query`SELECT * FROM maorigen where bactivo = 1`
+   
+   const records = result.recordsets[0]
+   
+   return records
+  } catch (err) {
+   console.log('Error al obtener los origenes', err)
+   return err
+  }
+}
+
 export default {
   getAllRamos,
+  getOrigenes
 }

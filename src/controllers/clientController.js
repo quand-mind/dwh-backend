@@ -65,7 +65,7 @@ const getClients = async (req, res) => {
 }
 const getAllClientsAndSearch = async (req, res) => {
   try {
-    const clients = await Client.getAllClientsAndSearch(req.params.string);
+    const clients = await Client.getAllClientsAndSearch(req.params.string, req.body);
     if (clients.error) {
       return res.status(clients.code).send({
         status: false,
@@ -120,5 +120,5 @@ export default {
   getClients,
   countClients,
   getAllClientsAndSearch,
-  getProducts
+  getProducts,
 }

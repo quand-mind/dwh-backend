@@ -21,8 +21,30 @@ const getRamos = async (req, res) => {
     
   }
 }
+const getOrigenes = async (req, res) => {
+  try {
+    const origenes = await Maestros.getOrigenes();
+
+    const data = origenes.map(item => {
+      return {text: item.xorigen, value: item.corigen}
+    })
+    data.unshift({text: 'Sin Filtros', value: ''})
+
+    if (origenes.error) {
+      return res.status(origenes.code).send({
+        status: false,
+        message: origenes.error
+      });
+    }
+    res.send(data)
+    
+  } catch (error) {
+    
+  }
+}
 
 
 export default {
   getRamos,
+  getOrigenes
 }
