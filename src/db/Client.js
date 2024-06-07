@@ -19,6 +19,16 @@ const sqlConfig = {
   }
 }
 
+function compareByCode( a, b ) {
+  if ( a.id < b.id ){
+    return -1;
+  }
+  if ( a.id > b.id ){
+    return 1;
+  }
+  return 0;
+}
+
 const getAllClients = async () => {
   
   try {
@@ -69,7 +79,8 @@ const getAllClients = async () => {
     clientsData.push(record)
    }
    
-   allClients = result.recordsets[0]
+   allClients = [...clientsData]
+   clientsData.sort(compareByCode)
    return clientsData
   } catch (err) {
    console.log('Error al Obtener los clientes', err)
@@ -110,7 +121,6 @@ const getAllClientsAndSearch = async (string, body) => {
       
     }
     const bodyKeys = Object.keys(body)
-    console.log(body);
     if(bodyKeys.length > 0) {
       for (const key of bodyKeys) {
         let filterItems = []
@@ -120,18 +130,22 @@ const getAllClientsAndSearch = async (string, body) => {
           let date2 = new Date(value_splitted[1]);
           filterItems = clientsData.filter(item => item[key] > date1 && item[key] < date2 )
         } else if(key.includes('_')) {
-          const value_splitted = key.split('_')
           const clientsProducts = await getProductsByType(body[key])
           const arrayClients = []
-          for( const product of clientsProducts) {
+          for( const product of await clientsProducts) {
             const validClient = clientsData.find(item => item.cci_rif == product.cci_rif)
-            arrayClients.push(validClient)
+            if(validClient) {
+              if(!arrayClients.find(item=> item.cci_rif == product.cci_rif)){
+                arrayClients.push({...validClient})
+              }
+            }
           }
           filterItems = arrayClients
         } else{
           filterItems = clientsData.filter(item => item[key] == body[key])
         }
         clientsData = filterItems
+        clientsData.sort(compareByCode)
       }
 
     }
@@ -155,7 +169,8 @@ const getClients = async (page) => {
     result = clients.slice(offsetRows, page * 10 )
   }
   
-   return result
+  result.sort(compareByCode)
+  return result
   } catch (err) {
    console.log('Error al Obtener los clientes', err)
    return err
@@ -188,7 +203,6 @@ const getProducts = async (rif) => {
 }
 
 const getProductsByType = async (ramo) => {
-  console.log(ramo);
   
   try {
    // make sure that any items are correctly URL encoded in the connection string

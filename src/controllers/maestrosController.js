@@ -1,5 +1,15 @@
 import Maestros from '../db/Maestros.js';
 
+function compare( a, b ) {
+  if ( a.text < b.text ){
+    return -1;
+  }
+  if ( a.text > b.text ){
+    return 1;
+  }
+  return 0;
+}
+
 const getRamos = async (req, res) => {
   try {
     const ramos = await Maestros.getAllRamos();
@@ -7,6 +17,10 @@ const getRamos = async (req, res) => {
     const data = ramos.map(item => {
       return {text: item.xdescripcion_l, value: item.cramo}
     })
+    
+
+    data.sort(compare);
+
     data.unshift({text: 'Sin Filtros', value: ''})
 
     if (ramos.error) {
