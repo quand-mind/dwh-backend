@@ -87,6 +87,89 @@ const getAllClients = async () => {
    return err
   }
 }
+const getDashboardClientData = async () => {
+  
+  try {
+    const objectItems = [
+      {label: 'Sys2000', value: 1, color: '#000000'},
+      {label: 'ManMar', value: 2, color: '#334ebd'},
+      {label: 'ArysAuto', value: 3, color: '#fdb101'}
+    ]
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const result = await sql.query`SELECT * FROM maVclientes_origen`
+    
+    
+    const records = result.recordsets[0]
+    let recordsData1 = []
+    let recordsData2 = []
+    let months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    
+    for(const objectItem of objectItems) {
+      let actualDate = new Date()
+      const year = actualDate.getFullYear()
+      let month = actualDate.getMonth()
+      
+      let sysData = records.filter(item => {
+        if(item.corigen == objectItem.value) {
+          return item
+        }
+      })
+      let monthData = null
+      
+      let actualMonth = month +1
+      let actualYear = year - 1
+      let x = 0
+      let item1 = {}
+      let item2 = {}
+
+      item1.color = objectItem.color
+      item1.data = sysData.length
+      item1.label = objectItem.label
+
+      recordsData1.push(item1)
+
+      item2.color = objectItem.color
+      item2.data = []
+      item2.label = objectItem.label
+
+      while (x == 0) {
+        let lastDate = new Date(actualYear, actualMonth + 1, 0);
+        let firstDate = new Date(actualYear, actualMonth, 0);
+        monthData = sysData.filter(item => {
+          if(item) {
+            const dateItem = new Date(item.fcreacion)
+            if(dateItem > firstDate && dateItem <= lastDate) {
+              return item
+            }
+          }
+        })
+        item2.data.push({label: months[actualMonth], data: monthData.length, date: Intl.DateTimeFormat('en-US').format(firstDate) + '-' + Intl.DateTimeFormat('en-US').format(lastDate)})
+        actualMonth++
+        if(actualMonth > 11) {
+          actualMonth = 0
+          actualYear++
+        }
+        if(actualMonth == month + 1 && x==0) {
+          x++
+        }
+      }
+      recordsData2.push(item2)
+      
+      
+    }
+    const actualDate = new Date()
+    const month = actualDate.getMonth()
+    let arr1 = months.slice(0, month + 1);
+    let arr2 = months.slice(month +1, month + months.length);
+    months = arr2.concat(arr1)
+
+    return {recordsData1, recordsData2, months}
+  } catch (err) {
+    console.log('Error al Obtener los clientes', err)
+    return err
+  }
+}
 const getAllClientsAndSearch = async (string, body) => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
@@ -221,4 +304,5 @@ export default {
   getAllClientsAndSearch,
   getAllClients,
   getProducts,
+  getDashboardClientData
 }
