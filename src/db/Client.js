@@ -291,7 +291,7 @@ const getReceipts = async (cnpoliza) => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const result = await sql.query`SELECT cnrecibo, cnpoliza, fanopol, itipopol, fanulacion, fcobro, iestadorec FROM adrecibos WHERE cnpoliza = ${cnpoliza}`
+   const result = await sql.query`SELECT cnrecibo, cnpoliza, femision, fanopol, itipopol, fanulacion, fcobro, iestadorec FROM adrecibos WHERE cnpoliza = ${cnpoliza}`
    
    return result.recordsets[0]
   } catch (err) {
