@@ -41,21 +41,6 @@ const getDashboardClientData = async (req, res) => {
         message: clients.error
       });
     }
-    // for (const item of clients) {
-    //   const keys = Object.keys(item)
-    //   for (const key of keys) {
-    //     if (key.charAt(0) == 'i') {
-    //       if(key == 'id') {
-    //       } else if(key == 'isexo') {
-    //         item['v'+key] = {values: ['M','F', 'N'], format:['Masculino', 'Femenino', 'No especificado']}
-    //       } else if(key == 'iestado'){
-    //         item['v'+key] = {values: ['V', 'E'], format:['Venezolano', 'Extranjero']}
-    //       } else if(key == 'iestado_civil'){
-    //         item['v'+key] == {values: ['C', 'S'],format: ['Casado', 'Soltero']}
-    //       }
-    //     }
-    //   }
-    // }
     res.send(clients)
     
   } catch (error) {
@@ -136,6 +121,17 @@ const getProducts = async (req, res) => {
         status: false,
         message: products.error
       });
+    }
+
+    for (const product of products) {
+      const receipts = await Client.getReceipts(product.cnpoliza)
+      if (receipts.error) {
+        return res.status(receipts.code).send({
+          status: false,
+          message: receipts.error
+        });
+      }
+      product.receipts = receipts
     }
     
     res.send(products) 

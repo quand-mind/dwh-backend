@@ -92,8 +92,9 @@ const getDashboardClientData = async () => {
   try {
     const objectItems = [
       {label: 'Sys2000', value: 1, color: '#000000'},
-      {label: 'ManMar', value: 2, color: '#334ebd'},
-      {label: 'ArysAuto', value: 3, color: '#fdb101'}
+      {label: 'ManMar', value: 3, color: '#334ebd'},
+      {label: 'ArysAuto', value: 2, color: '#fdb101'},
+      // {label: 'Beeinsurance', value: 10, color: '#F1B592'}
     ]
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
@@ -285,6 +286,20 @@ const getProducts = async (rif) => {
   }
 }
 
+const getReceipts = async (cnpoliza) => {
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   const result = await sql.query`SELECT cnrecibo, cnpoliza, fanopol, itipopol, fanulacion, fcobro, iestadorec FROM adrecibos WHERE cnpoliza = ${cnpoliza}`
+   
+   return result.recordsets[0]
+  } catch (err) {
+   console.log('Error al Obtener los productos de los clientes', err)
+   return err
+  }
+}
+
 const getProductsByType = async (ramo) => {
   
   try {
@@ -304,5 +319,6 @@ export default {
   getAllClientsAndSearch,
   getAllClients,
   getProducts,
-  getDashboardClientData
+  getDashboardClientData,
+  getReceipts
 }
