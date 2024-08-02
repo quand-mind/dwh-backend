@@ -34,48 +34,11 @@ const getAllClients = async () => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const result = await sql.query`SELECT * FROM maVclientes_origen`
+   const result = await sql.query`SELECT * FROM maVclientes_all`
    
    const records = result.recordsets[0]
    clientsData = []
    for (const record of records){
-    var nombre1 = ''
-    var nombre2 = ''
-    var apellido1 = ''
-    var apellido2 = ''
-    var nombrecompleto = ''
-    var apellidocompleto = ''
-    if(record.xnombre1){
-      nombre1 = record.xnombre1
-    } else {
-      nombre1 = '------'
-    }
-    if(record.xnombre2){
-      nombre2 = record.xnombre2
-    } else {
-      nombre2 = ''
-    }
-    if(record.xapellido1){
-      apellido1 = record.xapellido1
-    } else {
-      apellido1 = '------'
-    }
-    if(record.xapellido2){
-      apellido2 = record.xapellido2
-    } else {
-      apellido2 = ''
-    }
-    if(nombre2.length > 0) {
-      nombrecompleto = nombre1 + ' ' + nombre2
-    } else {
-      nombrecompleto = nombre1
-    }
-    if(apellido2.length > 0) {
-      apellidocompleto = apellido1 + ' ' + apellido2
-    } else {
-      apellidocompleto = apellido1
-    }
-    record.xnombrecompleto = nombrecompleto + ' ' + apellidocompleto
     clientsData.push(record)
    }
    
@@ -98,7 +61,7 @@ const getDashboardClientData = async () => {
     ]
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * FROM maVclientes_origen`
+    const result = await sql.query`SELECT * FROM maVclientes_all`
     
     
     const records = result.recordsets[0]
@@ -180,19 +143,6 @@ const getAllClientsAndSearch = async (string, body) => {
       for (const item of allClients) {
         const keys = Object.keys(item)
         const values = Object.values(item)
-        for (const key of keys) {
-          if (key.charAt(0) == 'i') {
-            if(key == 'id') {
-            } else if(key == 'isexo') {
-              item['v'+key] = {values: ['M','F', 'N'], format:['Masculino', 'Femenino', 'No especificado']}
-            } else if(key == 'iestado'){
-              item['v'+key] = {values: ['V', 'E'], format:['Venezolano', 'Extranjero']}
-            } else if(key == 'iestado_civil'){
-              item['v'+key] == {values: ['C', 'S'],format: ['Casado', 'Soltero']}
-            }
-          }
-        }
-        
         const findedValue = values.find( value => {
           if (typeof value === 'string'){
             return value.toLowerCase().includes(string.toLowerCase())
@@ -213,13 +163,13 @@ const getAllClientsAndSearch = async (string, body) => {
           let date1 = new Date(value_splitted[0]);
           let date2 = new Date(value_splitted[1]);
           filterItems = clientsData.filter(item => item[key] > date1 && item[key] < date2 )
-        } else if(key.includes('_')) {
+        } else if(key.includes('cid')) {
           const clientsProducts = await getProductsByType(body[key])
           const arrayClients = []
           for( const product of await clientsProducts) {
-            const validClient = clientsData.find(item => item.cci_rif == product.cci_rif)
+            const validClient = clientsData.find(item => item.cid == product.cci_rif)
             if(validClient) {
-              if(!arrayClients.find(item=> item.cci_rif == product.cci_rif)){
+              if(!arrayClients.find(item=> item.cid == product.cci_rif)){
                 arrayClients.push({...validClient})
               }
             }
@@ -277,7 +227,7 @@ const getProducts = async (rif) => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const result = await sql.query`SELECT * FROM maVclientes_productos WHERE cci_rif = ${rif}`
+   const result = await sql.query(`SELECT * FROM maVclientes_productos WHERE cci_rif = ${parseInt(rif)}`)
    
    return result.recordsets[0]
   } catch (err) {
@@ -291,7 +241,7 @@ const getReceipts = async (cnpoliza) => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const result = await sql.query`SELECT cnrecibo, cnpoliza, femision, fanopol, itipopol, fanulacion, fcobro, iestadorec FROM adrecibos WHERE cnpoliza = ${cnpoliza}`
+   const result = await sql.query`SELECT cnrecibo, mmontoapagext, cnpoliza, femision, fanopol, itipopol, fanulacion, fcobro, iestadorec FROM adrecibos WHERE cnpoliza = ${cnpoliza}`
    
    return result.recordsets[0]
   } catch (err) {
