@@ -37,6 +37,11 @@ const getAllClients = async () => {
    const result = await sql.query`SELECT * FROM maVclientes_all`
    
    const records = result.recordsets[0]
+   let i = 1
+   for (const record of records) {
+    record.id = i 
+    i++
+   }
    clientsData = []
    for (const record of records){
     clientsData.push(record)
@@ -55,8 +60,9 @@ const getDashboardClientData = async () => {
   try {
     const objectItems = [
       {label: 'Sys2000', value: 1, color: '#000000'},
-      {label: 'ManMar', value: 3, color: '#334ebd'},
+      // {label: 'ManMar', value: 3, color: '#334ebd'},
       {label: 'ArysAuto', value: 2, color: '#fdb101'},
+      {label: 'Pasarela de Ventas', value: 5, color: '#4A80F4'},
       // {label: 'Beeinsurance', value: 10, color: '#F1B592'}
     ]
     // make sure that any items are correctly URL encoded in the connection string
