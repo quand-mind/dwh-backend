@@ -1,8 +1,8 @@
 import Client from '../db/Client.js';
 
-const getAllClients = async (req, res) => {
+const setAllClients = async (req, res) => {
   try {
-    const clients = await Client.getAllClients();
+    const clients = await Client.setAllClients();
 
     if (clients.error) {
       return res.status(clients.code).send({
@@ -10,22 +10,26 @@ const getAllClients = async (req, res) => {
         message: clients.error
       });
     }
-    for (const item of clients) {
-      const keys = Object.keys(item)
-      for (const key of keys) {
-        if (key.charAt(0) == 'i') {
-          if(key == 'id') {
-          } else if(key == 'isexo') {
-            item['v'+key] = {values: ['M','F', 'N'], format:['Masculino', 'Femenino', 'No especificado']}
-          } else if(key == 'iestado'){
-            item['v'+key] = {values: ['V', 'E'], format:['Venezolano', 'Extranjero']}
-          } else if(key == 'iestado_civil'){
-            item['v'+key] == {values: ['C', 'S'],format: ['Casado', 'Soltero']}
-          }
-        }
-      }
+
+    res.send({count: clients})
+    
+  } catch (error) {
+    
+  }
+}
+const getAllClients = async (req, res) => {
+  try {
+    const clients = await Client.getAllClients(req.params.first);
+
+    if (clients.error) {
+      return res.status(clients.code).send({
+        status: false,
+        message: clients.error
+      });
     }
-    res.send(clients)
+
+
+    res.send({data: clients.clientsData, total: clients.total})
     
   } catch (error) {
     
@@ -149,4 +153,5 @@ export default {
   getAllClientsAndSearch,
   getProducts,
   getDashboardClientData,
+  setAllClients
 }

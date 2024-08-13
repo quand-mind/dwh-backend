@@ -5,7 +5,8 @@ import clientController from '../../src/controllers/clientController.js';
 const router = express.Router();
 
 router
-    .get("/getAll", clientController.getAllClients)
+    .get("/getAll/:first", clientController.getAllClients)
+    .get("/setAll", clientController.setAllClients)
     .get("/getDashboardClientData", clientController.getDashboardClientData)
     .get("/get/:page", clientController.getClients)
     .post("/searchOcurrences/:string", clientController.getAllClientsAndSearch)

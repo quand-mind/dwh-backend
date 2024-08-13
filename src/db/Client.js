@@ -29,30 +29,69 @@ function compareByCode( a, b ) {
   return 0;
 }
 
-const getAllClients = async () => {
+const setAllClients = async () => {
+  try {
+    await sql.connect(sqlConfig)
+    const result = await sql.query`SELECT COUNT(orden) AS count from lista_clientes`
+    return result.recordsets[0][0].count
+  } catch (err) {
+    console.log('Error al Obtener los clientes', err)
+    return err
+  }
+}
+const getAllClients = async (firstItem) => {
   
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const result = await sql.query`SELECT * FROM maVclientes_all`
-   
-   const records = result.recordsets[0]
-   let i = 1
-   for (const record of records) {
-    record.id = i 
-    i++
-   }
-   clientsData = []
-   for (const record of records){
-    clientsData.push(record)
-   }
-   
-   allClients = [...clientsData]
-   clientsData.sort(compareByCode)
-   return clientsData
+    let total = 0
+    // make sure that any items are correctly URL encoded in the connection string
+    if(allClients.length <= 0) {
+      await sql.connect(sqlConfig)
+      const result = await sql.query`SELECT * FROM lista_clientes ORDER BY orden OFFSET ${parseInt(firstItem)} ROWS FETCH NEXT 10000 ROWS ONLY`
+      
+      const records = result.recordsets[0]
+      records.forEach(item => {
+        formatData(item)
+      })
+     
+      allClients = [...clientsData]
+      total = await records.length
+      console.log(clientsData.length);
+    }
+    return {clientsData: clientsData.length, total: total}
   } catch (err) {
-   console.log('Error al Obtener los clientes', err)
-   return err
+    console.log('Error al Obtener los clientes', err)
+    return err
+  }
+}
+
+const formatData = (item) => {
+  
+  const index = clientsData.findIndex(item2=> item2.xcedula == item.xcedula)
+  const ccorigen = item.corigen
+  const xxorigen = item.xorigen
+  item.corigen = []
+  item.xorigen = []
+  
+  if(index == -1) {
+    item.corigen.push(ccorigen)
+    item.xorigen.push(xxorigen)
+    clientsData.push(item)
+  } else {
+    const entries = Object.entries(clientsData[index])
+    const entries2 = Object.entries(item)
+    let y = 0
+    for (const element of entries) {
+      if(!element[1]){
+        element[1] = entries2[y][1]
+        clientsData[index][element[0]] = entries2[y][1]
+        const originIndex = clientsData[index].corigen.findIndex(origin => origin == ccorigen)
+        if(originIndex == -1) {
+          clientsData[index].corigen.push(ccorigen)
+          clientsData[index].xorigen.push(xxorigen)
+        }
+      }
+      y++
+    }
   }
 }
 const getDashboardClientData = async () => {
@@ -163,6 +202,7 @@ const getAllClientsAndSearch = async (string, body) => {
     const bodyKeys = Object.keys(body)
     if(bodyKeys.length > 0) {
       for (const key of bodyKeys) {
+        
         let filterItems = []
         if(key[0].includes('f')){
           const value_splitted = body[key].split(' - ')
@@ -181,6 +221,18 @@ const getAllClientsAndSearch = async (string, body) => {
             }
           }
           filterItems = arrayClients
+        } else if(key.includes('_')){
+          const clientsProducts = await getProductsByType(body[key])
+          const arrayClients = []
+          for( const product of await clientsProducts) {
+            const validClient = clientsData.find(item => item.cid == product.cci_rif)
+            if(validClient) {
+              if(!arrayClients.find(item=> item.cid == product.cci_rif)){
+                filterItems.push({...validClient})
+                arrayClients.push({...validClient})
+              }
+            }
+          }
         } else{
           filterItems = clientsData.filter(item => item[key] == body[key])
         }
@@ -233,7 +285,7 @@ const getProducts = async (rif) => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const result = await sql.query(`SELECT * FROM maVclientes_productos WHERE cci_rif = ${parseInt(rif)}`)
+   const result = await sql.query(`SELECT * FROM maVclientes_productos WHERE cci_rif = '${rif}'`)
    
    return result.recordsets[0]
   } catch (err) {
@@ -276,5 +328,6 @@ export default {
   getAllClients,
   getProducts,
   getDashboardClientData,
-  getReceipts
+  getReceipts,
+  setAllClients
 }
