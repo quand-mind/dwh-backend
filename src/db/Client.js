@@ -1,4 +1,5 @@
 import sql from 'mssql'
+import moment from 'moment';
 
 let clientsData = []
 let allClients = []
@@ -122,24 +123,69 @@ const getDashboardClientData = async () => {
     ]
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * FROM maVclientes_all`
+    // const result = await sql.query`SELECT * FROM maVclientes_all`
     
     
-    const records = result.recordsets[0]
+    // const records = result.recordsets[0]
+    let records1 = []
+    let records2 = []
     let recordsData1 = []
     let recordsData2 = []
     let months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-    
+
+    let queryItems1 = ''
+    let queryItems2 = ''
+
+    let z = 1
     for(const objectItem of objectItems) {
+      queryItems1 += `SUM(CASE When corigen = ${objectItem.value} THEN 1 ELSE 0 END)`
+      if(z<objectItems.length){
+        queryItems1 += ','
+        z++
+      }
+
       let actualDate = new Date()
       const year = actualDate.getFullYear()
       let month = actualDate.getMonth()
       
-      let sysData = records.filter(item => {
-        if(item.corigen == objectItem.value) {
-          return item
+      let actualMonth = month +1
+      let actualYear = year - 1
+      let x = 0
+      while (x == 0) {
+        let lastDate = moment(new Date(actualYear, actualMonth + 1, 0)).format('MM-DD-YYYY');
+        let firstDate = moment(new Date(actualYear, actualMonth, 0)).format('MM-DD-YYYY');
+
+        queryItems2 += `SUM(CASE When fcreacion >= '${firstDate}' AND fcreacion <= '${lastDate}' Then 1 Else 0 End)`
+
+        actualMonth++
+        if(actualMonth > 11) {
+          actualMonth = 0
+          actualYear++
         }
-      })
+        if(actualMonth == month + 1 && x==0) {
+          x++
+        } else {
+          queryItems2 += ','
+        }
+      }
+    }
+    
+    const query1 = `SELECT ${queryItems1} FROM lista_clientes`
+    const query2 = `SELECT ${queryItems2} FROM lista_clientes`
+    
+    
+    let result1 = await sql.query(query1)
+    records1 = result1.recordset[0]['']
+    console.log(query2);
+
+    let result2 = await sql.query(query2)
+    records2 = result2.recordset[0]['']
+
+    let y = 0
+    for(const objectItem of objectItems) {
+      let actualDate = new Date()
+      const year = actualDate.getFullYear()
+      let month = actualDate.getMonth()
       let monthData = null
       
       let actualMonth = month +1
@@ -149,7 +195,7 @@ const getDashboardClientData = async () => {
       let item2 = {}
 
       item1.color = objectItem.color
-      item1.data = sysData.length
+      item1.data = records1[y]
       item1.label = objectItem.label
 
       recordsData1.push(item1)
@@ -158,18 +204,13 @@ const getDashboardClientData = async () => {
       item2.data = []
       item2.label = objectItem.label
 
+      let z = 0
+
       while (x == 0) {
         let lastDate = new Date(actualYear, actualMonth + 1, 0);
         let firstDate = new Date(actualYear, actualMonth, 0);
-        monthData = sysData.filter(item => {
-          if(item) {
-            const dateItem = new Date(item.fcreacion)
-            if(dateItem > firstDate && dateItem <= lastDate) {
-              return item
-            }
-          }
-        })
-        item2.data.push({label: months[actualMonth], data: monthData.length, date: Intl.DateTimeFormat('en-US').format(firstDate) + '-' + Intl.DateTimeFormat('en-US').format(lastDate)})
+
+        item2.data.push({label: months[actualMonth], data: records2[z], date: Intl.DateTimeFormat('en-US').format(firstDate) + '-' + Intl.DateTimeFormat('en-US').format(lastDate)})
         actualMonth++
         if(actualMonth > 11) {
           actualMonth = 0
@@ -178,8 +219,11 @@ const getDashboardClientData = async () => {
         if(actualMonth == month + 1 && x==0) {
           x++
         }
+        z++
       }
+      
       recordsData2.push(item2)
+      y++
       
       
     }
