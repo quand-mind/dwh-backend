@@ -114,10 +114,11 @@ const getDashboardClientData = async () => {
   try {
     const objectItems = [
       {label: 'Sys2000', value: 1, color: '#000000'},
-      // {label: 'ManMar', value: 3, color: '#334ebd'},
       {label: 'ArysAuto', value: 2, color: '#fdb101'},
+      {label: 'ManMar', value: 3, color: '#334ebd'},
+      {label: 'Beeinsurance', value: 4, color: '#F1B592'},
       {label: 'Pasarela de Ventas', value: 5, color: '#4A80F4'},
-      // {label: 'Beeinsurance', value: 10, color: '#F1B592'}
+      {label: 'Logistika', value: 6, color: '#FF794B'}
     ]
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
