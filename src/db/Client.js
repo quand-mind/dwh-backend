@@ -2,6 +2,7 @@ import sql from 'mssql'
 
 let clientsData = []
 let allClients = []
+let countAllClients = 0
 
 const sqlConfig = {
   user: process.env.DB_USER,
@@ -31,9 +32,12 @@ function compareByCode( a, b ) {
 
 const setAllClients = async () => {
   try {
-    await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT COUNT(orden) AS count from lista_clientes`
-    return result.recordsets[0][0].count
+    if(!countAllClients) {
+      await sql.connect(sqlConfig)
+      const result = await sql.query`SELECT COUNT(orden) AS count from lista_clientes`
+      countAllClients = result.recordsets[0][0].count
+    }
+    return countAllClients
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err
@@ -44,20 +48,31 @@ const getAllClients = async (firstItem) => {
   try {
     let total = 0
     // make sure that any items are correctly URL encoded in the connection string
-    if(allClients.length <= 0) {
-      await sql.connect(sqlConfig)
-      const result = await sql.query`SELECT * FROM lista_clientes ORDER BY orden OFFSET ${parseInt(firstItem)} ROWS FETCH NEXT 10000 ROWS ONLY`
-      
-      const records = result.recordsets[0]
-      records.forEach(item => {
-        formatData(item)
-      })
-     
-      allClients = [...clientsData]
-      total = await records.length
-      console.log(clientsData.length);
-    }
-    return {clientsData: clientsData.length, total: total}
+    // if(allClients.length <= firstItem) {
+    await sql.connect(sqlConfig)
+    const result = await sql.query`SELECT cid, xnombre, corigen, xorigen, fnacimiento, orden, xtelefono1, xcompania, xcedula FROM lista_clientes ORDER BY orden OFFSET ${parseInt(firstItem)} ROWS FETCH NEXT 10 ROWS ONLY`
+    
+    const records = result.recordsets[0]
+    
+    return records
+  } catch (err) {
+    console.log('Error al Obtener los clientes', err)
+    return err
+  }
+}
+const getClientData = async (cedula) => {
+  
+  try {
+    clientsData = []
+    await sql.connect(sqlConfig)
+    const result = await sql.query`SELECT * FROM lista_clientes WHERE xcedula = ${cedula}`
+
+    const records = result.recordsets[0]
+    records.forEach(item => {
+      formatData(item)
+    })
+    
+    return clientsData[0]
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err
@@ -251,18 +266,11 @@ const getAllClientsAndSearch = async (string, body) => {
 const getClients = async (page) => {
   
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const offsetRows = (page * 10) - 10
-  //  const result = await sql.query`SELECT * FROM maclientes ORDER BY id OFFSET ${parseInt(offsetRows)} rows FETCH NEXT 10 rows ONLY`
-  let result = []
-  const clients = await clientsData
-  if(clients.length > 0) {
-    result = clients.slice(offsetRows, page * 10 )
-  }
-  
-  result.sort(compareByCode)
-  return result
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const offsetRows = (page * 10) - 10
+    const result = await getAllClients(offsetRows)
+    return result
   } catch (err) {
    console.log('Error al Obtener los clientes', err)
    return err
@@ -326,6 +334,7 @@ export default {
   countClients,
   getAllClientsAndSearch,
   getAllClients,
+  getClientData,
   getProducts,
   getDashboardClientData,
   getReceipts,

@@ -29,7 +29,25 @@ const getAllClients = async (req, res) => {
     }
 
 
-    res.send({data: clients.clientsData, total: clients.total})
+    res.send({data: clients.length})
+    
+  } catch (error) {
+    
+  }
+}
+const getClientData = async (req, res) => {
+  try {
+    const client = await Client.getClientData(req.params.cedula);
+
+    if (client.error) {
+      return res.status(client.code).send({
+        status: false,
+        message: client.error
+      });
+    }
+
+
+    res.send({data: client})
     
   } catch (error) {
     
@@ -149,6 +167,7 @@ const getProducts = async (req, res) => {
 export default {
   getAllClients,
   getClients,
+  getClientData,
   countClients,
   getAllClientsAndSearch,
   getProducts,
