@@ -141,7 +141,6 @@ const getDashboardClientData = async () => {
       queryItems1 += `SUM(CASE When corigen = ${objectItem.value} THEN 1 ELSE 0 END)`
       if(z<objectItems.length){
         queryItems1 += ','
-        z++
       }
 
       let actualDate = new Date()
@@ -155,7 +154,7 @@ const getDashboardClientData = async () => {
         let lastDate = moment(new Date(actualYear, actualMonth + 1, 0)).format('MM-DD-YYYY');
         let firstDate = moment(new Date(actualYear, actualMonth, 0)).format('MM-DD-YYYY');
 
-        queryItems2 += `SUM(CASE When fcreacion >= '${firstDate}' AND fcreacion <= '${lastDate}' Then 1 Else 0 End)`
+        queryItems2 += `SUM(CASE When corigen = ${objectItem.value} AND fcreacion >= '${firstDate}' AND fcreacion <= '${lastDate}' Then 1 Else 0 End)`
 
         actualMonth++
         if(actualMonth > 11) {
@@ -163,11 +162,15 @@ const getDashboardClientData = async () => {
           actualYear++
         }
         if(actualMonth == month + 1 && x==0) {
+          if(z<objectItems.length){
+            queryItems2 += ',' 
+          }
           x++
         } else {
           queryItems2 += ','
         }
       }
+      z++
     }
     
     const query1 = `SELECT ${queryItems1} FROM lista_clientes`
@@ -176,10 +179,10 @@ const getDashboardClientData = async () => {
     
     let result1 = await sql.query(query1)
     records1 = result1.recordset[0]['']
-    console.log(query2);
-
+    
     let result2 = await sql.query(query2)
     records2 = result2.recordset[0]['']
+    console.log(records2);
 
     let y = 0
     for(const objectItem of objectItems) {
