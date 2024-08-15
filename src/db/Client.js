@@ -182,9 +182,9 @@ const getDashboardClientData = async () => {
     
     let result2 = await sql.query(query2)
     records2 = result2.recordset[0]['']
-    console.log(records2);
 
     let y = 0
+    z = 0
     for(const objectItem of objectItems) {
       let actualDate = new Date()
       const year = actualDate.getFullYear()
@@ -207,7 +207,7 @@ const getDashboardClientData = async () => {
       item2.data = []
       item2.label = objectItem.label
 
-      let z = 0
+
 
       while (x == 0) {
         let lastDate = new Date(actualYear, actualMonth + 1, 0);
@@ -224,7 +224,6 @@ const getDashboardClientData = async () => {
         }
         z++
       }
-      
       recordsData2.push(item2)
       y++
       
