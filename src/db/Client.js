@@ -44,14 +44,15 @@ const setAllClients = async () => {
     return err
   }
 }
+const queryRows = (firstItem) => {
+  return `ORDER BY orden OFFSET ${parseInt(firstItem)} ROWS FETCH NEXT 10 ROWS ONLY`
+}
 const getAllClients = async (firstItem) => {
   
   try {
-    let total = 0
-    // make sure that any items are correctly URL encoded in the connection string
-    // if(allClients.length <= firstItem) {
+    const queryRowsA = queryRows(firstItem)
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT cid, xnombre, corigen, xorigen, fnacimiento, orden, xtelefono1, xcompania, xcedula FROM lista_clientes ORDER BY orden OFFSET ${parseInt(firstItem)} ROWS FETCH NEXT 10 ROWS ONLY`
+    const result = await sql.query(`SELECT cid, xnombre, corigen, xorigen, fnacimiento, orden, xtelefono1, xcompania, xcedula FROM lista_clientes ${queryRowsA}`)
     
     const records = result.recordsets[0]
     
@@ -82,33 +83,33 @@ const getClientData = async (cedula) => {
 
 const formatData = (item) => {
   
-  const index = clientsData.findIndex(item2=> item2.xcedula == item.xcedula)
-  const ccorigen = item.corigen
-  const xxorigen = item.xorigen
-  item.corigen = []
-  item.xorigen = []
+  // const index = clientsData.findIndex(item2=> item2.xcedula == item.xcedula)
+  // const ccorigen = item.corigen
+  // const xxorigen = item.xorigen
+  // item.corigen = []
+  // item.xorigen = []
   
-  if(index == -1) {
-    item.corigen.push(ccorigen)
-    item.xorigen.push(xxorigen)
+  // if(index == -1) {
+  //   item.corigen.push(ccorigen)
+  //   item.xorigen.push(xxorigen)
     clientsData.push(item)
-  } else {
-    const entries = Object.entries(clientsData[index])
-    const entries2 = Object.entries(item)
-    let y = 0
-    for (const element of entries) {
-      if(!element[1]){
-        element[1] = entries2[y][1]
-        clientsData[index][element[0]] = entries2[y][1]
-        const originIndex = clientsData[index].corigen.findIndex(origin => origin == ccorigen)
-        if(originIndex == -1) {
-          clientsData[index].corigen.push(ccorigen)
-          clientsData[index].xorigen.push(xxorigen)
-        }
-      }
-      y++
-    }
-  }
+  // } else {
+  //   const entries = Object.entries(clientsData[index])
+  //   const entries2 = Object.entries(item)
+  //   let y = 0
+  //   for (const element of entries) {
+  //     if(!element[1]){
+  //       element[1] = entries2[y][1]
+  //       clientsData[index][element[0]] = entries2[y][1]
+  //       const originIndex = clientsData[index].corigen.findIndex(origin => origin == ccorigen)
+  //       if(originIndex == -1) {
+  //         clientsData[index].corigen.push(ccorigen)
+  //         clientsData[index].xorigen.push(xxorigen)
+  //       }
+  //     }
+  //     y++
+  //   }
+  // }
 }
 const getDashboardClientData = async () => {
   
@@ -121,12 +122,8 @@ const getDashboardClientData = async () => {
       {label: 'Pasarela de Ventas', value: 5, color: '#4A80F4'},
       {label: 'Logistika', value: 6, color: '#FF794B'}
     ]
-    // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    // const result = await sql.query`SELECT * FROM maVclientes_all`
     
-    
-    // const records = result.recordsets[0]
     let records1 = []
     let records2 = []
     let recordsData1 = []
@@ -241,74 +238,102 @@ const getDashboardClientData = async () => {
     return err
   }
 }
-const getAllClientsAndSearch = async (string, body) => {
-  try {
-    // make sure that any items are correctly URL encoded in the connection string
-    clientsData = await allClients
-    if (string != '------'){
-     clientsData = []
-      for (const item of allClients) {
-        const keys = Object.keys(item)
-        const values = Object.values(item)
-        const findedValue = values.find( value => {
-          if (typeof value === 'string'){
-            return value.toLowerCase().includes(string.toLowerCase())
-          }
-        })
-        if(findedValue) {
-          clientsData.push(item)
-        } 
-      }
-      
-    }
-    const bodyKeys = Object.keys(body)
-    if(bodyKeys.length > 0) {
-      for (const key of bodyKeys) {
-        
-        let filterItems = []
-        if(key[0].includes('f')){
-          const value_splitted = body[key].split(' - ')
-          let date1 = new Date(value_splitted[0]);
-          let date2 = new Date(value_splitted[1]);
-          filterItems = clientsData.filter(item => item[key] > date1 && item[key] < date2 )
-        } else if(key.includes('cid')) {
-          const clientsProducts = await getProductsByType(body[key])
-          const arrayClients = []
-          for( const product of await clientsProducts) {
-            const validClient = clientsData.find(item => item.cid == product.cci_rif)
-            if(validClient) {
-              if(!arrayClients.find(item=> item.cid == product.cci_rif)){
-                arrayClients.push({...validClient})
-              }
-            }
-          }
-          filterItems = arrayClients
-        } else if(key.includes('_')){
-          const clientsProducts = await getProductsByType(body[key])
-          const arrayClients = []
-          for( const product of await clientsProducts) {
-            const validClient = clientsData.find(item => item.cid == product.cci_rif)
-            if(validClient) {
-              if(!arrayClients.find(item=> item.cid == product.cci_rif)){
-                filterItems.push({...validClient})
-                arrayClients.push({...validClient})
-              }
-            }
-          }
-        } else{
-          filterItems = clientsData.filter(item => item[key] == body[key])
-        }
-        clientsData = filterItems
-        clientsData.sort(compareByCode)
-      }
+const getCountClientsAndSearch = async (string, body) => {
+  let initialQuery = 'SELECT COUNT(orden) AS count from lista_clientes'
 
-    }
-    return clientsData
+  let finalQuery = setQuery(string, body, initialQuery, null)
+
+  await sql.connect(sqlConfig)
+
+  const result = await sql.query(finalQuery)
+  let count = 0
+  if(result.recordset[1]){
+    count  = result.recordset[1].count
+  } else {
+    count  = result.recordset[0].count
+  }
+  
+  return count
+}
+const getAllClientsAndSearch = async (page, string, body) => {
+  try {
+
+    const offsetRows = (page * 10) - 10
+    const queryRowsA = queryRows(offsetRows)
+
+    let initialQuery = 'SELECT cid, xnombre, corigen, xorigen, fnacimiento, orden, xtelefono1, xcompania, xcedula FROM lista_clientes'
+
+    let finalQuery = setQuery(string, body, initialQuery, queryRowsA)
+    // make sure that any items are correctly URL encoded in the connection string    
+    
+    await sql.connect(sqlConfig)
+    const result = await sql.query(finalQuery)
+    const records = result.recordsets[0]
+
+    return records
     
   } catch (err) {
    console.log('Error al Obtener los clientes', err)
    return err
   }
+}
+
+const setQuery = (string, body, initialQuery, queryRowsA) => {
+
+  const repeatString = `SELECT orden FROM lista_clientes`
+  const bodyKeys = Object.keys(body)
+    
+  let queryFilters = ''
+  let x = 0
+  if(bodyKeys.length > 0) {
+    for (const key of bodyKeys) {
+      if(x > 0) {
+        queryFilters += ' AND '
+      }
+      let filterItems = []
+      if(key[0].includes('f')){
+        const value_splitted = body[key].split(' - ')
+        let date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
+        let date2 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
+        queryFilters += `(${key} > '${date1}' AND ${key} < '${date2}')`
+      } else if(key.includes('_')){
+        // const clientsProducts = await getProductsByType(body[key])
+        // const arrayClients = []
+        // for( const product of await clientsProducts) {
+        //   const validClient = clientsData.find(item => item.cid == product.cci_rif)
+        //   if(validClient) {
+        //     if(!arrayClients.find(item=> item.cid == product.cci_rif)){
+        //       filterItems.push({...validClient})
+        //       arrayClients.push({...validClient})
+        //     }
+        //   }
+        // }
+      } else{
+        queryFilters += `${key} = ${body[key]}`
+        // filterItems = clientsData.filter(item => item[key] == body[key])
+      }
+      x++
+      if(x == bodyKeys.length && string != '------') {
+        queryFilters += ' AND '
+      }
+      clientsData = filterItems
+    }
+  }
+  let queryString =''
+  if (string != '------'){
+    queryString = `(cid LIKE '${string}' + '%' OR xnombre LIKE '${string}' + '%' OR fnacimiento LIKE '${string}' + '%' OR xtelefono1 LIKE '${string}' + '%' OR xcompania LIKE '${string}' + '%')`
+  }
+
+  if(bodyKeys.length > 0 || string != '------'){
+    initialQuery += ' WHERE '
+  }
+
+  
+  let finalQuery = `${initialQuery} ${queryFilters} ${queryString}`
+  if(queryRowsA){
+    finalQuery += ` ${queryRowsA}`
+  }
+  return finalQuery
 }
 const getClients = async (page) => {
   
@@ -326,9 +351,9 @@ const getClients = async (page) => {
 const countClients = async () => {
   try {
     await sql.connect(sqlConfig)
-    let result = {count: await clientsData.length}
-    // let result = await sql.query`SELECT COUNT(*) FROM maclientes`
-    return result
+    const result = await sql.query`SELECT COUNT(orden) AS count from lista_clientes`
+    const resutlR = result.recordsets[0][0].count
+    return resutlR
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err
@@ -380,6 +405,7 @@ export default {
   getClients,
   countClients,
   getAllClientsAndSearch,
+  getCountClientsAndSearch,
   getAllClients,
   getClientData,
   getProducts,

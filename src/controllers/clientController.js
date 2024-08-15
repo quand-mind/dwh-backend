@@ -17,6 +17,23 @@ const setAllClients = async (req, res) => {
     
   }
 }
+const getCountClientsAndSearch = async (req, res) => {
+  try {
+    const clients = await Client.getCountClientsAndSearch(req.params.string, req.body);
+
+    if (clients.error) {
+      return res.status(clients.code).send({
+        status: false,
+        message: clients.error
+      });
+    }
+
+    res.send({count: clients})
+    
+  } catch (error) {
+    
+  }
+}
 const getAllClients = async (req, res) => {
   try {
     const clients = await Client.getAllClients(req.params.first);
@@ -103,7 +120,7 @@ const getClients = async (req, res) => {
 }
 const getAllClientsAndSearch = async (req, res) => {
   try {
-    const clients = await Client.getAllClientsAndSearch(req.params.string, req.body);
+    const clients = await Client.getAllClientsAndSearch(req.params.page, req.params.string, req.body);
     if (clients.error) {
       return res.status(clients.code).send({
         status: false,
@@ -170,6 +187,7 @@ export default {
   getClientData,
   countClients,
   getAllClientsAndSearch,
+  getCountClientsAndSearch,
   getProducts,
   getDashboardClientData,
   setAllClients
