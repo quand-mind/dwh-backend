@@ -264,6 +264,7 @@ const getAllClientsAndSearch = async (page, string, body) => {
     let initialQuery = 'SELECT cid, xnombre, corigen, xorigen, fnacimiento, orden, xtelefono1, xcompania, xcedula FROM lista_clientes'
 
     let finalQuery = setQuery(string, body, initialQuery, queryRowsA)
+    console.log(finalQuery);
     // make sure that any items are correctly URL encoded in the connection string    
     
     await sql.connect(sqlConfig)
@@ -321,7 +322,7 @@ const setQuery = (string, body, initialQuery, queryRowsA) => {
   }
   let queryString =''
   if (string != '------'){
-    queryString = `(cid LIKE '${string}' + '%' OR xnombre LIKE '${string}' + '%' OR fnacimiento LIKE '${string}' + '%' OR xtelefono1 LIKE '${string}' + '%' OR xcompania LIKE '${string}' + '%')`
+    queryString = `(xcedula LIKE '${string}' + '%' OR xnombre LIKE '${string}' + '%' OR fnacimiento LIKE '${string}' + '%' OR xtelefono1 LIKE '${string}' + '%' OR xcompania LIKE '${string}' + '%')`
   }
 
   if(bodyKeys.length > 0 || string != '------'){
