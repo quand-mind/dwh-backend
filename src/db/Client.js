@@ -366,7 +366,7 @@ const getProducts = async (rif) => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const result = await sql.query(`SELECT * FROM maVclientes_productos WHERE cci_rif = '${rif}'`)
+   const result = await sql.query(`SELECT * FROM maVclientes_productos WHERE id = ${rif}`)
    
    return result.recordsets[0]
   } catch (err) {
@@ -378,13 +378,14 @@ const getProducts = async (rif) => {
 const getReceipts = async (cnpoliza) => {
   
   try {
+    console.log('receipts');
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
    const result = await sql.query`SELECT cnrecibo, mmontoapagext, cnpoliza, femision, fanopol, itipopol, fanulacion, fcobro, iestadorec FROM adrecibos WHERE cnpoliza = ${cnpoliza}`
    
    return result.recordsets[0]
   } catch (err) {
-   console.log('Error al Obtener los productos de los clientes', err)
+   console.log('Error al Obtener los recibos de los productos', err)
    return err
   }
 }

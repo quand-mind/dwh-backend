@@ -163,7 +163,7 @@ const getProducts = async (req, res) => {
     }
 
     for (const product of products) {
-      const receipts = await Client.getReceipts(product.cnpoliza)
+      const receipts = await Client.getReceipts(product.xcontrato)
       if (receipts.error) {
         return res.status(receipts.code).send({
           status: false,
