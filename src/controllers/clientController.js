@@ -54,7 +54,7 @@ const getAllClients = async (req, res) => {
 }
 const getClientData = async (req, res) => {
   try {
-    const client = await Client.getClientData(req.params.cedula);
+    const client = await Client.getClientData(req.params.orden);
 
     if (client.error) {
       return res.status(client.code).send({

@@ -62,12 +62,12 @@ const getAllClients = async (firstItem) => {
     return err
   }
 }
-const getClientData = async (cedula) => {
+const getClientData = async (orden) => {
   
   try {
     clientsData = []
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * FROM lista_clientes WHERE xcedula = ${cedula}`
+    const result = await sql.query`SELECT * FROM lista_clientes WHERE orden = ${orden}`
 
     const records = result.recordsets[0]
     records.forEach(item => {
@@ -261,7 +261,7 @@ const getAllClientsAndSearch = async (page, string, body) => {
     const offsetRows = (page * 10) - 10
     const queryRowsA = queryRows(offsetRows)
 
-    let initialQuery = 'SELECT cid, xnombre, corigen, xorigen, fnacimiento, orden, xtelefono1, xcompania, xcedula FROM lista_clientes'
+    let initialQuery = 'SELECT DISTINCT(lista_clientes.orden), lista_clientes.cid, lista_clientes.xnombre, lista_clientes.corigen, lista_clientes.xorigen, lista_clientes.fnacimiento, lista_clientes.xtelefono1, lista_clientes.xcompania, lista_clientes.xcedula FROM lista_clientes'
 
     let finalQuery = setQuery(string, body, initialQuery, queryRowsA)
     console.log(finalQuery);
@@ -281,8 +281,8 @@ const getAllClientsAndSearch = async (page, string, body) => {
 
 const setQuery = (string, body, initialQuery, queryRowsA) => {
 
-  const repeatString = `SELECT orden FROM lista_clientes`
   const bodyKeys = Object.keys(body)
+
     
   let queryFilters = ''
   let x = 0
@@ -290,14 +290,35 @@ const setQuery = (string, body, initialQuery, queryRowsA) => {
     for (const key of bodyKeys) {
       if(x > 0) {
         queryFilters += ' AND '
+      } else {
+        queryFilters += ' WHERE '
       }
       let filterItems = []
       if(key[0].includes('f')){
         const value_splitted = body[key].split(' - ')
-        let date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
-        let date2 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
-        queryFilters += `(${key} > '${date1}' AND ${key} < '${date2}')`
+        console.log(value_splitted.length);
+        let date1, date2 = ''
+        if(value_splitted.length == 1) {
+          date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
+          if(value_splitted[0].includes('>')) {
+            queryFilters += `(lista_clientes.${key} <= '${date1}')`
+          } else {
+            queryFilters += `(lista_clientes.${key} >= '${date1}')`
+          }
+        } else {
+          date2 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
+          date1 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
+          if(value_splitted[0].includes('>')) {
+            queryFilters += `(lista_clientes.${key} >= '${date1}')`
+          } else if(value_splitted[1].includes('>')) {
+            queryFilters += `(lista_clientes.${key} <= '${date2}')`
+          } else {
+            queryFilters += `(lista_clientes.${key} <= '${date2}' AND lista_clientes.${key} >= '${date1}')`
+          }
+        }
       } else if(key.includes('_')){
+        queryFilters += `maVclientes_productos.cramo != ${body[key]}`
+        
         // const clientsProducts = await getProductsByType(body[key])
         // const arrayClients = []
         // for( const product of await clientsProducts) {
@@ -310,7 +331,7 @@ const setQuery = (string, body, initialQuery, queryRowsA) => {
         //   }
         // }
       } else{
-        queryFilters += `${key} = ${body[key]}`
+        queryFilters += `lista_clientes.${key} = ${body[key]}`
         // filterItems = clientsData.filter(item => item[key] == body[key])
       }
       x++
@@ -320,17 +341,20 @@ const setQuery = (string, body, initialQuery, queryRowsA) => {
       clientsData = filterItems
     }
   }
+
+  let queryjoin = ''
+  bodyKeys.forEach(key => {
+    if(key == 'productos_ramo') {
+      queryjoin = ` FULL OUTER JOIN maVclientes_productos ON (maVclientes_productos.id = lista_clientes.xcedula)`
+    }
+  });
   let queryString =''
   if (string != '------'){
     queryString = `(xcedula LIKE '${string}' + '%' OR xnombre LIKE '${string}' + '%' OR fnacimiento LIKE '${string}' + '%' OR xtelefono1 LIKE '${string}' + '%' OR xcompania LIKE '${string}' + '%')`
   }
 
-  if(bodyKeys.length > 0 || string != '------'){
-    initialQuery += ' WHERE '
-  }
-
   
-  let finalQuery = `${initialQuery} ${queryFilters} ${queryString}`
+  let finalQuery = `${initialQuery} ${queryjoin} ${queryFilters} ${queryString}`
   if(queryRowsA){
     finalQuery += ` ${queryRowsA}`
   }
@@ -366,7 +390,8 @@ const getProducts = async (rif) => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const result = await sql.query(`SELECT * FROM maVclientes_productos WHERE id = ${rif}`)
+   const query = `SELECT * FROM maVclientes_productos WHERE id = '${rif}'`;
+   const result = await sql.query(query)
    
    return result.recordsets[0]
   } catch (err) {
@@ -378,10 +403,10 @@ const getProducts = async (rif) => {
 const getReceipts = async (cnpoliza) => {
   
   try {
-    console.log('receipts');
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
    const result = await sql.query`SELECT cnrecibo, mmontoapagext, cnpoliza, femision, fanopol, itipopol, fanulacion, fcobro, iestadorec FROM adrecibos WHERE cnpoliza = ${cnpoliza}`
+   
    
    return result.recordsets[0]
   } catch (err) {

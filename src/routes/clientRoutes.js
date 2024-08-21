@@ -11,7 +11,7 @@ router
     .get("/get/:page", clientController.getClients)
     .post("/getCountOcurrences/:string", clientController.getCountClientsAndSearch)
     .post("/searchOcurrences/:page/:string", clientController.getAllClientsAndSearch)
-    .get("/getClientData/:cedula", clientController.getClientData)
+    .get("/getClientData/:orden", clientController.getClientData)
     .get("/getProducts/:rif", clientController.getProducts)
     .post("/countClients", clientController.countClients)
 
