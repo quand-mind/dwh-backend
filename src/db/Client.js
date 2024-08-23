@@ -350,6 +350,9 @@ const setQuery = (string, body, initialQuery, queryRowsA) => {
   });
   let queryString =''
   if (string != '------'){
+    if(bodyKeys.length == 0) {
+      queryFilters += ' WHERE '
+    }
     queryString = `(xcedula LIKE '${string}' + '%' OR xnombre LIKE '${string}' + '%' OR fnacimiento LIKE '${string}' + '%' OR xtelefono1 LIKE '${string}' + '%' OR xcompania LIKE '${string}' + '%')`
   }
 
