@@ -12,6 +12,7 @@ router
     .post("/getCountOcurrences/:string", clientController.getCountClientsAndSearch)
     .post("/searchOcurrences/:page/:string", clientController.getAllClientsAndSearch)
     .get("/getClientData/:orden", clientController.getClientData)
+    .post("/:orden/addObservation", clientController.addObservation)
     .get("/getProducts/:rif", clientController.getProducts)
     .post("/countClients", clientController.countClients)
 

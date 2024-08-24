@@ -417,6 +417,25 @@ const getReceipts = async (cnpoliza) => {
    return err
   }
 }
+const addObservation = async (orden, data) => {
+  
+  console.log(data)
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   let date = new Date
+   date = date.toLocaleDateString('en-US')
+   const query = `INSERT into clobservaciones (orden, fobservacion, cusuario, xobservacion, itipoobservacion, cestatus) VALUES (${orden},'${date}', 1, '${data.xobservacion}', '${data.itipoobservacion}', ${data.cestatus})`
+   console.log(query)
+   const result = await sql.query(query)
+   
+  //  await sql.close()
+   return result.recordsets[0]
+  } catch (err) {
+   console.log('Error al agregar la Observacion', err)
+   return err
+  }
+}
 
 const getProductsByType = async (ramo) => {
   
@@ -433,6 +452,7 @@ const getProductsByType = async (ramo) => {
 }
 export default {
   getClients,
+  addObservation,
   countClients,
   getAllClientsAndSearch,
   getCountClientsAndSearch,

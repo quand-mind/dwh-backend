@@ -179,6 +179,22 @@ const getProducts = async (req, res) => {
     
   }
 }
+const addObservation = async (req, res) => {
+  try {
+    const observation = await Client.addObservation(req.params.orden, req.body);
+    if (observation.error) {
+      return res.status(observation.code).send({
+        status: false,
+        message: observation.error
+      });
+    }
+    
+    res.send(observation) 
+    
+  } catch (error) {
+    
+  }
+}
 
 
 export default {
@@ -190,5 +206,6 @@ export default {
   getCountClientsAndSearch,
   getProducts,
   getDashboardClientData,
+  addObservation,
   setAllClients
 }
