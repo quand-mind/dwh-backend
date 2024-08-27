@@ -63,6 +63,11 @@ const getClientData = async (req, res) => {
       });
     }
 
+    const observations = await getObservations(client.orden)
+    observations.forEach(observation => {
+      observation.fobservacion = new Date(observation.fobservacion).toLocaleDateString('en-GB')
+    });
+    client.observations = observations
 
     res.send({data: client})
     
@@ -174,6 +179,22 @@ const getProducts = async (req, res) => {
     }
     
     res.send(products) 
+    
+  } catch (error) {
+    
+  }
+}
+const getObservations = async (orden) => {
+  try {
+    const observations = await Client.getObservations(orden);
+    if (observations.error) {
+      return res.status(observations.code).send({
+        status: false,
+        message: observations.error
+      });
+    }
+    
+    return observations 
     
   } catch (error) {
     

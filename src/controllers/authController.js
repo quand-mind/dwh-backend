@@ -45,6 +45,7 @@ const createJWT = async (req, res) => {
                 // bmodificar: user.bmodificar,
                 // beliminar: user.beliminar,
                 ccompania: user.CCOMPANIA,
+                xemail: user.XEMAIL,
                 cpais: user.CPAIS,
                 ctipo_sistema: user.CTIPO_SISTEMA,
                 token: 'Bearer ' + jwt

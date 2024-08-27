@@ -383,7 +383,7 @@ const countClients = async () => {
     const resutlR = result.recordsets[0][0].count
     return resutlR
   } catch (err) {
-    console.log('Error al Obtener los clientes', err)
+    console.log('Error al Obtener el total de los clientes', err)
     return err
   }
 }
@@ -398,7 +398,21 @@ const getProducts = async (rif) => {
    
    return result.recordsets[0]
   } catch (err) {
-   console.log('Error al Obtener los productos de los clientes', err)
+   console.log('Error al Obtener los productos del cliente', err)
+   return err
+  }
+}
+const getObservations = async (orden) => {
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   const query = `SELECT * FROM clV_Observaciones WHERE orden = ${orden}`;
+   const result = await sql.query(query)
+   
+   return result.recordsets[0]
+  } catch (err) {
+   console.log('Error al Obtener las observaciones del cliente', err)
    return err
   }
 }
@@ -418,15 +432,12 @@ const getReceipts = async (cnpoliza) => {
   }
 }
 const addObservation = async (orden, data) => {
-  
-  console.log(data)
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
    let date = new Date
    date = date.toLocaleDateString('en-US')
-   const query = `INSERT into clobservaciones (orden, fobservacion, cusuario, xobservacion, itipoobservacion, cestatus) VALUES (${orden},'${date}', 1, '${data.xobservacion}', '${data.itipoobservacion}', ${data.cestatus})`
-   console.log(query)
+   const query = `INSERT into clobservaciones (orden, fobservacion, cusuario, xobservacion, itipoobservacion, cestatus) VALUES (${orden},'${date}', ${data.cusuario}, '${data.xobservacion}', '${data.itipoobservacion}', ${data.cestatus})`
    const result = await sql.query(query)
    
   //  await sql.close()
@@ -459,6 +470,7 @@ export default {
   getAllClients,
   getClientData,
   getProducts,
+  getObservations,
   getDashboardClientData,
   getReceipts,
   setAllClients
