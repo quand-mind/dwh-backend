@@ -52,6 +52,44 @@ const getAllClients = async (req, res) => {
     
   }
 }
+const searchWithTable = async (req, res) => {
+  try {
+    const clients = await Client.searchWithTable(req.params.table);
+
+    if (clients.error) {
+      return res.status(clients.code).send({
+        status: false,
+        message: clients.error
+      });
+    }
+
+
+    res.send(clients)
+    
+  } catch (error) {
+    
+  }
+}
+const getCompanies = async (req, res) => {
+  try {
+    const companies = await Client.getCompanies();
+
+    if (companies.error) {
+      return res.status(companies.code).send({
+        status: false,
+        message: companies.error
+      });
+    }
+    const companiesF = companies.map(element => {
+      return {text: element.xorigen, value: element.corigen, url: element.xtabla}
+    });
+
+    res.send(companiesF)
+    
+  } catch (error) {
+    
+  }
+}
 const getClientData = async (req, res) => {
   try {
     const client = await Client.getClientData(req.params.orden);
@@ -93,7 +131,8 @@ const getDashboardClientData = async (req, res) => {
 }
 const getClients = async (req, res) => {
   try {
-    const clients = await Client.getClients(req.params.page);
+    const data = await Client.getClients(req.params.page);
+    const clients = data.records
     // console.log(plans)
     if (clients.error) {
       return res.status(clients.code).send({
@@ -117,7 +156,7 @@ const getClients = async (req, res) => {
         }
       }
     }
-    res.send(clients)
+    res.send({clients, query: data.query})
     
   } catch (error) {
     
@@ -125,7 +164,8 @@ const getClients = async (req, res) => {
 }
 const getAllClientsAndSearch = async (req, res) => {
   try {
-    const clients = await Client.getAllClientsAndSearch(req.params.page, req.params.string, req.body);
+    const data = await Client.getAllClientsAndSearch(req.params.page, req.params.string, req.body);
+    const clients = data.records
     if (clients.error) {
       return res.status(clients.code).send({
         status: false,
@@ -134,7 +174,7 @@ const getAllClientsAndSearch = async (req, res) => {
     }
     
 
-    res.send(clients)
+    res.send({clients, query: data.query})
     
   } catch (error) {
     
@@ -221,6 +261,7 @@ const addObservation = async (req, res) => {
 export default {
   getAllClients,
   getClients,
+  searchWithTable,
   getClientData,
   countClients,
   getAllClientsAndSearch,
@@ -228,5 +269,6 @@ export default {
   getProducts,
   getDashboardClientData,
   addObservation,
-  setAllClients
+  setAllClients,
+  getCompanies
 }

@@ -52,11 +52,12 @@ const getAllClients = async (firstItem) => {
   try {
     const queryRowsA = queryRows(firstItem)
     await sql.connect(sqlConfig)
-    const result = await sql.query(`SELECT cid, xnombre, corigen, xorigen, fnacimiento, orden, xtelefono1, xcompania, xcedula FROM lista_clientes ${queryRowsA}`)
+    const query = `SELECT cid, xnombre, corigen, xorigen, fnacimiento, orden, xtelefono1, xcompania, xcedula FROM lista_clientes`
+    const result = await sql.query(`${query} ${queryRowsA}`)
     
     const records = result.recordsets[0]
     
-    return records
+    return {records, query}
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err
@@ -82,34 +83,7 @@ const getClientData = async (orden) => {
 }
 
 const formatData = (item) => {
-  
-  // const index = clientsData.findIndex(item2=> item2.xcedula == item.xcedula)
-  // const ccorigen = item.corigen
-  // const xxorigen = item.xorigen
-  // item.corigen = []
-  // item.xorigen = []
-  
-  // if(index == -1) {
-  //   item.corigen.push(ccorigen)
-  //   item.xorigen.push(xxorigen)
     clientsData.push(item)
-  // } else {
-  //   const entries = Object.entries(clientsData[index])
-  //   const entries2 = Object.entries(item)
-  //   let y = 0
-  //   for (const element of entries) {
-  //     if(!element[1]){
-  //       element[1] = entries2[y][1]
-  //       clientsData[index][element[0]] = entries2[y][1]
-  //       const originIndex = clientsData[index].corigen.findIndex(origin => origin == ccorigen)
-  //       if(originIndex == -1) {
-  //         clientsData[index].corigen.push(ccorigen)
-  //         clientsData[index].xorigen.push(xxorigen)
-  //       }
-  //     }
-  //     y++
-  //   }
-  // }
 }
 const getDashboardClientData = async () => {
   
@@ -255,23 +229,49 @@ const getCountClientsAndSearch = async (string, body) => {
   
   return count
 }
+const getCompanies = async (table) => {
+  try {
+    await sql.connect(sqlConfig)
+    const result = await sql.query(`SELECT * FROM maorigen`)
+    const records = result.recordset
+
+    return records
+  } catch (err) {
+    console.log('Error al Obtener los clientes', err)
+    return err
+  }
+
+}
+const searchWithTable = async (table) => {
+  try {
+    await sql.connect(sqlConfig)
+    const result = await sql.query(`SELECT * FROM ${table}`)
+    const records = result.recordset
+
+    return records
+  } catch (err) {
+    console.log('Error al Obtener los clientes', err)
+    return err
+  }
+
+}
 const getAllClientsAndSearch = async (page, string, body) => {
   try {
 
     const offsetRows = (page * 10) - 10
     const queryRowsA = queryRows(offsetRows)
 
-    let initialQuery = 'SELECT DISTINCT(lista_clientes.orden), lista_clientes.cid, lista_clientes.xnombre, lista_clientes.corigen, lista_clientes.xorigen, lista_clientes.fnacimiento, lista_clientes.xtelefono1, lista_clientes.xcompania, lista_clientes.xcedula FROM lista_clientes'
+    let initialQuery = 'SELECT orden, cid, xnombre, corigen, xorigen, fnacimiento, xtelefono1, xcompania, xcedula FROM lista_clientes'
 
     let finalQuery = setQuery(string, body, initialQuery, queryRowsA)
     console.log(finalQuery);
     // make sure that any items are correctly URL encoded in the connection string    
     
     await sql.connect(sqlConfig)
-    const result = await sql.query(finalQuery)
+    const result = await sql.query(`${finalQuery} ${queryRowsA}`)
     const records = result.recordsets[0]
 
-    return records
+    return {records, query: finalQuery}
     
   } catch (err) {
    console.log('Error al Obtener los clientes', err)
@@ -279,7 +279,7 @@ const getAllClientsAndSearch = async (page, string, body) => {
   }
 }
 
-const setQuery = (string, body, initialQuery, queryRowsA) => {
+const setQuery = (string, body, initialQuery) => {
 
   const bodyKeys = Object.keys(body)
 
@@ -317,22 +317,9 @@ const setQuery = (string, body, initialQuery, queryRowsA) => {
           }
         }
       } else if(key.includes('_')){
-        queryFilters += `maVclientes_productos.cramo != ${body[key]}`
-        
-        // const clientsProducts = await getProductsByType(body[key])
-        // const arrayClients = []
-        // for( const product of await clientsProducts) {
-        //   const validClient = clientsData.find(item => item.cid == product.cci_rif)
-        //   if(validClient) {
-        //     if(!arrayClients.find(item=> item.cid == product.cci_rif)){
-        //       filterItems.push({...validClient})
-        //       arrayClients.push({...validClient})
-        //     }
-        //   }
-        // }
+        queryFilters += `xcedula NOT IN (SELECT id FROM maVclientes_productos WHERE cramo = ${body[key]})`
       } else{
         queryFilters += `lista_clientes.${key} = ${body[key]}`
-        // filterItems = clientsData.filter(item => item[key] == body[key])
       }
       x++
       if(x == bodyKeys.length && string != '------') {
@@ -342,12 +329,7 @@ const setQuery = (string, body, initialQuery, queryRowsA) => {
     }
   }
 
-  let queryjoin = ''
-  bodyKeys.forEach(key => {
-    if(key == 'productos_ramo') {
-      queryjoin = ` FULL OUTER JOIN maVclientes_productos ON (maVclientes_productos.id = lista_clientes.xcedula)`
-    }
-  });
+
   let queryString =''
   if (string != '------'){
     if(bodyKeys.length == 0) {
@@ -357,10 +339,8 @@ const setQuery = (string, body, initialQuery, queryRowsA) => {
   }
 
   
-  let finalQuery = `${initialQuery} ${queryjoin} ${queryFilters} ${queryString}`
-  if(queryRowsA){
-    finalQuery += ` ${queryRowsA}`
-  }
+  let finalQuery = `${initialQuery} ${queryFilters} ${queryString}`
+  
   return finalQuery
 }
 const getClients = async (page) => {
@@ -447,24 +427,11 @@ const addObservation = async (orden, data) => {
    return err
   }
 }
-
-const getProductsByType = async (ramo) => {
-  
-  try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const result = await sql.query`SELECT * FROM maVclientes_productos WHERE cramo = ${ramo}`
-   
-   return result.recordsets[0]
-  } catch (err) {
-   console.log('Error al Obtener los productos de los clientes', err)
-   return err
-  }
-}
 export default {
   getClients,
   addObservation,
   countClients,
+  searchWithTable,
   getAllClientsAndSearch,
   getCountClientsAndSearch,
   getAllClients,
@@ -473,5 +440,6 @@ export default {
   getObservations,
   getDashboardClientData,
   getReceipts,
-  setAllClients
+  setAllClients,
+  getCompanies
 }
