@@ -22,7 +22,7 @@ const getCampaignsCompanies = async (req, res) => {
 }
 const getProducts = async (req, res) => {
   try {
-    const products = await Campaign.getProducts(req.params.table);
+    const products = await Campaign.getProducts(req.params.corigen);
 
     if (products.error) {
       return res.status(products.code).send({
@@ -31,7 +31,7 @@ const getProducts = async (req, res) => {
       });
     }
     const gettedProducts = products.map(element => {
-      return {text: element.xplan, id: element.id, value: element.nasegurados_sin_prod}
+      return {text: element.xplan, id: element.cramo, value: element.nsin_poliza, other_value: element.npolizas}
     });
 
     res.send(gettedProducts)
@@ -42,7 +42,7 @@ const getProducts = async (req, res) => {
 }
 const getClientsProduct = async (req, res) => {
   try {
-    const clients = await Campaign.getClientsProduct(req.params.cramo, req.params.page);
+    const clients = await Campaign.getClientsProduct(req.params.corigen, req.params.cramo, req.body);
 
     if (clients.error) {
       return res.status(clients.code).send({
@@ -50,6 +50,10 @@ const getClientsProduct = async (req, res) => {
         message: clients.error
       });
     }
+    clients.forEach(element => {
+      element.selected = false
+      element.cestatus = null
+    });
 
     res.send(clients)
     

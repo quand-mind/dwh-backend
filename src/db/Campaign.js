@@ -16,6 +16,9 @@ const sqlConfig = {
     trustServerCertificate: true // change to true for local dev / self-signed certs
   }
 }
+const queryRows = (firstItem) => {
+  return `ORDER BY orden OFFSET ${parseInt(firstItem)} ROWS FETCH NEXT 10 ROWS ONLY`
+}
 
 const getCampaignsCompanies = async () => {
   try {
@@ -27,23 +30,23 @@ const getCampaignsCompanies = async () => {
     return err
   }
 }
-const getProducts = async (tableName) => {
+const getProducts = async (corigen) => {
   try {
     await sql.connect(sqlConfig)
-    const result = await sql.query(`SELECT * from ${tableName}`)
+    const result = await sql.query(`SELECT * from magrupo_plan WHERE corigen = ${corigen}`)
     return result.recordset
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err
   }
 }
-const getClientsProduct = async (cramo, page) => {
+const getClientsProduct = async (corigen, cramo, data) => {
   try {
     await sql.connect(sqlConfig)
     const result = await sql.query(`
-      SELECT * FROM lista_clientes WHERE xcedula NOT IN (
+      SELECT orden, xnombre, cid FROM lista_clientes WHERE xcedula NOT IN (
         SELECT id FROM maVclientes_productos WHERE cramo = ${cramo}
-      ) AND corigen = 1 
+      ) AND corigen = ${corigen}
     `)
     return result.recordset
   } catch (err) {

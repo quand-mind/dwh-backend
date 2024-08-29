@@ -6,7 +6,8 @@ const router = express.Router();
 
 router
     .get("/getCampaignsCompanies", campaignController.getCampaignsCompanies)
-    .get("/getProducts/:table", campaignController.getProducts)
+    .get("/getProducts/:corigen", campaignController.getProducts)
+    .post("/getClientsProduct/:corigen/:cramo", campaignController.getClientsProduct)
 
     
 export default router;
