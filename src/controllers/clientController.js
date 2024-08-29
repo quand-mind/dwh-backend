@@ -70,6 +70,24 @@ const searchWithTable = async (req, res) => {
     
   }
 }
+const getSystemData = async (req, res) => {
+  try {
+    const tableData = await Client.getSystemData(req.params.table);
+
+    if (tableData.error) {
+      return res.status(tableData.code).send({
+        status: false,
+        message: tableData.error
+      });
+    }
+
+
+    res.send(tableData)
+    
+  } catch (error) {
+    
+  }
+}
 const getCompanies = async (req, res) => {
   try {
     const companies = await Client.getCompanies();
@@ -81,7 +99,7 @@ const getCompanies = async (req, res) => {
       });
     }
     const companiesF = companies.map(element => {
-      return {text: element.xorigen, value: element.corigen, url: element.xtabla}
+      return {text: element.xorigen, value: element.corigen, url: element.xtabla_export}
     });
 
     res.send(companiesF)
@@ -270,5 +288,6 @@ export default {
   getDashboardClientData,
   addObservation,
   setAllClients,
-  getCompanies
+  getCompanies,
+  getSystemData
 }

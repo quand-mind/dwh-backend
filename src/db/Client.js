@@ -255,6 +255,39 @@ const searchWithTable = async (table) => {
   }
 
 }
+const getSystemData = async (table) => {
+  try {
+    let fields = {id:'',email:'',telefono:'',nacimiento:''}
+    if(table == 'maclientes') {
+      fields.id = 'id'; fields.email = 'xcorreo1', fields.telefono = 'xtelefono1', fields.nacimiento = 'fnacimiento'
+    } else if( table == 'clcliente'){
+      fields.id = 'ccliente'; fields.email = 'xemail', fields.telefono = 'xtelefono', fields.nacimiento = 'fnacimiento'
+    } else if(table == 'Clientes_ManMar') {
+      fields.id = 'id'; fields.email = 'xcorreo', fields.telefono = 'xtelefono1', fields.nacimiento = 'fnacimiento'
+    } else if(table == 'Clientes_BeeInsurance') {
+      fields.id = 'id'; fields.email = 'xcorreo', fields.telefono = 'xtelefono1', fields.nacimiento = 'fnacimiento'
+    } else if(table == 'Clientes_Pasarela') {
+      fields.id = 'id_buy'; fields.email = 'xcorreo', fields.telefono = 'xtelefono1', fields.nacimiento = 'fnacimiento'
+    } else if(table == 'Clientes_RMS') {
+      fields.id = 'id'; fields.email = 'xcorreo', fields.telefono = 'xtelefono1', fields.nacimiento = 'fnacimiento'
+    }
+    let query = `
+      SELECT xnombre = 'Sin Correo', COUNT(${fields.id}) as ntotal FROM ${table} WHERE ${fields.email} IS NULL UNION 
+      SELECT xnombre = 'Sin Telefono', COUNT(${fields.id}) as ntotal FROM ${table} WHERE ${fields.telefono} IS NULL UNION
+      SELECT xnombre = 'Sin Fecha de Nacimiento', COUNT(${fields.id}) as ntotal FROM ${table} WHERE ${fields.nacimiento} IS NULL UNION
+      SELECT xnombre = 'Total', COUNT(${fields.id}) as ntotal FROM ${table}
+    `
+    await sql.connect(sqlConfig)
+    const result = await sql.query(query)
+    const records = result.recordset
+
+    return records
+  } catch (err) {
+    console.log('Error al Obtener los clientes', err)
+    return err
+  }
+
+}
 const getAllClientsAndSearch = async (page, string, body) => {
   try {
 
@@ -441,5 +474,6 @@ export default {
   getDashboardClientData,
   getReceipts,
   setAllClients,
-  getCompanies
+  getCompanies,
+  getSystemData
 }

@@ -10,6 +10,7 @@ router
     .get("/getDashboardClientData", clientController.getDashboardClientData)
     .get("/get/:page", clientController.getClients)
     .get("/searchTable/:table", clientController.searchWithTable)
+    .get("/getCompanyData/:table", clientController.getSystemData)
     .post("/getCountOcurrences/:string", clientController.getCountClientsAndSearch)
     .post("/searchOcurrences/:page/:string", clientController.getAllClientsAndSearch)
     .get("/getClientData/:orden", clientController.getClientData)
