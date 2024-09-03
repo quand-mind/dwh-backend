@@ -55,9 +55,23 @@ const getClientsProduct = async (corigen, cramo, data) => {
   }
   
 }
+const getProductsPlan = async (corigen, cramo, data) => {
+  try {
+    await sql.connect(sqlConfig)
+    const result = await sql.query(`
+      SELECT id, cramo, corigen, xplan from maplanes where corigen = ${corigen} and cramo = ${cramo} and xplan IS NOT null and bactivo = 1
+    `)
+    return result.recordset
+  } catch (err) {
+    console.log('Error al Obtener los clientes', err)
+    return err
+  }
+  
+}
 
 export default {
   getCampaignsCompanies,
   getProducts,
   getClientsProduct,
+  getProductsPlan,
 }

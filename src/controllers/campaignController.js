@@ -61,9 +61,27 @@ const getClientsProduct = async (req, res) => {
     
   }
 }
+const getProductsPlan = async (req, res) => {
+  try {
+    const products = await Campaign.getProductsPlan(req.params.corigen, req.params.cramo);
+
+    if (products.error) {
+      return res.status(products.code).send({
+        status: false,
+        message: products.error
+      });
+    }
+
+    res.send(products)
+    
+  } catch (error) {
+    
+  }
+}
 
 export default {
   getCampaignsCompanies,
   getProducts,
   getClientsProduct,
+  getProductsPlan,
 }
