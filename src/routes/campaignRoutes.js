@@ -9,6 +9,7 @@ router
     .get("/getProducts/:corigen", campaignController.getProducts)
     .post("/getClientsProduct/:corigen/:cramo", campaignController.getClientsProduct)
     .post("/getClientsData", campaignController.getClientsData)
+    .post("/setCampaign", campaignController.setCampaignClients)
     .get("/getProductsPlan/:corigen/:cramo", campaignController.getProductsPlan)
 
     

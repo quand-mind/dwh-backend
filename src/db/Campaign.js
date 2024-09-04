@@ -16,9 +16,6 @@ const sqlConfig = {
     trustServerCertificate: true // change to true for local dev / self-signed certs
   }
 }
-const queryRows = (firstItem) => {
-  return `ORDER BY orden OFFSET ${parseInt(firstItem)} ROWS FETCH NEXT 10 ROWS ONLY`
-}
 
 const getCampaignsCompanies = async () => {
   try {
@@ -53,7 +50,6 @@ const setQuery = (body, initialQuery) => {
       queryFilters += ' AND '
       if(key[0].includes('f')){
         const value_splitted = body[key].split(' - ')
-        console.log(value_splitted.length);
         let date1, date2 = ''
         if(value_splitted.length == 1) {
           date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
@@ -90,9 +86,12 @@ const setQuery = (body, initialQuery) => {
 
 const getClientsProduct = async (corigen, cramo, data) => {
   try {
-    const initialQuery = `SELECT orden, xnombre, cid FROM lista_clientes WHERE xcedula NOT IN (SELECT id FROM maVclientes_productos WHERE cramo = ${cramo}) AND corigen = ${corigen}`
-    let finalQuery = setQuery(data, initialQuery, null)
+    
+    
     await sql.connect(sqlConfig)
+    const initialQuery = `SELECT orden, xnombre, cid FROM lista_clientes WHERE xcedula NOT IN (SELECT id FROM maVclientes_productos WHERE cramo = ${cramo}) AND corigen = ${corigen} AND orden NOT IN (SELECT orden FROM clVobservaciones WHERE cramo = ${cramo})`
+    let finalQuery = setQuery(data, initialQuery, null)
+    console.log(finalQuery);
     const result = await sql.query(finalQuery)
     return result.recordset
   } catch (err) {
@@ -107,6 +106,31 @@ const getClientsData = async (data) => {
     const result = await sql.query(`
       SELECT * FROM lista_clientes WHERE orden IN (${data.join(',')}) `)
     return result.recordset
+  } catch (err) {
+    console.log('Error al Obtener los clientes', err)
+    return err
+  }
+  
+}
+const setCampaignClients = async (data) => {
+  try {
+    await sql.connect(sqlConfig)
+    const cusuario = data.cusuario
+    const body = data.items
+    let bodyQuery = ''
+    let x = 0
+    let date = new Date().toLocaleDateString('en-GB')
+    for (const item of body) {
+      bodyQuery += `(${item.orden}, '${date}', ${cusuario}, '${item.xobservacion.trim()}', '${item.itipoobservacion}', 14)`
+      x++
+      if(x != body.length) {
+        bodyQuery += `,`
+      }
+    }
+    const result = await sql.query(`
+      INSERT INTO clobservaciones (orden, fobservacion, cusuario, xobservacion, itipoobservacion, cestatus) VALUES ${bodyQuery} `)
+    return result.recordset
+    // return body
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err
@@ -132,5 +156,6 @@ export default {
   getProducts,
   getClientsProduct,
   getClientsData,
+  setCampaignClients,
   getProductsPlan,
 }
