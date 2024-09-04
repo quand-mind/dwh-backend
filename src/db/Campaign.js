@@ -91,7 +91,6 @@ const getClientsProduct = async (corigen, cramo, data) => {
     await sql.connect(sqlConfig)
     const initialQuery = `SELECT orden, xnombre, cid FROM lista_clientes WHERE xcedula NOT IN (SELECT id FROM maVclientes_productos WHERE cramo = ${cramo}) AND corigen = ${corigen} AND orden NOT IN (SELECT orden FROM clVobservaciones WHERE cramo = ${cramo})`
     let finalQuery = setQuery(data, initialQuery, null)
-    console.log(finalQuery);
     const result = await sql.query(finalQuery)
     return result.recordset
   } catch (err) {
