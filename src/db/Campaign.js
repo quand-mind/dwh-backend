@@ -118,17 +118,23 @@ const setCampaignClients = async (data) => {
     const body = data.items
     let bodyQuery = ''
     let x = 0
+
+    const initialQuery = 'INSERT INTO clobservaciones (orden, fobservacion, cusuario, xobservacion, itipoobservacion, cestatus) VALUES '
     let date = new Date().toLocaleDateString('en-GB')
+    let result = null
     for (const item of body) {
       bodyQuery += `(${item.orden}, '${date}', ${cusuario}, '${item.xobservacion.trim()}', '${item.itipoobservacion}', 14)`
       x++
       if(x != body.length) {
-        bodyQuery += `,`
+        if(x % 100 == 0) {
+          result = await sql.query(`${initialQuery} ${bodyQuery} `)
+          bodyQuery = ''
+        } else{
+          bodyQuery += `,`
+        }
       }
     }
-    const result = await sql.query(`
-      INSERT INTO clobservaciones (orden, fobservacion, cusuario, xobservacion, itipoobservacion, cestatus) VALUES ${bodyQuery} `)
-    return result.recordset
+    return result.rowsAffected
     // return body
   } catch (err) {
     console.log('Error al Obtener los clientes', err)

@@ -81,7 +81,7 @@ const getClientsData = async (req, res) => {
 const setCampaignClients = async (req, res) => {
   try {
     const clients = await Campaign.setCampaignClients(req.body);
-
+    console.log(clients);
     if (clients.error) {
       return res.status(clients.code).send({
         status: false,
