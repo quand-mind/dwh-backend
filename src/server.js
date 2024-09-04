@@ -16,16 +16,16 @@ const { diskStorage } = multer;
 const app = express(); 
 dotenv;
 
-// app.use(cors({
-//   origin: '*',  // o especifica el dominio permitido
-//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-//   optionsSuccessStatus: 204,
-//   credentials: true ,
-//   allowedHeaders: ['Content-Type', 'Authorization', 'x-client-channel'],
+app.use(cors({
+  origin: '*',  // o especifica el dominio permitido
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  optionsSuccessStatus: 204,
+  credentials: true ,
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-client-channel'],
   
-// }));
+}));
 
-// app.use(cors());
+app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));

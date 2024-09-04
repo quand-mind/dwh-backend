@@ -61,6 +61,23 @@ const getClientsProduct = async (req, res) => {
     
   }
 }
+const getClientsData = async (req, res) => {
+  try {
+    const clients = await Campaign.getClientsData(req.body);
+
+    if (clients.error) {
+      return res.status(clients.code).send({
+        status: false,
+        message: clients.error
+      });
+    }
+
+    res.send(clients)
+    
+  } catch (error) {
+    
+  }
+}
 const getProductsPlan = async (req, res) => {
   try {
     const products = await Campaign.getProductsPlan(req.params.corigen, req.params.cramo);
@@ -83,5 +100,6 @@ export default {
   getCampaignsCompanies,
   getProducts,
   getClientsProduct,
+  getClientsData,
   getProductsPlan,
 }
