@@ -25,7 +25,7 @@ dotenv;
   
 // }));
 
-app.use(cors());
+// app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
