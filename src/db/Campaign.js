@@ -124,17 +124,21 @@ const setCampaignClients = async (data) => {
     let result = null
     for (const item of body) {
       bodyQuery += `(${item.orden}, '${date}', ${cusuario}, '${item.xobservacion.trim()}', '${item.itipoobservacion}', 14)`
-      x++
+      
       if(x != body.length) {
-        if(x % 100 == 0) {
+        
+        x++
+        if(x % 100 == 0 || x == body.length) {
+          console.log(`${initialQuery} ${bodyQuery} `);
           result = await sql.query(`${initialQuery} ${bodyQuery} `)
           bodyQuery = ''
         } else{
           bodyQuery += `,`
         }
       }
+      
     }
-    return result.rowsAffected
+    return result
     // return body
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
