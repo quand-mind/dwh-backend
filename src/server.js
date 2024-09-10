@@ -11,6 +11,7 @@ import clientRoutes from './routes/clientRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import maestrosRoutes from './routes/maestrosRoutes.js';
 import campaignRoutes from './routes/campaignRoutes.js';
+import graphicsRoutes from './routes/graphicsRoutes.js';
 
 const { diskStorage } = multer;
 const app = express(); 
@@ -40,6 +41,7 @@ app.use("/clients", clientRoutes);
 app.use("/auth", authRoutes);
 app.use("/maestros", maestrosRoutes);
 app.use("/campaign", campaignRoutes);
+app.use("/graphics", graphicsRoutes);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
