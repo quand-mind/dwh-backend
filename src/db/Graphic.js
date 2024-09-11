@@ -34,7 +34,6 @@ const setBg = () => {
 
 const getItems = async (queryItems, queryTotal) => {
   try {
-    console.log(queryItems);
     await sql.connect(sqlConfig)
     const result = []
     let total = 0
