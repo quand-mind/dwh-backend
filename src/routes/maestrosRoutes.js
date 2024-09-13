@@ -7,6 +7,7 @@ const router = express.Router();
 router
     .get("/ramos", maestrosController.getRamos)
     .get("/origenes", maestrosController.getOrigenes)
+    .get("/origenesApi", maestrosController.getOrigenesApi)
 
     
 export default router;

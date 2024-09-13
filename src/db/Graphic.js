@@ -64,6 +64,53 @@ const getItems = async (queryItems, queryTotal) => {
     return err
   }
 }
+const getItemsFiltered = async (filters, queryItems, queryTotal) => {
+  try {
+    console.log(filters);
+    await sql.connect(sqlConfig)
+    const result = []
+    let total = 0
+    const items = await sql.query(`${queryItems}`)
+    const valuesToSearch = items.recordset
+    let x = 0
+    if(filters.main){
+      let newQueryTotal = queryTotal.split('@var')
+      const labelToFind = valuesToSearch.find((element) => element.value == filters.main)
+      if(labelToFind) {
+        newQueryTotal.splice(newQueryTotal.length-1, 0, `'${filters.main}'`)
+        newQueryTotal = newQueryTotal.join('')
+        const values = await sql.query(`${newQueryTotal}`)
+        const valueF = values.recordset[0].value
+        result.push({color: setBg(), data: valueF, label: labelToFind.label})
+        total += valueF
+      }
+    } else {
+
+      for (const value of valuesToSearch) {
+        let newQueryTotal = queryTotal.split('@var')
+        if(value.value) { 
+          newQueryTotal.splice(newQueryTotal.length-1, 0, `'${value.value}'`)
+          newQueryTotal = newQueryTotal.join('')
+        } else {
+          value.label = 'No especificado'
+          newQueryTotal = newQueryTotal.join('')
+          newQueryTotal = newQueryTotal.split('=')
+          newQueryTotal.splice(newQueryTotal.length-1, 0, `IS NULL`)
+          newQueryTotal = newQueryTotal.join('')
+        }
+        const values = await sql.query(`${newQueryTotal}`)
+        const valueF = values.recordset[0].value
+        result.push({color: setBg(), data: valueF, label: value.label})
+        total += valueF
+        x++
+      }
+    }
+    return {data: result, total: total}
+  } catch (err) {
+    console.log('Error al Obtener los graficos', err)
+    return err
+  }
+}
 
 const setQuery = (body, initialQuery) => {
 
@@ -113,5 +160,6 @@ const setQuery = (body, initialQuery) => {
 
 export default {
   getGraphicsById,
-  getItems
+  getItems,
+  getItemsFiltered
 }

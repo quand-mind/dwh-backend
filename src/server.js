@@ -17,16 +17,16 @@ const { diskStorage } = multer;
 const app = express(); 
 dotenv;
 
-// app.use(cors({
-//   origin: '*',  // o especifica el dominio permitido
-//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-//   optionsSuccessStatus: 204,
-//   credentials: true ,
-//   allowedHeaders: ['Content-Type', 'Authorization', 'x-client-channel'],
+app.use(cors({
+  origin: '*',  // o especifica el dominio permitido
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  optionsSuccessStatus: 204,
+  credentials: true ,
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-client-channel'],
   
-// }));
+}));
 
-// app.use(cors());
+app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
@@ -46,6 +46,18 @@ app.use("/graphics", graphicsRoutes);
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
+
+const sqlConfig = {
+  user: process.env.DB_USER,
+  password: process.env.DB_PWD,
+  server: process.env.DB_server,
+  database: process.env.DB_NAME_BEE,
+  requestTimeout: 60000,
+  options: {
+      encrypt: true,
+      trustServerCertificate: true
+  }
+}
 
 
 

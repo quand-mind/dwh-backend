@@ -1,0 +1,9 @@
+--select distinct(LTRIM(RTRIM(ifuente_api))) as label, LTRIM(RTRIM(corigen_rel)) as value from maclient_api
+
+select distinct(LTRIM(RTRIM(cprog))) as label, LTRIM(RTRIM(cprog)) as value from maproductos_Mundial
+
+
+
+--select count(orden) as value from Lista_Clientes where xcedula IN ( SELECT CONVERT(varchar(250), cci_rif) from maproductos_Mundial where corigen_rel = @var)
+
+select count(orden) as value from Lista_Clientes where xcedula IN ( SELECT CONVERT(varchar(250), cci_rif) from maproductos_Mundial where cprog = @var)

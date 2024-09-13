@@ -56,9 +56,31 @@ const getOrigenes = async (req, res) => {
     
   }
 }
+const getOrigenesApi = async (req, res) => {
+  try {
+    const origenes = await Maestros.getOrigenesApi();
+
+    const data = origenes.map(item => {
+      return {text: item.text, value: item.value}
+    })
+    data.unshift({text: 'Sin Filtros', value: ''})
+
+    if (origenes.error) {
+      return res.status(origenes.code).send({
+        status: false,
+        message: origenes.error
+      });
+    }
+    res.send(data)
+    
+  } catch (error) {
+    
+  }
+}
 
 
 export default {
   getRamos,
-  getOrigenes
+  getOrigenes,
+  getOrigenesApi
 }

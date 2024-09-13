@@ -48,8 +48,24 @@ const getOrigenes = async () => {
    return err
   }
 }
+const getOrigenesApi = async () => {
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   const result = await sql.query`select distinct(LTRIM(RTRIM(cprog))) as text, LTRIM(RTRIM(cprog)) as value from adpoliza`
+   
+   const records = result.recordsets[0]
+   
+   return records
+  } catch (err) {
+   console.log('Error al obtener los origenes', err)
+   return err
+  }
+}
 
 export default {
   getAllRamos,
-  getOrigenes
+  getOrigenes,
+  getOrigenesApi
 }
