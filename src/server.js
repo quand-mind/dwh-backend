@@ -6,6 +6,7 @@ import fs from 'fs';
 import bodyParser from 'body-parser';
 import multer from 'multer';
 import sql from 'mssql'
+import mysql from 'mysql'
 
 import clientRoutes from './routes/clientRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -43,21 +44,29 @@ app.use("/maestros", maestrosRoutes);
 app.use("/campaign", campaignRoutes);
 app.use("/graphics", graphicsRoutes);
 
-app.listen(port, () => {
+app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`)
+  // var connection = mysql.createConnection({
+  //   host     : process.env.DB_server_BEE,
+  //   user     : process.env.DB_USER_BEE,
+  //   password : process.env.DB_PWD_BEE,
+  //   database : process.env.DB_NAME_BEE
+  // });
+   
+  // connection.connect();
+  // const sqlConfig = {
+  //   user: process.env.DB_USER_BEE,
+  //   password: process.env.DB_PWD_BEE,
+  //   server: process.env.DB_server_BEE,
+  //   database: process.env.DB_NAME_BEE,
+  //   requestTimeout: 60000,
+  //   options: {
+  //       encrypt: true,
+  //       trustServerCertificate: true
+  //   }    
+  // }
+  // let pool = await sql.connect(sqlConfig);
 })
-
-const sqlConfig = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PWD,
-  server: process.env.DB_server,
-  database: process.env.DB_NAME_BEE,
-  requestTimeout: 60000,
-  options: {
-      encrypt: true,
-      trustServerCertificate: true
-  }
-}
 
 
 

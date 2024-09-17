@@ -8,6 +8,7 @@ router
     .get("/getData/:id", graphicsController.getGraphicsById)
     .post("/getItems", graphicsController.getItems)
     .post("/getItemsFilters", graphicsController.getItemsFiltered)
+    .get("/:id/getFilters", graphicsController.getFilters)
 
     
 export default router;

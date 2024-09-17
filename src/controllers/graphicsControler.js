@@ -51,9 +51,54 @@ const getItemsFiltered = async (req, res) => {
     
   }
 }
+const getFilters = async (req, res) => {
+  try {
+    const filters = await Graphic.getFilters(req.params.id);
+
+    
+    if (filters.error) {
+      return res.status(filters.code).send({
+        status: false,
+        message: filters.error
+      });
+    }
+    const filtersFil = filters.map((filter) => {
+      if(filter.xurl) {
+
+        return {
+          text: filter.xnombre,
+          key: filter.xllave,
+          data: [],
+          main_key:filter.bprincipal,
+          controlValue: '',
+          url: filter.xurl
+        }
+      } else if(filter.xintervals) {
+        const intervals = filter.xintervals.split(',')
+        return {
+          text: filter.xnombre,
+          key: filter.xllave,
+          range: [],
+          data: [],
+          main_key:filter.bprincipal,
+          controlValue: '',
+          intervals: intervals,
+          labelText: filter.xlabel
+        }
+
+      }
+    })
+    
+    res.send(filtersFil)
+    
+  } catch (error) {
+    
+  }
+}
 
 export default {
   getGraphicsById,
   getItemsFiltered,
+  getFilters,
   getItems
 }
