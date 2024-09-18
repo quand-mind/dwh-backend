@@ -96,9 +96,28 @@ const getFilters = async (req, res) => {
   }
 }
 
+const getDetails = async (req, res) => {
+  try {
+    const items = await Graphic.getDetails(req.params.id, req.body.filter, req.body.requestVar);
+
+    if (items.error) {
+      return res.status(items.code).send({
+        status: false,
+        message: items.error
+      });
+    }
+
+    res.send(items)
+    
+  } catch (error) {
+    
+  }
+}
+
 export default {
   getGraphicsById,
   getItemsFiltered,
   getFilters,
-  getItems
+  getItems,
+  getDetails
 }

@@ -151,7 +151,6 @@ const getItemsFiltered = async (filters, queryItems, queryTotal) => {
       data.push({data: result, total: total})
       if(resultsApart.length > 0) {
         resultsApart.forEach(result2A => {
-          console.log(result2A);
           data.push({data: result2A.result, total: total, label: result2A.label})   
         });
         
@@ -240,9 +239,27 @@ const setQuery = (key, value, initialQuery, mainVar) => {
   return finalQuery
 }
 
+const getDetails = async (id, filter, requestVar) => {
+  try {
+    await sql.connect(sqlConfig)
+    const result = await sql.query(`SELECT * from magraficos WHERE id = ${parseInt(id)}`)
+    const graphic = result.recordset[0]
+    let response = null
+    if(graphic) {
+      const sqlArr = graphic.xsqltotales.split('from')
+      console.log(sqlArr);
+    }
+    return graphic
+  } catch (err) {
+    console.log('Error al Obtener los graficos', err)
+    return err
+  }
+}
+
 export default {
   getGraphicsById,
   getItems,
   getItemsFiltered,
-  getFilters
+  getFilters,
+  getDetails
 }
