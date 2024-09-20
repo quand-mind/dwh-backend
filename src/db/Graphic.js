@@ -55,7 +55,7 @@ const getItems = async (queryItems, queryTotal) => {
       }
       const values = await sql.query(`${newQueryTotal}`)
       const valueF = values.recordset[0].value
-      result.push({color: setBg(), data: valueF, label: value.label})
+      result.push({color: setBg(), data: valueF, label: value.label, id: value.value})
       total += valueF
       x++
     }
@@ -92,15 +92,16 @@ const getItemsFiltered = async (filters, queryItems, queryTotal) => {
         for (const key of bodyKeys) {
           
           let finalQuery = setQuery(key, filters[key], newQueryTotal,varQuery)
+          console.log(finalQuery)
           if(finalQuery.trim() != newQueryTotal.trim()){
             let valueF2 = values.recordset[0].value
             const values2 = await sql.query(`${finalQuery}`)
             valueF2 = values2.recordset[0].value
-            result2.push({color: setBg(), data: valueF2, label: labelToFind.label})
+            result2.push({color: setBg(), data: valueF2, label: labelToFind.label, id: labelToFind.value})
             resultsApart.push({result:result2, label: `${filters[key]}`})
           }
         }
-        result.push({color: setBg(), data: valueF, label: labelToFind.label})
+        result.push({color: setBg(), data: valueF, label: labelToFind.label, id: labelToFind.value})
         total += valueF
         data.push({data: result, total: total})
         if(resultsApart.length > 0) {
@@ -138,13 +139,13 @@ const getItemsFiltered = async (filters, queryItems, queryTotal) => {
             let valueF2 = values.recordset[0].value
             const values2 = await sql.query(`${finalQuery}`)
             valueF2 = values2.recordset[0].value
-            result2.push({color: setBg(), data: valueF2, label: `${filters[key]}`})
+            result2.push({color: setBg(), data: valueF2, label: `${filters[key]}`, id: value.value})
           }
           if(x == valuesToSearch.length > 1) {
             resultsApart.push({result:result2, label: `${filters[key]}`})
           }
         }
-        result.push({color: setBg(), data: valueF, label: value.label})
+        result.push({color: setBg(), data: valueF, label: value.label, id: value.value})
         total += valueF
         x++
       }
@@ -174,7 +175,7 @@ const getFilters = async (id) => {
   }
 }
 
-const setQuery = (key, value, initialQuery, mainVar) => {
+const setQuery = (key, value, initialQuery, mainVar, grouped) => {
 
   // const bodyKeys = Object.keys(body)
 
@@ -230,7 +231,11 @@ const setQuery = (key, value, initialQuery, mainVar) => {
     } else {
       keyFilter =`${keySplit[1]} = ${value}`
     }
-    queryFilters += `${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
+    if(grouped) {
+      queryFilters += `${grouped}${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
+    } else {
+      queryFilters += `${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
+    }
   } else{
     queryFilters += `${key} = ${value}`
   }  
@@ -241,15 +246,58 @@ const setQuery = (key, value, initialQuery, mainVar) => {
 
 const getDetails = async (id, filter, requestVar) => {
   try {
-    await sql.connect(sqlConfig)
+    await sql.connect(sqlConfig)    
+    
     const result = await sql.query(`SELECT * from magraficos WHERE id = ${parseInt(id)}`)
     const graphic = result.recordset[0]
     let response = null
     if(graphic) {
-      const sqlArr = graphic.xsqltotales.split('from')
-      console.log(sqlArr);
+      response = {}
+      const sqlDetalles = graphic.xsqldetalles.replace('@var', `'${requestVar}'`)
+      let finalQuery = ''
+      if(filter) {
+        finalQuery = setQuery(filter.key, filter.controlValue, sqlDetalles, graphic.xllave)
+      } else {
+        finalQuery = sqlDetalles
+      }
+      const resultDetails = await sql.query(finalQuery)
+      const extraDetailsString = []
+      for (const item of resultDetails.recordset) {
+        extraDetailsString.push(item.cpoliza)
+      }
+      let finalQuery1 = ''
+      let sqlOtrosDetalles = graphic.xsqlotrosdetalles.replace('@var', `${extraDetailsString.join(',')}`)
+      if(filter) {
+
+        if(sqlOtrosDetalles.includes('group by')) {
+          const sqlOtrosDetallesD = sqlOtrosDetalles.split('group by')
+          sqlOtrosDetalles = sqlOtrosDetallesD[0]
+          finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave, 'a.')
+          finalQuery1 = finalQuery1 + 'group by' + sqlOtrosDetallesD[1]
+          sqlOtrosDetalles = sqlOtrosDetalles + 'group by' + sqlOtrosDetallesD[1]
+        } else {
+          finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave)
+        }
+      } else {
+        finalQuery1 = sqlOtrosDetalles
+      }
+      const resultOtherDetails = await sql.query(finalQuery1) 
+      // + 'group by' + sqlOtrosDetallesD
+      response = {}
+      for (const item of resultOtherDetails.recordset) {
+        const itemFindedIndex = resultDetails.recordset.findIndex(element => item[graphic.xllave] == element[graphic.xllave])
+        if(itemFindedIndex != -1) {
+          resultDetails.recordset.splice(itemFindedIndex,1)
+        }
+      }
+      response.headers = graphic.xheadersdetalles.split(',')
+      response.keys = graphic.xllavesdetalles.split(',')
+      response.headerMaster = graphic.xencabezadodetalles.split(',')
+      response.dataTotal = resultDetails.recordset
+      response.data = resultOtherDetails.recordset
+      // console.log(graphic.xsqlotrosdetalles);
     }
-    return graphic
+    return response
   } catch (err) {
     console.log('Error al Obtener los graficos', err)
     return err

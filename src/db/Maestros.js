@@ -53,7 +53,7 @@ const getOrigenesApi = async () => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const result = await sql.query`select distinct(LTRIM(RTRIM(cprog))) as text, LTRIM(RTRIM(cprog)) as value from adpoliza`
+   const result = await sql.query`select distinct(LTRIM(RTRIM(xcanal_venta))) as text, LTRIM(RTRIM(corigen_rel)) as value from maclientApiDes`
    
    const records = result.recordsets[0]
    
