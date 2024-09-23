@@ -10,6 +10,7 @@ router
     .post("/getItemsFilters", graphicsController.getItemsFiltered)
     .get("/:id/getFilters", graphicsController.getFilters)
     .post("/getDetails/:id", graphicsController.getDetails)
+    .post("/exportDetails", graphicsController.exportDetails)
 
     
 export default router;

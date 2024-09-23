@@ -266,7 +266,7 @@ const getDetails = async (id, filter, requestVar) => {
         extraDetailsString.push(item.cpoliza)
       }
       let finalQuery1 = ''
-      let sqlOtrosDetalles = graphic.xsqlotrosdetalles.replace('@var', `${extraDetailsString.join(',')}`)
+      let sqlOtrosDetalles = graphic.xsqlotrosdetalles.replaceAll('@var', `${extraDetailsString.join(',')}`)
       if(filter) {
 
         if(sqlOtrosDetalles.includes('group by')) {
@@ -304,10 +304,66 @@ const getDetails = async (id, filter, requestVar) => {
   }
 }
 
+const exportDetails = async (filter, requestVar, id) => {
+  try {
+    await sql.connect(sqlConfig)
+
+    let result = null
+
+
+
+    const resultA = await sql.query(`SELECT * from magraficos WHERE id = ${parseInt(id)}`)
+    const graphic = resultA.recordset[0]
+    let response = null
+
+    if(graphic) {
+      response = {}
+      const sqlDetalles = graphic.xsqldetalles.replace('@var', `'${requestVar}'`)
+      console.log(sqlDetalles)
+      let finalQuery = ''
+      if(filter) {
+        finalQuery = setQuery(filter.key, filter.controlValue, sqlDetalles, graphic.xllave)
+      } else {
+        finalQuery = sqlDetalles
+      }
+      const resultDetails = await sql.query(finalQuery)
+      const extraDetailsString = []
+      for (const item of resultDetails.recordset) {
+        console.log(item)
+        extraDetailsString.push(item.cpoliza)
+      }
+      let finalQuery1 = ''
+      let sqlOtrosDetalles = graphic.xsqlexportdetalles.replaceAll('@var', `${extraDetailsString.join(',')}`)
+      if(filter) {
+        if(sqlOtrosDetalles.includes('group by')) {
+          const sqlOtrosDetallesD = sqlOtrosDetalles.split('group by')
+          sqlOtrosDetalles = sqlOtrosDetallesD[0]
+          finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave, 'a.')
+          finalQuery1 = finalQuery1 + 'group by' + sqlOtrosDetallesD[1]
+          sqlOtrosDetalles = sqlOtrosDetalles + 'group by' + sqlOtrosDetallesD[1]
+        } else {
+          finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave)
+        }
+      } else {
+        finalQuery1 = sqlOtrosDetalles
+      }
+      // console.log(finalQuery1)
+      const resultOtherDetails = await sql.query(finalQuery1)
+      result = resultOtherDetails.recordset
+      console.log(resultOtherDetails.recordset.length)
+    }
+    return {result: result, graphic:graphic}
+  } catch (err) {
+    console.log('Error al Obtener los graficos', err)
+    return err
+  }
+}
+
 export default {
   getGraphicsById,
   getItems,
   getItemsFiltered,
   getFilters,
-  getDetails
+  getDetails,
+  exportDetails
 }

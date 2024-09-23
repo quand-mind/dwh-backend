@@ -113,11 +113,29 @@ const getDetails = async (req, res) => {
     
   }
 }
+const exportDetails = async (req, res) => {
+  try {
+    const items = await Graphic.exportDetails(req.body.filter, req.body.requestVar, req.body.id);
+
+    if (items.error) {
+      return res.status(items.code).send({
+        status: false,
+        message: items.error
+      });
+    }
+
+    res.send(items)
+    
+  } catch (error) {
+    
+  }
+}
 
 export default {
   getGraphicsById,
   getItemsFiltered,
   getFilters,
   getItems,
-  getDetails
+  getDetails,
+  exportDetails
 }
