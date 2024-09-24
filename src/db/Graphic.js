@@ -263,7 +263,7 @@ const getDetails = async (id, filter, requestVar) => {
       const resultDetails = await sql.query(finalQuery)
       const extraDetailsString = []
       for (const item of resultDetails.recordset) {
-        extraDetailsString.push(item.cpoliza)
+        extraDetailsString.push(`'${item[graphic.xllave]}'`)
       }
       let finalQuery1 = ''
       let sqlOtrosDetalles = graphic.xsqlotrosdetalles.replaceAll('@var', `${extraDetailsString.join(',')}`)
@@ -329,8 +329,7 @@ const exportDetails = async (filter, requestVar, id) => {
       const resultDetails = await sql.query(finalQuery)
       const extraDetailsString = []
       for (const item of resultDetails.recordset) {
-        console.log(item)
-        extraDetailsString.push(item.cpoliza)
+        extraDetailsString.push(`'${item[graphic.xllave]}'`)
       }
       let finalQuery1 = ''
       let sqlOtrosDetalles = graphic.xsqlexportdetalles.replaceAll('@var', `${extraDetailsString.join(',')}`)
