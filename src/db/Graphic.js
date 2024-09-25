@@ -92,7 +92,7 @@ const getItemsFiltered = async (filters, queryItems, queryTotal) => {
         for (const key of bodyKeys) {
           
           let finalQuery = setQuery(key, filters[key], newQueryTotal,varQuery)
-          console.log(finalQuery)
+          // console.log(finalQuery)
           if(finalQuery.trim() != newQueryTotal.trim()){
             let valueF2 = values.recordset[0].value
             const values2 = await sql.query(`${finalQuery}`)
@@ -132,7 +132,6 @@ const getItemsFiltered = async (filters, queryItems, queryTotal) => {
         const bodyKeys = Object.keys(filters)
         for (const key of bodyKeys) {
           let finalQuery = setQuery(key, filters[key], newQueryTotal, varQuery)
-          
           // console.log(finalQuery.trim() == newQueryTotal.trim());
           // console.log(newQueryTotal);
           if(finalQuery.trim() != newQueryTotal.trim()){
@@ -176,6 +175,7 @@ const getFilters = async (id) => {
 }
 
 const setQuery = (key, value, initialQuery, mainVar, grouped) => {
+  // console.log(grouped);
 
   // const bodyKeys = Object.keys(body)
 
@@ -184,14 +184,26 @@ const setQuery = (key, value, initialQuery, mainVar, grouped) => {
     // for (const key of bodyKeys) {
   queryFilters += ' AND '
   if(key[0].includes('f')){
+    if(grouped) {
+      key = grouped + key 
+    }
     const value_splitted = value.split(' - ')
     let date1, date2 = ''
     if(value_splitted.length == 1) {
       date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
+      const dateNow = moment(new Date()).format('MM-DD-YYYY');
+      // console.log(value_splitted)
+      
       if(value_splitted[0].includes('>')) {
         queryFilters += `(${key} <= '${date1}')`
-      } else {
+      } else if(value_splitted[0].includes('<')){
         queryFilters += `(${key} >= '${date1}')`
+      } else {
+        if(date1 > dateNow) {
+          queryFilters += `(${key} <= '${date1}')`
+        } else {
+          queryFilters += `(${key} >= '${date1}')`
+        }
       }
     } else {
       date2 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
@@ -200,8 +212,17 @@ const setQuery = (key, value, initialQuery, mainVar, grouped) => {
         queryFilters += `(${key} >= '${date1}')`
       } else if(value_splitted[1].includes('>')) {
         queryFilters += `(${key} <= '${date2}')`
+      } else if(value_splitted[0].includes('<')) {
+        queryFilters += `(${key} <= '${date1}')`
+      } else if(value_splitted[1].includes('<')){
+        queryFilters += `(${key} >= '${date2}')`
       } else {
-        queryFilters += `(${key} <= '${date2}' AND ${key} >= '${date1}')`
+        if(date2 > date1) {
+          queryFilters += `(${key} <= '${date1}' AND ${key} >= '${date2}')`
+        } else {
+          queryFilters += `(${key} <= '${date2}' AND ${key} >= '${date1}')`
+
+        }
       }
     }
   } else if(key.includes('_')){
@@ -251,6 +272,8 @@ const getDetails = async (id, filter, requestVar) => {
     const result = await sql.query(`SELECT * from magraficos WHERE id = ${parseInt(id)}`)
     const graphic = result.recordset[0]
     let response = null
+    let resultDetails = null
+    let resultOtherDetails = null
     if(graphic) {
       response = {}
       const sqlDetalles = graphic.xsqldetalles.replace('@var', `'${requestVar}'`)
@@ -260,36 +283,44 @@ const getDetails = async (id, filter, requestVar) => {
       } else {
         finalQuery = sqlDetalles
       }
-      const resultDetails = await sql.query(finalQuery)
+      resultDetails = await sql.query(finalQuery)
       const extraDetailsString = []
-      for (const item of resultDetails.recordset) {
-        extraDetailsString.push(`'${item[graphic.xllave]}'`)
-      }
-      let finalQuery1 = ''
-      let sqlOtrosDetalles = graphic.xsqlotrosdetalles.replaceAll('@var', `${extraDetailsString.join(',')}`)
-      if(filter) {
+      if(resultDetails.recordset.length> 0) {
 
-        if(sqlOtrosDetalles.includes('group by')) {
-          const sqlOtrosDetallesD = sqlOtrosDetalles.split('group by')
-          sqlOtrosDetalles = sqlOtrosDetallesD[0]
-          finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave, 'a.')
-          finalQuery1 = finalQuery1 + 'group by' + sqlOtrosDetallesD[1]
-          sqlOtrosDetalles = sqlOtrosDetalles + 'group by' + sqlOtrosDetallesD[1]
+        for (const item of resultDetails.recordset) {
+          extraDetailsString.push(`'${item[graphic.xllave]}'`)
+        }
+        let finalQuery1 = ''
+        let sqlOtrosDetalles = graphic.xsqlotrosdetalles.replaceAll('@var', `${extraDetailsString.join(',')}`)
+        if(filter) {
+  
+          if(sqlOtrosDetalles.includes('group by')) {
+            const sqlOtrosDetallesD = sqlOtrosDetalles.split('group by')
+            sqlOtrosDetalles = sqlOtrosDetallesD[0]
+            finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave, 'a.')
+            
+            finalQuery1 = finalQuery1 + 'group by' + sqlOtrosDetallesD[1]
+            sqlOtrosDetalles = sqlOtrosDetalles + 'group by' + sqlOtrosDetallesD[1]
+          } else {
+            finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave)
+          }
         } else {
-          finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave)
+          finalQuery1 = sqlOtrosDetalles
+        }
+        // console.log(finalQuery1)
+        resultOtherDetails = await sql.query(finalQuery1) 
+        response = {}
+        for (const item of resultOtherDetails.recordset) {
+          const itemFindedIndex = resultDetails.recordset.findIndex(element => item[graphic.xllave] == element[graphic.xllave])
+          if(itemFindedIndex != -1) {
+            resultDetails.recordset.splice(itemFindedIndex,1)
+          }
         }
       } else {
-        finalQuery1 = sqlOtrosDetalles
+        resultOtherDetails = {}
+        resultOtherDetails.recordset = []
       }
-      const resultOtherDetails = await sql.query(finalQuery1) 
       // + 'group by' + sqlOtrosDetallesD
-      response = {}
-      for (const item of resultOtherDetails.recordset) {
-        const itemFindedIndex = resultDetails.recordset.findIndex(element => item[graphic.xllave] == element[graphic.xllave])
-        if(itemFindedIndex != -1) {
-          resultDetails.recordset.splice(itemFindedIndex,1)
-        }
-      }
       response.headers = graphic.xheadersdetalles.split(',')
       response.keys = graphic.xllavesdetalles.split(',')
       response.headerMaster = graphic.xencabezadodetalles.split(',')

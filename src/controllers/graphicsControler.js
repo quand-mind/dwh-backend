@@ -71,7 +71,8 @@ const getFilters = async (req, res) => {
           data: [],
           main_key:filter.bprincipal,
           controlValue: '',
-          url: filter.xurl
+          url: filter.xurl,
+          binverso: filter.binverso
         }
       } else if(filter.xintervals) {
         const intervals = filter.xintervals.split(',')
@@ -83,7 +84,8 @@ const getFilters = async (req, res) => {
           main_key:filter.bprincipal,
           controlValue: '',
           intervals: intervals,
-          labelText: filter.xlabel
+          labelText: filter.xlabel,
+          binverso: filter.binverso
         }
 
       }
