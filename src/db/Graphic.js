@@ -20,7 +20,7 @@ const sqlConfig = {
 const getGraphicsById = async (id) => {
   try {
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * from magraficos WHERE corigen = ${id}`
+    const result = await sql.query`SELECT * from magraficos WHERE corigen = ${id} and bactivo = 1`
     return result.recordset
   } catch (err) {
     console.log('Error al Obtener los graficos', err)
@@ -284,14 +284,9 @@ const getDetails = async (id, filter, requestVar) => {
         finalQuery = sqlDetalles
       }
       resultDetails = await sql.query(finalQuery)
-      const extraDetailsString = []
       if(resultDetails.recordset.length> 0) {
-
-        for (const item of resultDetails.recordset) {
-          extraDetailsString.push(`'${item[graphic.xllave]}'`)
-        }
         let finalQuery1 = ''
-        let sqlOtrosDetalles = graphic.xsqlotrosdetalles.replaceAll('@var', `${extraDetailsString.join(',')}`)
+        let sqlOtrosDetalles = graphic.xsqlotrosdetalles.replaceAll('@var', `'${requestVar}'`)
         if(filter) {
   
           if(sqlOtrosDetalles.includes('group by')) {
@@ -349,21 +344,8 @@ const exportDetails = async (filter, requestVar, id) => {
 
     if(graphic) {
       response = {}
-      const sqlDetalles = graphic.xsqldetalles.replace('@var', `'${requestVar}'`)
-      console.log(sqlDetalles)
-      let finalQuery = ''
-      if(filter) {
-        finalQuery = setQuery(filter.key, filter.controlValue, sqlDetalles, graphic.xllave)
-      } else {
-        finalQuery = sqlDetalles
-      }
-      const resultDetails = await sql.query(finalQuery)
-      const extraDetailsString = []
-      for (const item of resultDetails.recordset) {
-        extraDetailsString.push(`'${item[graphic.xllave]}'`)
-      }
       let finalQuery1 = ''
-      let sqlOtrosDetalles = graphic.xsqlexportdetalles.replaceAll('@var', `${extraDetailsString.join(',')}`)
+      let sqlOtrosDetalles = graphic.xsqlexportdetalles.replaceAll('@var', `'${requestVar}'`)
       if(filter) {
         if(sqlOtrosDetalles.includes('group by')) {
           const sqlOtrosDetallesD = sqlOtrosDetalles.split('group by')
@@ -380,7 +362,7 @@ const exportDetails = async (filter, requestVar, id) => {
       // console.log(finalQuery1)
       const resultOtherDetails = await sql.query(finalQuery1)
       result = resultOtherDetails.recordset
-      console.log(resultOtherDetails.recordset.length)
+      // console.log(resultOtherDetails.recordset.length)
     }
     return {result: result, graphic:graphic}
   } catch (err) {
