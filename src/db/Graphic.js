@@ -66,7 +66,7 @@ const getItems = async (queryItems, queryTotal) => {
     return err
   }
 }
-const getItemsFiltered = async (filters, queryItems, queryTotal) => {
+const getItemsFiltered = async (type, filters, queryItems, queryTotal) => {
   try {
     await sql.connect(sqlConfig)
     let result = []
@@ -78,82 +78,84 @@ const getItemsFiltered = async (filters, queryItems, queryTotal) => {
     const valuesToSearch = items.recordset
     let varQueryArr = queryTotal.split('count(')
     let varQuery = varQueryArr[1].split(')')[0]
-    if(filters.main){
-      let newQueryTotal = queryTotal.split('@var')
-      const labelToFind = valuesToSearch.find((element) => element.value == filters.main)
-      if(labelToFind) {
-        newQueryTotal.splice(newQueryTotal.length-1, 0, `'${filters.main}'`)
-        newQueryTotal = newQueryTotal.join('')
-        // console.log(newQueryTotal);
-        delete filters.main
-        const bodyKeys = Object.keys(filters)
-        const values = await sql.query(`${newQueryTotal}`)
-        const valueF = values.recordset[0].value
-        for (const key of bodyKeys) {
-          
-          let finalQuery = setQuery(key, filters[key], newQueryTotal,varQuery)
-          // console.log(finalQuery)
-          if(finalQuery.trim() != newQueryTotal.trim()){
-            let valueF2 = values.recordset[0].value
-            const values2 = await sql.query(`${finalQuery}`)
-            valueF2 = values2.recordset[0].value
-            result2.push({color: setBg(), data: valueF2, label: labelToFind.label, id: labelToFind.value})
-            resultsApart.push({result:result2, label: `${filters[key]}`})
+    if(type == 'bar') {
+      if(filters.main){
+        let newQueryTotal = queryTotal.split('@var')
+        const labelToFind = valuesToSearch.find((element) => element.value == filters.main)
+        if(labelToFind) {
+          newQueryTotal.splice(newQueryTotal.length-1, 0, `'${filters.main}'`)
+          newQueryTotal = newQueryTotal.join('')
+          // console.log(newQueryTotal);
+          delete filters.main
+          const bodyKeys = Object.keys(filters)
+          const values = await sql.query(`${newQueryTotal}`)
+          const valueF = values.recordset[0].value
+          for (const key of bodyKeys) {
+            
+            let finalQuery = setQuery(key, filters[key], newQueryTotal,varQuery)
+            // console.log(finalQuery)
+            if(finalQuery.trim() != newQueryTotal.trim()){
+              let valueF2 = values.recordset[0].value
+              const values2 = await sql.query(`${finalQuery}`)
+              valueF2 = values2.recordset[0].value
+              result2.push({color: setBg(), data: valueF2, label: labelToFind.label, id: labelToFind.value})
+              resultsApart.push({result:result2, label: `${filters[key]}`})
+            }
+          }
+          result.push({color: setBg(), data: valueF, label: labelToFind.label, id: labelToFind.value})
+          total += valueF
+          data.push({data: result, total: total})
+          if(resultsApart.length > 0) {
+            resultsApart.forEach(result2A => {
+              data.push({data: result2A.result, total: total, label: result2A.label})        
+            });
           }
         }
-        result.push({color: setBg(), data: valueF, label: labelToFind.label, id: labelToFind.value})
-        total += valueF
+      } else {
+        result = []
+        result2 = []
+        resultsApart = []
+        let x = 0
+        for (const value of valuesToSearch) {
+          let newQueryTotal = queryTotal.split('@var')
+          if(value.value) { 
+            newQueryTotal.splice(newQueryTotal.length-1, 0, `'${value.value}'`)
+            newQueryTotal = newQueryTotal.join('')
+          } else {
+            value.label = 'No especificado'
+            newQueryTotal = newQueryTotal.join('')
+            newQueryTotal = newQueryTotal.split('=')
+            newQueryTotal.splice(newQueryTotal.length-1, 0, `IS NULL`)
+            newQueryTotal = newQueryTotal.join('')
+          }
+          const values = await sql.query(`${newQueryTotal}`)
+          let valueF = values.recordset[0].value
+          const bodyKeys = Object.keys(filters)
+          for (const key of bodyKeys) {
+            let finalQuery = setQuery(key, filters[key], newQueryTotal, varQuery)
+            // console.log(finalQuery.trim() == newQueryTotal.trim());
+            // console.log(newQueryTotal);
+            if(finalQuery.trim() != newQueryTotal.trim()){
+              let valueF2 = values.recordset[0].value
+              const values2 = await sql.query(`${finalQuery}`)
+              valueF2 = values2.recordset[0].value
+              result2.push({color: setBg(), data: valueF2, label: `${filters[key]}`, id: value.value})
+            }
+            if(x == valuesToSearch.length > 1) {
+              resultsApart.push({result:result2, label: `${filters[key]}`})
+            }
+          }
+          result.push({color: setBg(), data: valueF, label: value.label, id: value.value})
+          total += valueF
+          x++
+        }
         data.push({data: result, total: total})
         if(resultsApart.length > 0) {
           resultsApart.forEach(result2A => {
-            data.push({data: result2A.result, total: total, label: result2A.label})        
+            data.push({data: result2A.result, total: total, label: result2A.label})   
           });
+          
         }
-      }
-    } else {
-      result = []
-      result2 = []
-      resultsApart = []
-      let x = 0
-      for (const value of valuesToSearch) {
-        let newQueryTotal = queryTotal.split('@var')
-        if(value.value) { 
-          newQueryTotal.splice(newQueryTotal.length-1, 0, `'${value.value}'`)
-          newQueryTotal = newQueryTotal.join('')
-        } else {
-          value.label = 'No especificado'
-          newQueryTotal = newQueryTotal.join('')
-          newQueryTotal = newQueryTotal.split('=')
-          newQueryTotal.splice(newQueryTotal.length-1, 0, `IS NULL`)
-          newQueryTotal = newQueryTotal.join('')
-        }
-        const values = await sql.query(`${newQueryTotal}`)
-        let valueF = values.recordset[0].value
-        const bodyKeys = Object.keys(filters)
-        for (const key of bodyKeys) {
-          let finalQuery = setQuery(key, filters[key], newQueryTotal, varQuery)
-          // console.log(finalQuery.trim() == newQueryTotal.trim());
-          // console.log(newQueryTotal);
-          if(finalQuery.trim() != newQueryTotal.trim()){
-            let valueF2 = values.recordset[0].value
-            const values2 = await sql.query(`${finalQuery}`)
-            valueF2 = values2.recordset[0].value
-            result2.push({color: setBg(), data: valueF2, label: `${filters[key]}`, id: value.value})
-          }
-          if(x == valuesToSearch.length > 1) {
-            resultsApart.push({result:result2, label: `${filters[key]}`})
-          }
-        }
-        result.push({color: setBg(), data: valueF, label: value.label, id: value.value})
-        total += valueF
-        x++
-      }
-      data.push({data: result, total: total})
-      if(resultsApart.length > 0) {
-        resultsApart.forEach(result2A => {
-          data.push({data: result2A.result, total: total, label: result2A.label})   
-        });
-        
       }
     }
     return {data:data}

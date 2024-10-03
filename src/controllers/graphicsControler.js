@@ -36,7 +36,7 @@ const getItems = async (req, res) => {
 }
 const getItemsFiltered = async (req, res) => {
   try {
-    const items = await Graphic.getItemsFiltered(req.body.filters, req.body.queryItems, req.body.queryTotal);
+    const items = await Graphic.getItemsFiltered(req.body.type, req.body.filters, req.body.queryItems, req.body.queryTotal);
 
     if (items.error) {
       return res.status(items.code).send({
@@ -88,6 +88,38 @@ const getFilters = async (req, res) => {
           binverso: filter.binverso
         }
 
+      } else if(filter.xdata) {
+
+        return {
+          text: filter.xnombre,
+          key: filter.xllave,
+          data: filter.xdata.split(','),
+          main_key:filter.bprincipal,
+          controlValue: '',
+          labelText: filter.xlabel,
+          binverso: filter.binverso
+        }
+      } else if(filter.bcalendar) {
+        return {
+          text: filter.xnombre,
+          key: filter.xllave,
+          bcalendar: filter.bcalendar,
+          main_key:filter.bprincipal,
+          controlValue: '',
+          calendar_value: '',
+          labelText: filter.xlabel,
+          binverso: filter.binverso
+        }
+      } else {
+        return {
+          text: filter.xnombre,
+          key: filter.xllave,
+          data: [],
+          main_key:filter.bprincipal,
+          controlValue: '',
+          labelText: filter.xlabel,
+          binverso: filter.binverso
+        }
       }
     })
     
