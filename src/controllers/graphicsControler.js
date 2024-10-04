@@ -19,7 +19,7 @@ const getGraphicsById = async (req, res) => {
 }
 const getItems = async (req, res) => {
   try {
-    const items = await Graphic.getItems(req.body.queryItems, req.body.queryTotal);
+    const items = await Graphic.getItems(req.body.queryItems, req.body.queryTotal, req.body.id);
 
     if (items.error) {
       return res.status(items.code).send({
@@ -36,7 +36,7 @@ const getItems = async (req, res) => {
 }
 const getItemsFiltered = async (req, res) => {
   try {
-    const items = await Graphic.getItemsFiltered(req.body.type, req.body.filters, req.body.queryItems, req.body.queryTotal);
+    const items = await Graphic.getItemsFiltered(req.body.type, req.body.filters, req.body.filtersInvert, req.body.queryItems, req.body.queryTotal, req.body.id);
 
     if (items.error) {
       return res.status(items.code).send({
