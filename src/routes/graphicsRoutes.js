@@ -11,6 +11,7 @@ router
     .get("/:id/getFilters", graphicsController.getFilters)
     .post("/getDetails/:id", graphicsController.getDetails)
     .post("/exportDetails", graphicsController.exportDetails)
+    .post("/exportTotal", graphicsController.exportTotal)
 
     
 export default router;
