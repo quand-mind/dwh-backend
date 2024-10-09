@@ -347,7 +347,7 @@ const setQueryArray = (filters, filtersInvert, initialQuery, mainVar, grouped) =
     for (let key of bodyKeys) {
       if(filtersInvert[x] == null){
         if(key[0].includes('f')){
-          let date1 = new Date(filters[key]).toLocaleDateString('en-US');
+          let date1 = new Date(filters[key]).toLocaleDateString('en-CA');
           if(grouped) {
             key = grouped + key 
           }
@@ -358,14 +358,14 @@ const setQueryArray = (filters, filtersInvert, initialQuery, mainVar, grouped) =
           if(keySplit[1].includes('f')){
             const value_splitted = value.split(' - ')
             if(value_splitted.length == 1) {
-              date1 = new Date(value_splitted[0]).toLocaleDateString('en-US');
+              date1 = new Date(value_splitted[0]).toLocaleDateString('en-CA');
               if(value_splitted[0].includes('>')) {
                 keyFilter = `(convert(date,${keySplit[1]}) <= '${date1}')`
               } else {
                 keyFilter = `(convert(date,${keySplit[1]}) >= '${date1}')`
               }
             } else {
-              date1 = new Date(value_splitted[1]).toLocaleDateString('en-US');
+              date1 = new Date(value_splitted[1]).toLocaleDateString('en-CA');
               keyFilter += `(convert(date,${keySplit[1]}) = '${date1}')`
             }
           } else {
@@ -438,6 +438,134 @@ const setQueryArray = (filters, filtersInvert, initialQuery, mainVar, grouped) =
             } else {
               date2 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
               date1 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
+              if(value_splitted[0].includes('>')) {
+                keyFilter += `(convert(date,${keySplit[1]}) >= '${date1}')`
+              } else if(value_splitted[1].includes('>')) {
+                keyFilter = `(convert(date,${keySplit[1]}) <= '${date2}')`
+              } else {
+                keyFilter = `(convert(date,${keySplit[1]}) between '${date2}' AND '${date1}')`
+              }
+            }
+          } else {
+            keyFilter =`convert(date,${keySplit[1]}) = ${value}`
+          }
+          if(grouped) {
+            queryFilters += `${grouped}${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
+          } else {
+            queryFilters += `${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
+          }
+        } else{
+          queryFilters += `${key} = ${value}`
+        }
+      }
+      x++
+    }
+  }
+  let finalQuery = `${initialQuery} ${queryFilters}`
+  return finalQuery
+}
+const setQueryArrayTotal = (filters, filtersInvert, initialQuery, mainVar, grouped) => {
+
+  const bodyKeys = Object.keys(filters)
+    
+  let queryFilters = ''
+  let x = 0
+  if(bodyKeys.length > 0) {
+    queryFilters += ' AND '
+    for (let key of bodyKeys) {
+      if(filtersInvert[x] == null){
+        if(key[0].includes('f')){
+          let date1 = filters[key];
+          if(grouped) {
+            key = grouped + key 
+          }
+          queryFilters += `(convert(date,${key}) = '${date1}')`
+        } else if(key.includes('/?/')){
+          const keySplit = key.split('/?/')
+          let keyFilter = ''
+          if(keySplit[1].includes('f')){
+            const value_splitted = value.split(' - ')
+            if(value_splitted.length == 1) {
+              date1 = value_splitted[0];
+              if(value_splitted[0].includes('>')) {
+                keyFilter = `(convert(date,${keySplit[1]}) <= '${date1}')`
+              } else {
+                keyFilter = `(convert(date,${keySplit[1]}) >= '${date1}')`
+              }
+            } else {
+              date1 = value_splitted[1];
+              keyFilter += `(convert(date,${keySplit[1]}) = '${date1}')`
+            }
+          } else {
+            keyFilter =`convert(date,${keySplit[1]}) = ${value}`
+          }
+          if(grouped) {
+            queryFilters += `${grouped}${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
+          } else {
+            queryFilters += `${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
+          }
+        } else{
+          queryFilters += `${key} = ${value}`
+        }
+      } else {
+        if(key[0].includes('f')){
+          if(grouped) {
+            key = grouped + key 
+          }
+          const value_splitted = filters[key].split(' - ')
+          let date1, date2 = ''
+          if(value_splitted.length == 1) {
+            date1 = value_splitted[0];
+            const dateNow = moment(new Date()).format('MM-DD-YYYY');
+            // console.log(value_splitted)
+            
+            if(value_splitted[0].includes('>')) {
+              queryFilters += `(convert(date,${key}) <= '${date1}')`
+            } else if(value_splitted[0].includes('<')){
+              queryFilters += `(convert(date,${key}) >= '${date1}')`
+            } else {
+              if(date1 > dateNow) {
+                queryFilters += `(convert(date,${key}) <= '${date1}')`
+              } else {
+                queryFilters += `(convert(date,${key}) >= '${date1}')`
+              }
+            }
+          } else {
+            date2 = value_splitted[0];
+            date1 = value_splitted[1];
+            if(value_splitted[0].includes('>')) {
+              queryFilters += `(convert(date,${key}) >= '${date1}')`
+            } else if(value_splitted[1].includes('>')) {
+              queryFilters += `(convert(date,${key}) <= '${date2}')`
+            } else if(value_splitted[0].includes('<')) {
+              queryFilters += `(convert(date,${key}) <= '${date1}')`
+            } else if(value_splitted[1].includes('<')){
+              queryFilters += `(convert(date,${key}) >= '${date2}')`
+            } else {
+              if(date2 > date1) {
+                queryFilters += `(convert(date,${key}) between '${date1}' AND '${date2}')`
+              } else {
+                queryFilters += `(convert(date,${key}) between '${date2}' AND '${date1}')`
+  
+              }
+            }
+          }
+        } else if(key.includes('/?/')){
+          const keySplit = key.split('/?/')
+          let keyFilter = ''
+          if(keySplit[1].includes('f')){
+            const value_splitted = value.split(' - ')
+            let date1, date2 = ''
+            if(value_splitted.length == 1) {
+              date1 = value_splitted[0];
+              if(value_splitted[0].includes('>')) {
+                keyFilter = `(convert(date,${keySplit[1]}) <= '${date1}')`
+              } else {
+                keyFilter = `(convert(date,${keySplit[1]}) >= '${date1}')`
+              }
+            } else {
+              date2 = value_splitted[0];
+              date1 =value_splitted[1];
               if(value_splitted[0].includes('>')) {
                 keyFilter += `(convert(date,${keySplit[1]}) >= '${date1}')`
               } else if(value_splitted[1].includes('>')) {
@@ -581,15 +709,82 @@ const exportDetails = async (filter, requestVar, id) => {
     return err
   }
 }
-const exportTotal = async (requestVar, id) => {
+const getGraphic = async (id) => {
   try{
-    console.log(requestVar);
     await sql.connect(sqlConfig)
-    const graphicRecord = await sql.query(`SELECT * FROM magraficos where id = ${id}`)
-    const graphic = graphicRecord.recordset[0]
-    graphic.xsqlexporttotal = graphic.xsqlexporttotal.replaceAll('@2var', `'${requestVar.value}'`)
-    const result = await sql.query(`${graphic.xsqlexporttotal}`)
-    return {data: result.recordset}
+    const result = await sql.query(`SELECT * FROM magraficos where id = ${id}`)
+    return result.recordset[0]
+  } catch {
+    console.log('Error al Obtener el grafico', err)
+    return err
+  }
+}
+const getTotals = async (requestVar, query) => {
+  try{
+    await sql.connect(sqlConfig)
+
+    query = query.replaceAll('@2var', `'${requestVar.value}'`)
+    // console.log(query);
+
+    const result = await sql.query(`${query}`)
+    return result.recordset
+  } catch {
+    console.log('Error al Obtener los graficos', err)
+    return err
+  }
+}
+const getItemsTotals = async (query) => {
+  try{
+    await sql.connect(sqlConfig)
+
+    const result = await sql.query(`${query}`)
+    return result.recordset
+  } catch {
+    console.log('Error al Obtener los graficos', err)
+    return err
+  }
+}
+const getDetailsTotal = async (values, requestVar, query, xllave) => {
+  try{
+    await sql.connect(sqlConfig)
+    let queryDetails = query
+    let items = []
+    let finalQuery1 = ''
+    let finalQuery2 = ''
+    if(queryDetails.includes('group by')) {
+      const querySplitGrouped = queryDetails.split('group by')
+      queryDetails = querySplitGrouped[0]
+      finalQuery1 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso], queryDetails, xllave, 'a.')
+      if(querySplitGrouped[1].includes('UNION')) {
+        const querySplitUnion = querySplitGrouped[1].split('UNION')
+        finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
+        querySplitGrouped[1] = querySplitUnion[1]
+        finalQuery2 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso], querySplitGrouped[1], xllave, 'a.')
+        finalQuery2 =  ' UNION ' + finalQuery2
+      } else {
+        finalQuery1 = finalQuery1 + 'group by' + querySplitGrouped[1]
+      }
+    } else {
+      if(queryDetails.includes('UNION')) {
+        const querySplitUnion = queryDetails.split('UNION')
+        finalQuery1 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso], queryDetails, xllave, 'a.')
+        querySplitGrouped[1] = querySplitUnion[1]
+        finalQuery2 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso],querySplitGrouped[1], xllave, 'a.')
+      }
+    }
+    queryDetails = finalQuery1 + finalQuery2
+    for (const value of values) {
+      const queryDivided = queryDetails.replaceAll('@var', `'${value.value}'`)
+      const result = await sql.query(`${queryDivided}`)
+      // const keys = Object.keys(result.recordset[0])
+      // result.recordset.unshift({[keys[0]]: value})
+      // items = [...items, {[keys[0]]: value.label}, ...result.recordset]
+      // console.log(items);
+      items.push({label: `Detalles ${value.label}`, data: result.recordset})
+
+    }
+
+    return items
   } catch {
     console.log('Error al Obtener los graficos', err)
     return err
@@ -602,5 +797,8 @@ export default {
   getFilters,
   getDetails,
   exportDetails,
-  exportTotal
+  getTotals,
+  getGraphic,
+  getItemsTotals,
+  getDetailsTotal
 }

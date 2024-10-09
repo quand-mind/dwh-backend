@@ -166,16 +166,48 @@ const exportDetails = async (req, res) => {
 }
 const exportTotal = async (req, res) => {
   try {
-    const items = await Graphic.exportTotal(req.body.requestVar, req.body.id);
 
-    if (items.error) {
-      return res.status(items.code).send({
+    const graphic = await Graphic.getGraphic(req.body.id)
+
+    if (graphic.error) {
+      return res.status(graphic.code).send({
         status: false,
-        message: items.error
+        message: graphic.error
+      });
+    }
+    const itemsLabels = await Graphic.getItemsTotals(graphic.xsqlitems)
+
+    if (itemsLabels.error) {
+      return res.status(itemsLabels.code).send({
+        status: false,
+        message: itemsLabels.error
       });
     }
 
-    res.send(items)
+    const itemsTotals = await Graphic.getTotals(req.body.requestVar, graphic.xsqlexporttotal);
+
+    if (itemsTotals.error) {
+      return res.status(itemsTotals.code).send({
+        status: false,
+        message: itemsTotals.error
+      });
+    }
+
+    const itemsDetails = await Graphic.getDetailsTotal(itemsLabels, req.body.requestVar, graphic.xsqlexportdetalles, graphic.xllave)
+
+    if (itemsDetails.error) {
+      return res.status(itemsDetails.code).send({
+        status: false,
+        message: itemsDetails.error
+      });
+    }
+    const items = [
+      ...itemsDetails,
+      {label: 'Totales', data: itemsTotals},
+    ]
+    items.reverse()
+
+    res.send({items})
     
   } catch (error) {
     
