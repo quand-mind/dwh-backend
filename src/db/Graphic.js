@@ -42,31 +42,35 @@ const getItems = async (id) => {
     const graph = await sql.query(`select * from magraficos where id = ${id}`)
     let queryItems = graph.recordset[0].xsqlitems
     let queryTotal = graph.recordset[0].xsqltotales
-    
-    if(graph.recordset[0].xvalordefecto) {
-      const defaultValue = await sql.query(graph.recordset[0].xvalordefecto)
-      queryTotal = queryTotal.replaceAll('@2var', `'${defaultValue.recordset[0].default_value}'`)
-    }
-    const items = await sql.query(`${queryItems}`)
-    const valuesToSearch = items.recordset
-    let x = 0
-    const variables = await sql.query(`select* from mavaloresgraficos where cgrafico = ${id}`)
-    for (const value of valuesToSearch) {
-      let newQueryTotal = ''
-      if(value.value) { 
-        newQueryTotal = queryTotal.replaceAll('@var', `'${value.value}'`)
-      } else {
-        value.label = 'No especificado'
-        newQueryTotal = queryTotal.replaceAll('=@var', `'IS NULL'`)
+    if(graph.recordset.type == 'line') {
+      const items = await sql.query(`${queryItems}`)
+    } else {
+
+      if(graph.recordset[0].xvalordefecto) {
+        const defaultValue = await sql.query(graph.recordset[0].xvalordefecto)
+        queryTotal = queryTotal.replaceAll('@2var', `'${defaultValue.recordset[0].default_value}'`)
       }
-      for (const variable of variables.recordset) {
-        newQueryTotal = newQueryTotal.replaceAll(variable.xidentificador, variable.xllavevalor)
+      const items = await sql.query(`${queryItems}`)
+      const valuesToSearch = items.recordset
+      let x = 0
+      const variables = await sql.query(`select* from mavaloresgraficos where cgrafico = ${id}`)
+      for (const value of valuesToSearch) {
+        let newQueryTotal = ''
+        if(value.value) { 
+          newQueryTotal = queryTotal.replaceAll('@var', `'${value.value}'`)
+        } else {
+          value.label = 'No especificado'
+          newQueryTotal = queryTotal.replaceAll('=@var', `'IS NULL'`)
+        }
+        for (const variable of variables.recordset) {
+          newQueryTotal = newQueryTotal.replaceAll(variable.xidentificador, variable.xllavevalor)
+        }
+        const values = await sql.query(`${newQueryTotal}`)
+        const valueF = values.recordset[0].value
+        result.push({color: setBg(), data: valueF, label: value.label, id: value.value})
+        total += valueF
+        x++
       }
-      const values = await sql.query(`${newQueryTotal}`)
-      const valueF = values.recordset[0].value
-      result.push({color: setBg(), data: valueF, label: value.label, id: value.value})
-      total += valueF
-      x++
     }
     data.push({data: result, total: total})
     return {data: data}
@@ -94,7 +98,6 @@ const getItemsFiltered = async (filters, filtersInvert, id) => {
       queryTotal = queryTotal.replaceAll('@2var', `'${defaultValue.recordset[0].default_value}'`)
     }
     
-    
     const items = await sql.query(`${queryItems}`)
     const valuesToSearch = items.recordset
     let varQueryArr = queryTotal.split('count(')
@@ -104,13 +107,9 @@ const getItemsFiltered = async (filters, filtersInvert, id) => {
     const bodyEntries = Object.entries(filters)
     if(type == 'bar') {
       if(filters.main){
-        
-        let newQueryTotal = queryTotal.split('@var')
         const labelToFind = valuesToSearch.find((element) => element.value == filters.main)
         if(labelToFind) {
-          newQueryTotal.splice(newQueryTotal.length-1, 0, `'${filters.main}'`)
-          newQueryTotal = newQueryTotal.join('')
-          // console.log(newQueryTotal);
+          let newQueryTotal = queryTotal.replaceAll('@var',`'${filters.main}'`)
           delete filters.main
           const bodyKeys = Object.keys(filters)
           const values = await sql.query(`${newQueryTotal}`)
@@ -142,40 +141,35 @@ const getItemsFiltered = async (filters, filtersInvert, id) => {
         result = []
         resultsApart = []
         let x = 0
+        let result2 = []
         for (const value of valuesToSearch) {
           
-          let newQueryTotal = queryTotal.split('@var')
+          let newQueryTotal = queryTotal
           if(value.value) { 
-            newQueryTotal.splice(newQueryTotal.length-1, 0, `'${value.value}'`)
-            newQueryTotal = newQueryTotal.join('')
+            newQueryTotal = queryTotal.replaceAll('@var', `'${value.value}'`)
           } else {
             value.label = 'No especificado'
-            newQueryTotal = newQueryTotal.join('')
-            newQueryTotal = newQueryTotal.split('=')
-            newQueryTotal.splice(newQueryTotal.length-1, 0, `IS NULL`)
-            newQueryTotal = newQueryTotal.join('')
+            newQueryTotal = newQueryTotal.replaceAll('=@var', `IS NULL`)
           }
           const values = await sql.query(`${newQueryTotal}`)
           let valueF = values.recordset[0].value
           const bodyKeys = Object.keys(filters)
-          let x = 0
           for (const key of bodyKeys) {
-            let result2 = []
             let finalQuery = setQuery(key, filters[key], newQueryTotal, varQuery)
-            // console.log(finalQuery.trim() == newQueryTotal.trim());
-            if(finalQuery.trim() != newQueryTotal.trim()){
-              let valueF2 = values.recordset[0].value
-              const values2 = await sql.query(`${finalQuery}`)
-              valueF2 = values2.recordset[0].value
-              result2.push({color: setBg(), data: valueF2, label: `${filters[key]}`, id: value.value})
-            }
+            // if(finalQuery.trim() != newQueryTotal.trim()){
+            let valueF2 = values.recordset[0].value
+            const values2 = await sql.query(`${finalQuery}`)
+            valueF2 = values2.recordset[0].value
+            result2.push({color: setBg(), data: valueF2, label: `${filters[key]}`, id: value.value})
+            // }
             if(x == valuesToSearch.length > 1) {
               resultsApart.push({result:result2, label: `${filters[key]}`})
             }
           }
+          x++
+          
           result.push({color: setBg(), data: valueF, label: value.label, id: value.value})
           total += valueF
-          x++
         }
         data.push({data: result, total: total})
         if(resultsApart.length > 0) {
@@ -673,32 +667,90 @@ const getDetails = async (id, filter, requestVar, filterInverso) => {
   }
 }
 
-const exportDetails = async (filter, requestVar, id) => {
+const exportDetails = async (filters, requestVar, id) => {
   try {
     await sql.connect(sqlConfig)
     let result = null
     const resultA = await sql.query(`SELECT * from magraficos WHERE id = ${parseInt(id)}`)
     const graphic = resultA.recordset[0]
     let response = null
+    // console.log(filter);
 
     if(graphic) {
       response = {}
       let finalQuery1 = ''
+      let finalQuery2 = ''
       let sqlOtrosDetalles = graphic.xsqlexportdetalles.replaceAll('@var', `'${requestVar}'`)
-      if(filter) {
-        if(sqlOtrosDetalles.includes('group by')) {
-          const sqlOtrosDetallesD = sqlOtrosDetalles.split('group by')
-          sqlOtrosDetalles = sqlOtrosDetallesD[0]
-          finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave, 'a.')
-          finalQuery1 = finalQuery1 + 'group by' + sqlOtrosDetallesD[1]
-          sqlOtrosDetalles = sqlOtrosDetalles + 'group by' + sqlOtrosDetallesD[1]
+      console.log(graphic);
+      if(graphic.xtipografico == 'bar') {
+        
+        if(filters.length > 0) {
+          for (const filter of filters) {
+            if(sqlOtrosDetalles.includes('group by')) {
+              const sqlOtrosDetallesD = sqlOtrosDetalles.split('group by')
+              sqlOtrosDetalles = sqlOtrosDetallesD[0]
+              finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave, 'a.')
+              if(sqlOtrosDetallesD[1].includes('UNION')) {
+                const querySplitUnion = sqlOtrosDetallesD[1].split('UNION')
+                finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
+                console.log(finalQuery1);
+                sqlOtrosDetallesD[1] = querySplitUnion[1]
+                finalQuery2 = setQuery(filter.key, filter.controlValue, sqlOtrosDetallesD[1], graphic.xllave, 'a.')
+                finalQuery2 =  ' UNION ' + finalQuery2
+                finalQuery1 = finalQuery1 + 'group by' + finalQuery2
+              } else {
+                finalQuery1 = finalQuery1 + 'group by' + sqlOtrosDetallesD[1]
+              }
+            } else {
+              if(sqlOtrosDetalles[1].includes('UNION')) {
+                const querySplitUnion = sqlOtrosDetalles.split('UNION')
+                finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave)
+                querySplitGrouped[1] = querySplitUnion[1]
+                finalQuery2 = setQuery(filter.key, filter.controlValue,querySplitGrouped[1], graphic.xllave)
+                finalQuery2 =  ' UNION ' + finalQuery2
+              } else {
+                finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave)
+              }
+            }
+          }
         } else {
-          finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave)
+          finalQuery1 = sqlOtrosDetalles
         }
       } else {
-        finalQuery1 = sqlOtrosDetalles
+        if(filters.length > 0) {
+          const filtersInverso = filters.map(filter => filter.binverso)
+          let filtersToCheck = {} 
+          for (const filter of filters) {
+            filtersToCheck[filter.key] = filter.controlValue
+          } 
+          if(sqlOtrosDetalles.includes('group by')) {
+            const querySplitGrouped = sqlOtrosDetalles.split('group by')
+            sqlOtrosDetalles = querySplitGrouped[0]
+            finalQuery1 = setQueryArrayTotal(filtersToCheck, filtersInverso, sqlOtrosDetalles, graphic.xllave, 'a.')
+            if(querySplitGrouped[1].includes('UNION')) {
+              const querySplitUnion = querySplitGrouped[1].split('UNION')
+              finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
+              querySplitGrouped[1] = querySplitUnion[1]
+              finalQuery2 = setQueryArrayTotal(filtersToCheck, filtersInverso, querySplitGrouped[1], graphic.xllave, 'a.')
+              finalQuery2 =  ' UNION ' + finalQuery2
+              finalQuery1
+            } else {
+              finalQuery1 = finalQuery1 + 'group by' + querySplitGrouped[1]
+            }
+          } else {
+            if(sqlOtrosDetalles.includes('UNION')) {
+              const querySplitUnion = sqlOtrosDetalles.split('UNION')
+              finalQuery1 = setQueryArrayTotal(filtersToCheck, filtersInverso, sqlOtrosDetalles, graphic.xllave, 'a.')
+              querySplitGrouped[1] = querySplitUnion[1]
+              finalQuery2 = setQueryArrayTotal(filtersToCheck, filtersInverso,querySplitGrouped[1], graphic.xllave, 'a.')
+            }
+          }
+          finalQuery1 = finalQuery1 + finalQuery2
+        } else {
+          finalQuery1 = sqlOtrosDetalles
+        }
       }
-      // console.log(finalQuery1)
+      console.log(finalQuery1)
       const resultOtherDetails = await sql.query(finalQuery1)
       result = resultOtherDetails.recordset
       // console.log(resultOtherDetails.recordset.length)

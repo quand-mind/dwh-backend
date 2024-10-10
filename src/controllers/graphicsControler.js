@@ -166,9 +166,9 @@ const exportDetails = async (req, res) => {
 }
 const exportTotal = async (req, res) => {
   try {
+    console.log(req.body);
 
     const graphic = await Graphic.getGraphic(req.body.id)
-
     if (graphic.error) {
       return res.status(graphic.code).send({
         status: false,

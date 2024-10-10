@@ -88,6 +88,8 @@ const formatData = (item) => {
 const getDashboardClientData = async () => {
   
   try {
+    // Array de Sistemas
+    await sql.connect(sqlConfig)
     const objectItems = [
       {label: 'Sys2000', value: 1, color: '#000000'},
       {label: 'ArysAuto', value: 2, color: '#fdb101'},
@@ -96,19 +98,21 @@ const getDashboardClientData = async () => {
       {label: 'Pasarela de Ventas', value: 5, color: '#4A80F4'},
       {label: 'Logistika', value: 6, color: '#FF794B'}
     ]
-    await sql.connect(sqlConfig)
     
     let records1 = []
     let records2 = []
     let recordsData1 = []
     let recordsData2 = []
+    // Array de Meses
     let months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 
     let queryItems1 = ''
     let queryItems2 = ''
 
     let z = 1
+    // Ciclo para obtener la totalidad de valores de cada sistema
     for(const objectItem of objectItems) {
+      // Query del 1er gráfico
       queryItems1 += `SUM(CASE When corigen = ${objectItem.value} THEN 1 ELSE 0 END)`
       if(z<objectItems.length){
         queryItems1 += ','
@@ -121,13 +125,15 @@ const getDashboardClientData = async () => {
       let actualMonth = month +1
       let actualYear = year - 1
       let x = 0
+      // Ciclo para generar las fechas de cada mes y obtener los valores por mes
       while (x == 0) {
         let lastDate = moment(new Date(actualYear, actualMonth + 1, 0)).format('MM-DD-YYYY');
         let firstDate = moment(new Date(actualYear, actualMonth, 0)).format('MM-DD-YYYY');
-
+        // Query del 2do gráfico
         queryItems2 += `SUM(CASE When corigen = ${objectItem.value} AND fcreacion >= '${firstDate}' AND fcreacion <= '${lastDate}' Then 1 Else 0 End)`
 
         actualMonth++
+        // Cambio de año luego del mes 12 (11 porque el ciclo empieza en 0)
         if(actualMonth > 11) {
           actualMonth = 0
           actualYear++
