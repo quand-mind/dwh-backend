@@ -8,12 +8,14 @@ import multer from 'multer';
 import sql from 'mssql'
 import mysql from 'mysql'
 import cron from 'node-cron'
+import nodemailer from 'nodemailer';
 
 import clientRoutes from './routes/clientRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import maestrosRoutes from './routes/maestrosRoutes.js';
 import campaignRoutes from './routes/campaignRoutes.js';
 import graphicsRoutes from './routes/graphicsRoutes.js';
+import excelService from './services/excelService.js';
 
 const { diskStorage } = multer;
 const app = express(); 
@@ -49,39 +51,79 @@ app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`)
   
   // 0 0 0 * * *
-  const task = cron.schedule('* * * * *', async () => {
+  const task = cron.schedule('0 20 0 * * *', async () => {
     console.log('running a task');
     
     const responseGraphics = await fetch('http://localhost:3000/graphics/getData/1', {
       method: "GET",
       headers: {"Content-type": "application/json;charset=UTF-8"}
     })
-    const graphics = await responseGraphics.json()
+    const graphicsAll = await responseGraphics.json()
+    const graphics = graphicsAll.filter(graphic => graphic.bexportdiario)
     let date = new Date(new Date().setDate(new Date().getDate()-1));
-    for (const graphic of graphics) {
-      if(graphic.bexportdiario) {
-        const responseFilters = await fetch(`http://localhost:3000/graphics/${graphic.id}/getFilters`, {
-          method: "GET",
-          headers: {"Content-type": "application/json;charset=UTF-8"}
-        })
-        const filters = await responseFilters.json()
-        for (const filter of filters) {
-          filter.controlValue = date.toLocaleDateString('en-CA')
-          const requestVar = {"value": filter.controlValue, "key": filter.key, "binverso": filter.binverso}
-          console.log(requestVar);
-          const responseExportTotal = await fetch(`http://localhost:3000/graphics/exportTotal`, {
-            method: "POST",
-            headers: {"Content-type": "application/json;charset=UTF-8"},
-            body: `{
-                "requestVar": requestVar,
-                "id": 2
-            }`
-          })
-          const exportTotal = await responseExportTotal
-          console.log(exportTotal);
-          
+    let emailHtml = `
+      <style>
+        .title {
+          font-size: 16px;
+          font-weight: 700;
         }
+      </style>
+      <h4 class="title">En el siguiente correo se envía los reportes diarios de:</h4>            
+    `;
+    const excelFiles = []
+    emailHtml += '<h2>'
+    let x = 1
+    for (const graphic of graphics) {
+      const responseFilters = await fetch(`http://localhost:3000/graphics/${graphic.id}/getFilters`, {
+        method: "GET",
+        headers: {"Content-type": "application/json;charset=UTF-8"}
+      })
+      const filters = await responseFilters.json()
+      for (const filter of filters) {
+        filter.controlValue = date.toLocaleDateString('en-CA')
+        const requestVar = {value: filter.controlValue, key: filter.key, binverso: filter.binverso}
+        const responseExportTotal = await fetch(`http://localhost:3000/graphics/exportTotal`, {
+          method: "POST",
+          headers: {"Content-type": "application/json;charset=UTF-8"},
+          body: JSON.stringify({
+              requestVar: requestVar,
+              id: graphic.id
+          })
+        })
+        const exportTotal = await responseExportTotal.json()
+        const excelFile = await excelService.exportAllToExcel(exportTotal.items, `dwh_reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}`)
+        excelFiles.push({filename: `dwh_reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}.xlsx`, content: Buffer.from(excelFile)})
+        
       }
+      emailHtml += `${graphic.xnombre}`
+      if(x < graphics.length) {
+        emailHtml += ' - '
+      }
+      x++
+    }
+    emailHtml += `</h2>
+    <p>De parte del equipo de  <b style="font-weight: 700px">Exelixi</b></p>
+    `
+    console.log(excelFiles);
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
+      auth: {
+        user: 'themultiacount@gmail.com',
+        pass: 'kfgb bnad gqpz etux'
+      }
+    });
+    const mailOptions = {
+      from: 'La Mundial de Seguros',
+      to: 'quand.mind@gmail.com', // Cambia esto por la dirección de destino
+      subject: `Reportes del día ${date.toLocaleDateString('en-US')}`,
+      html: emailHtml,
+      attachments: excelFiles
+    };
+    try {
+      const response = await transporter.sendMail(mailOptions);
+      console.log('Correo enviado correctamente');
+    } catch (error) {
+      console.error('Error al enviar el correo:', error.message);
     }
     // console.log(result);
 
