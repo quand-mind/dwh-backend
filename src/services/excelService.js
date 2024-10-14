@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import { writeFileSync } from "fs";
+import * as Excel from "exceljs";
 
 const exportToExcel = (selectedList, fileName) =>{
   const ws = XLSX.utils.json_to_sheet(selectedList);
