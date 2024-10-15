@@ -52,7 +52,7 @@ app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`)
   
   // 0 0 0 * * *
-  const task = cron.schedule('0 20 15 * * *', async () => {
+  const task = cron.schedule('0 30 15 * * *', async () => {
     console.log('running a task');
     
     const responseGraphics = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
