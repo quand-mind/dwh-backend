@@ -52,14 +52,15 @@ app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`)
   
   // 0 0 0 * * *
-  const task = cron.schedule('0 25 16 * * *', async () => {
+  const task = cron.schedule('0 30 16 * * *', async () => {
     console.log('running a task');
     
-    console.log(process.env.API_URL_PROD + '/graphics/getData/1');
+    
     const responseGraphics = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
       method: "GET",
       headers: {"Content-type": "application/json;charset=UTF-8"}
     })
+    console.log(responseGraphics);
     const graphicsAll = await responseGraphics.json()
     const graphics = graphicsAll.filter(graphic => graphic.bexportdiario)
     let date = new Date(new Date().setDate(new Date().getDate()-1));
