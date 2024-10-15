@@ -52,9 +52,10 @@ app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`)
   
   // 0 0 0 * * *
-  const task = cron.schedule('0 30 15 * * *', async () => {
+  const task = cron.schedule('0 0 16 * * *', async () => {
     console.log('running a task');
     
+    console.log(process.env.API_URL_PROD);
     const responseGraphics = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
       method: "GET",
       headers: {"Content-type": "application/json;charset=UTF-8"}
@@ -93,6 +94,7 @@ app.listen(port, async () => {
           })
         })
         const exportTotal = await responseExportTotal.json()
+        console.log(exportTotal);
         const excelFile = await excelService.exportAllToExcel(exportTotal.items, `dwh_reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}`, graphic.xnombre)
         excelFiles.push({filename: `dwh_reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}.xlsx`, content: Buffer.from(excelFile)})
         
@@ -115,6 +117,7 @@ app.listen(port, async () => {
     });
     const mailOptions = {
       from: 'La Mundial de Seguros',
+      // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
       to: ['quand.mind@gmail.com','gidler@lamundialdeseguros.com', 'jperez@lamundialdeseguros.com'], // Cambia esto por la dirección de destino
       subject: `Reportes del día ${date.toLocaleDateString('en-US')}`,
       html: emailHtml,
