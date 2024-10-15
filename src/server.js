@@ -9,6 +9,7 @@ import sql from 'mssql'
 import mysql from 'mysql'
 import cron from 'node-cron'
 import nodemailer from 'nodemailer';
+import Excel from "exceljs";
 
 import clientRoutes from './routes/clientRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -51,10 +52,10 @@ app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`)
   
   // 0 0 0 * * *
-  const task = cron.schedule('0 20 0 * * *', async () => {
+  const task = cron.schedule('0 20 15 * * *', async () => {
     console.log('running a task');
     
-    const responseGraphics = await fetch('http://localhost:3000/graphics/getData/1', {
+    const responseGraphics = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
       method: "GET",
       headers: {"Content-type": "application/json;charset=UTF-8"}
     })
@@ -68,13 +69,14 @@ app.listen(port, async () => {
           font-weight: 700;
         }
       </style>
+      <h2>Saludos</h2>    
       <h4 class="title">En el siguiente correo se envía los reportes diarios de:</h4>            
     `;
     const excelFiles = []
     emailHtml += '<h2>'
     let x = 1
     for (const graphic of graphics) {
-      const responseFilters = await fetch(`http://localhost:3000/graphics/${graphic.id}/getFilters`, {
+      const responseFilters = await fetch(`${process.env.API_URL_PROD}/graphics/${graphic.id}/getFilters`, {
         method: "GET",
         headers: {"Content-type": "application/json;charset=UTF-8"}
       })
@@ -82,7 +84,7 @@ app.listen(port, async () => {
       for (const filter of filters) {
         filter.controlValue = date.toLocaleDateString('en-CA')
         const requestVar = {value: filter.controlValue, key: filter.key, binverso: filter.binverso}
-        const responseExportTotal = await fetch(`http://localhost:3000/graphics/exportTotal`, {
+        const responseExportTotal = await fetch(`${process.env.API_URL_PROD}/graphics/exportTotal`, {
           method: "POST",
           headers: {"Content-type": "application/json;charset=UTF-8"},
           body: JSON.stringify({
@@ -91,7 +93,7 @@ app.listen(port, async () => {
           })
         })
         const exportTotal = await responseExportTotal.json()
-        const excelFile = await excelService.exportAllToExcel(exportTotal.items, `dwh_reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}`)
+        const excelFile = await excelService.exportAllToExcel(exportTotal.items, `dwh_reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}`, graphic.xnombre)
         excelFiles.push({filename: `dwh_reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}.xlsx`, content: Buffer.from(excelFile)})
         
       }
@@ -102,9 +104,8 @@ app.listen(port, async () => {
       x++
     }
     emailHtml += `</h2>
-    <p>De parte del equipo de  <b style="font-weight: 700px">Exelixi</b></p>
+    <p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>
     `
-    console.log(excelFiles);
     const transporter = nodemailer.createTransport({
       service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
       auth: {
@@ -114,7 +115,7 @@ app.listen(port, async () => {
     });
     const mailOptions = {
       from: 'La Mundial de Seguros',
-      to: 'quand.mind@gmail.com', // Cambia esto por la dirección de destino
+      to: ['quand.mind@gmail.com','gidler@lamundialdeseguros.com', 'jperez@lamundialdeseguros.com'], // Cambia esto por la dirección de destino
       subject: `Reportes del día ${date.toLocaleDateString('en-US')}`,
       html: emailHtml,
       attachments: excelFiles
