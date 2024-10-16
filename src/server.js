@@ -51,14 +51,9 @@ app.use("/graphics", graphicsRoutes);
 
 app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`)
-  const responseGraphicsAS = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
-    method: "GET",
-    headers: {"Content-type": "application/json;charset=UTF-8"}
-  })
-  console.log(await responseGraphicsAS.json());
   
-  // 0 0 0 * * *
-  const task = cron.schedule('0 00 12 * * *', async () => {
+  // 0 20 0 * * *
+  const task = cron.schedule('0 40 15 * * *', async () => {
     console.log('running a task');
     
     
