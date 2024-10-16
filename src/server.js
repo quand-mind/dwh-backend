@@ -53,7 +53,7 @@ app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`)
   
   // 0 20 0 * * *
-  const task = cron.schedule('0 40 15 * * *', async () => {
+  const task = cron.schedule('0 20 0 * * *', async () => {
     console.log('running a task');
     
     
@@ -61,7 +61,6 @@ app.listen(port, async () => {
       method: "GET",
       headers: {"Content-type": "application/json;charset=UTF-8"}
     })
-    console.log(responseGraphics);
     const graphicsAll = await responseGraphics.json()
     const graphics = graphicsAll.filter(graphic => graphic.bexportdiario)
     let date = new Date(new Date().setDate(new Date().getDate()-1));

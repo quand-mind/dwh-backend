@@ -681,7 +681,6 @@ const exportDetails = async (filters, requestVar, id) => {
       let finalQuery1 = ''
       let finalQuery2 = ''
       let sqlOtrosDetalles = graphic.xsqlexportdetalles.replaceAll('@var', `'${requestVar}'`)
-      console.log(graphic);
       if(graphic.xtipografico == 'bar') {
         
         if(filters.length > 0) {
@@ -693,7 +692,6 @@ const exportDetails = async (filters, requestVar, id) => {
               if(sqlOtrosDetallesD[1].includes('UNION')) {
                 const querySplitUnion = sqlOtrosDetallesD[1].split('UNION')
                 finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
-                console.log(finalQuery1);
                 sqlOtrosDetallesD[1] = querySplitUnion[1]
                 finalQuery2 = setQuery(filter.key, filter.controlValue, sqlOtrosDetallesD[1], graphic.xllave, 'a.')
                 finalQuery2 =  ' UNION ' + finalQuery2
@@ -750,7 +748,6 @@ const exportDetails = async (filters, requestVar, id) => {
           finalQuery1 = sqlOtrosDetalles
         }
       }
-      console.log(finalQuery1)
       const resultOtherDetails = await sql.query(finalQuery1)
       result = resultOtherDetails.recordset
       // console.log(resultOtherDetails.recordset.length)
