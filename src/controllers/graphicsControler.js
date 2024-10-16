@@ -1,5 +1,25 @@
 import Graphic from '../db/Graphic.js';
 
+const getGraphicCompanies = async (req, res) => {
+  try {
+    const companies = await Graphic.getGraphicCompanies();
+
+    if (companies.error) {
+      return res.status(companies.code).send({
+        status: false,
+        message: companies.error
+      });
+    }
+    const gettedCompanies = companies.map(element => {
+      return {text: element.xorigen, value: element.corigen, url: element.xtabla}
+    });
+
+    res.send(gettedCompanies)
+    
+  } catch (error) {
+    
+  }
+}
 const getGraphicsById = async (req, res) => {
   try {
     const graphics = await Graphic.getGraphicsById(req.params.id);
@@ -214,6 +234,7 @@ const exportTotal = async (req, res) => {
 }
 
 export default {
+  getGraphicCompanies,
   getGraphicsById,
   getItemsFiltered,
   getFilters,

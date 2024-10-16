@@ -16,7 +16,6 @@ const sqlConfig = {
     trustServerCertificate: true // change to true for local dev / self-signed certs
   }
 }
-
 const getCampaignsCompanies = async () => {
   try {
     await sql.connect(sqlConfig)

@@ -5,6 +5,7 @@ import graphicsController from '../../src/controllers/graphicsControler.js';
 const router = express.Router();
 
 router
+    .get("/getGraphicCompanies", graphicsController.getGraphicCompanies)
     .get("/getData/:id", graphicsController.getGraphicsById)
     .post("/getItems", graphicsController.getItems)
     .post("/getItemsFilters", graphicsController.getItemsFiltered)

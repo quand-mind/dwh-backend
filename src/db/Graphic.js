@@ -18,6 +18,16 @@ const sqlConfig = {
   }
 }
 
+const getGraphicCompanies = async () => {
+  try {
+    await sql.connect(sqlConfig)
+    const result = await sql.query`SELECT * from maorigen WHERE igraficos = 1`
+    return result.recordset
+  } catch (err) {
+    console.log('Error al Obtener los clientes', err)
+    return err
+  }
+}
 const getGraphicsById = async (id) => {
   try {
     await sql.connect(sqlConfig)
@@ -840,6 +850,7 @@ const getDetailsTotal = async (values, requestVar, query, xllave) => {
   }
 }
 export default {
+  getGraphicCompanies,
   getGraphicsById,
   getItems,
   getItemsFiltered,
