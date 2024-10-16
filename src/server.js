@@ -10,6 +10,7 @@ import mysql from 'mysql'
 import cron from 'node-cron'
 import nodemailer from 'nodemailer';
 import Excel from "exceljs";
+import fetch from 'node-fetch';
 
 import clientRoutes from './routes/clientRoutes.js';
 import authRoutes from './routes/authRoutes.js';
