@@ -23,16 +23,16 @@ const { diskStorage } = multer;
 const app = express(); 
 dotenv;
 
-// app.use(cors({
-//   origin: '*',  // o especifica el dominio permitido
-//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-//   optionsSuccessStatus: 204,
-//   credentials: true ,
-//   allowedHeaders: ['Content-Type', 'Authorization', 'x-client-channel'],
+app.use(cors({
+  origin: '*',  // o especifica el dominio permitido
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  optionsSuccessStatus: 204,
+  credentials: true ,
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-client-channel'],
   
-// }));
+}));
 
-// app.use(cors());
+app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
@@ -117,8 +117,8 @@ app.listen(port, async () => {
     });
     const mailOptions = {
       from: 'La Mundial de Seguros',
-      to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
-      // to: ['quand.mind@gmail.com','gidler@lamundialdeseguros.com', 'jperez@lamundialdeseguros.com'], // Cambia esto por la dirección de destino
+      // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+      to: ['quand.mind@gmail.com','gidler@lamundialdeseguros.com', 'jperez@lamundialdeseguros.com'], // Cambia esto por la dirección de destino
       subject: `Reportes del día ${date.toLocaleDateString('en-US')}`,
       html: emailHtml,
       attachments: excelFiles

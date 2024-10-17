@@ -701,11 +701,13 @@ const exportDetails = async (filters, requestVar, id) => {
               finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave, 'a.')
               if(sqlOtrosDetallesD[1].includes('UNION')) {
                 const querySplitUnion = sqlOtrosDetallesD[1].split('UNION')
+                console.log(querySplitUnion);
                 finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
+                console.log(finalQuery1);
                 sqlOtrosDetallesD[1] = querySplitUnion[1]
                 finalQuery2 = setQuery(filter.key, filter.controlValue, sqlOtrosDetallesD[1], graphic.xllave, 'a.')
                 finalQuery2 =  ' UNION ' + finalQuery2
-                finalQuery1 = finalQuery1 + 'group by' + finalQuery2
+                finalQuery1 = finalQuery1 + finalQuery2
               } else {
                 finalQuery1 = finalQuery1 + 'group by' + sqlOtrosDetallesD[1]
               }
@@ -758,6 +760,7 @@ const exportDetails = async (filters, requestVar, id) => {
           finalQuery1 = sqlOtrosDetalles
         }
       }
+      // console.log(finalQuery1);
       const resultOtherDetails = await sql.query(finalQuery1)
       result = resultOtherDetails.recordset
       // console.log(resultOtherDetails.recordset.length)

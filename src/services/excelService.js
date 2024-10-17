@@ -53,6 +53,9 @@ const  exportAllToExcel = async (selectedLists, fileName, graphicName) => {
       buffer: imageBuffer.data,
       extension: 'png'
     });
+    for (const column of worksheet.columns) {
+      column.alignment={vertical: 'middle', horizontal: 'center', wrapText: true}
+    }
     worksheet.insertRow(1, [])
     worksheet.insertRow(1, ['','',`REPORTE DE ${graphicName.toUpperCase()}`],)
     worksheet.insertRow(1, ['', '', `FECHA DE REPORTE:`, `${today.toLocaleDateString('en-CA')}`])
@@ -66,7 +69,7 @@ const  exportAllToExcel = async (selectedLists, fileName, graphicName) => {
     const headerRow = worksheet.getRow(4)
     const lastRow = worksheet.lastRow;
     headerRow.height=25
-    headerRow.alignment={vertical: 'middle', horizontal: 'right', wrapText: true}
+    headerRow.alignment={vertical: 'middle', horizontal: 'center', wrapText: true}
     headerRow.eachCell({includeEmpty: false }, (cell, rowNumber) => {
       cell.font = {color: { argb: 'FFFFFF' }, scheme: 'major'}
       cell.fill = {
