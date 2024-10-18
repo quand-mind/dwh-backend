@@ -18,10 +18,28 @@ import maestrosRoutes from './routes/maestrosRoutes.js';
 import campaignRoutes from './routes/campaignRoutes.js';
 import graphicsRoutes from './routes/graphicsRoutes.js';
 import excelService from './services/excelService.js';
+import Surveillance from './db/Surveillance.js'
 
 const { diskStorage } = multer;
 const app = express(); 
 dotenv;
+
+const sqlConfig = {
+  user: process.env.DB_USER,
+  password: process.env.DB_PWD,
+  database: process.env.DB_NAME,
+  server: process.env.DB_server,
+  pool: {
+    max: 10,
+    min: 0,
+    idleTimeoutMillis: 30000
+  },
+  options: {
+    encrypt: true, // for azure
+    trustServerCertificate: true // change to true for local dev / self-signed certs
+  }
+}
+
 
 // app.use(cors({
 //   origin: '*',  // o especifica el dominio permitido
@@ -53,7 +71,19 @@ app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`)
   
   // 0 20 0 * * *
-  const task = cron.schedule('0 20 0 * * *', async () => {
+  const avisos = await Surveillance.getAvisos()
+  for (const aviso of avisos) {
+    const frecuencias = aviso.xfrecuencia.split(',')
+    for (const frecuencia of frecuencias) {
+      cron.schedule(frecuencia, async() => {
+        await sql.connect(sqlConfig)
+        const result = await sql.query(aviso.xsqlaviso)
+        console.log(result.recordset[0].return);
+      })
+    }
+    
+  }
+  cron.schedule('0 20 0 * * *', async () => {
     console.log('running a task');
     
     
@@ -132,26 +162,15 @@ app.listen(port, async () => {
     // console.log(result);
 
   });
-  // var connection = mysql.createConnection({
-  //   host     : process.env.DB_server_BEE,
-  //   user     : process.env.DB_USER_BEE,
-  //   password : process.env.DB_PWD_BEE,
-  //   database : process.env.DB_NAME_BEE
-  // });
-   
-  // connection.connect();
-  // const sqlConfig = {
-  //   user: process.env.DB_USER_BEE,
-  //   password: process.env.DB_PWD_BEE,
-  //   server: process.env.DB_server_BEE,
-  //   database: process.env.DB_NAME_BEE,
-  //   requestTimeout: 60000,
-  //   options: {
-  //       encrypt: true,
-  //       trustServerCertificate: true
-  //   }    
-  // }
-  // let pool = await sql.connect(sqlConfig);
+  cron.schedule('0 0 0 * * *', async() => {
+    let date = new Date()
+    console.log(date);
+    console.log('ejecutandose');
+    const usersAvailables = await Surveillance.getAvailableGuards(date)
+    const mappedUsersAvailables = usersAvailables.map(user => user.cusuario)
+    const userGuard = await Surveillance.setGuard(mappedUsersAvailables)
+    console.log(userGuard);
+  })
 })
 
 
