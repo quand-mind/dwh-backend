@@ -29,7 +29,7 @@ const getAvisos = async () => {
 const getSurveillances = async (fdate) => {
   try {
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * from prguardias where fdesde <= '${fdate}' AND fhasta >='${date}'`
+    const result = await sql.query`SELECT * from prguardias where fdesde <= '${fdate}' AND fhasta >='${fdate}'`
     return result.recordset
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
