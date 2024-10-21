@@ -56,7 +56,7 @@ const setGuard = async (users) => {
     await sql.connect(sqlConfig)
     let newDateDesde = new Date()
     let newDateHasta = new Date()
-    newDateHasta.setDate(newDateHasta.getDate() + 7)
+    newDateHasta.setDate(newDateHasta.getDate() + 6)
     
     const random = getRandomInt(users.length-1)
     console.log(users[random]);
