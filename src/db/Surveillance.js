@@ -41,10 +41,10 @@ const getAvailableGuards = async (fdate) => {
     await sql.connect(sqlConfig)
     
     let date = fdate;
-    const users = await sql.query`select count(cusuario) as count from seusuario where crol = 2 and bactivo = 1`
+    const users = await sql.query(`select count(cusuario) as count from seusuario where crol = 2 and bactivo = 1`)
     date.setDate(date.getDate() - (users.recordset[0].count * 7))
     date = date.toLocaleDateString('en-US')
-    const result = await sql.query(`select cusuario from seusuario where crol = 2 and bactivo = 1 and cusuario not in (select cusuario from prguardias where fdesde >= '${date}')`)
+    const result = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre from seusuario where crol = 2 and bactivo = 1 and cusuario not in (select cusuario from prguardias where fdesde >= '${date}')`)
     return result.recordset
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
@@ -58,13 +58,18 @@ const setGuard = async (users) => {
     let newDateHasta = new Date()
     newDateHasta.setDate(newDateHasta.getDate() + 7)
     
-    const result = await sql.query(`select top(1) cusuario from seusuario where crol = 2 and bactivo = 1 and cusuario in(${users.join(',')}) order by NEWID()`)
-    const setGuard = await sql.query(`insert into prguardias (cusuario, fdesde, fhasta) values (${result.recordset[0].cusuario}, '${newDateDesde.toLocaleDateString('en-US')}', '${newDateHasta.toLocaleDateString('en-US')}')`)
-    return result.recordset[0].cusuario
+    const random = getRandomInt(users.length-1)
+    console.log(users[random]);
+    const setGuard = await sql.query(`insert into prguardias (cusuario, fdesde, fhasta) values (${users[random]}, '${newDateDesde.toLocaleDateString('en-US')}', '${newDateHasta.toLocaleDateString('en-US')}')`)
+    return users[random]
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err
   }
+}
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
 }
 
 export default {

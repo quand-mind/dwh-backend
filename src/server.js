@@ -162,14 +162,20 @@ app.listen(port, async () => {
     // console.log(result);
 
   });
-  cron.schedule('0 0 0 * * *', async() => {
+  cron.schedule('0 41 16 * * 1', async() => {
     let date = new Date()
     console.log(date);
     console.log('ejecutandose');
     const usersAvailables = await Surveillance.getAvailableGuards(date)
     const mappedUsersAvailables = usersAvailables.map(user => user.cusuario)
-    const userGuard = await Surveillance.setGuard(mappedUsersAvailables)
-    console.log(userGuard);
+    if (mappedUsersAvailables.length > 0){
+      const userGuard = await Surveillance.setGuard(mappedUsersAvailables)
+      console.log(usersAvailables, userGuard);
+      const userGuardObject = usersAvailables.find(user => user.cusuario == userGuard)
+      console.log('Usuario que tiene que estar de guardia: ',userGuardObject.xnombre);
+    } else {
+      console.log('No existen mas usuarios disponibles para guardias');
+    }
   })
 })
 
