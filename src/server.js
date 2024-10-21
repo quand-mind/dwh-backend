@@ -72,13 +72,49 @@ app.listen(port, async () => {
   
   // 0 20 0 * * *
   const avisos = await Surveillance.getAvisos()
+  
   for (const aviso of avisos) {
     const frecuencias = aviso.xfrecuencia.split(',')
     for (const frecuencia of frecuencias) {
       cron.schedule(frecuencia, async() => {
         await sql.connect(sqlConfig)
         const result = await sql.query(aviso.xsqlaviso)
-        console.log(result.recordset[0].return);
+        if(!result.recordset[0].return) {
+          let emailHtml = `
+            <style>
+              .title {
+                font-size: 16px;
+                font-weight: 700;
+              }
+            </style>
+            <h2>Estimado Usuario</h2>    
+            <h4 class="title">Se ha presentado un problema en el siguiente proceso:</h4>
+            <h5>${aviso.xmensaje}</h5>
+            </h2>
+            <p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>
+          `
+          const transporter = nodemailer.createTransport({
+            service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
+            auth: {
+              user: 'themultiacount@gmail.com',
+              pass: 'kfgb bnad gqpz etux'
+            }
+          });
+          const mailOptions = {
+            from: 'La Mundial de Seguros',
+            // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+            to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+            subject: `Problemas en proceso de ${aviso.xnombre}`,
+            html: emailHtml,
+            attachments: excelFiles
+          };
+          try {
+            const response = await transporter.sendMail(mailOptions);
+            console.log('Correo enviado correctamente');
+          } catch (error) {
+            console.error('Error al enviar el correo:', error.message);
+          }
+        }
       })
     }
     
