@@ -81,11 +81,10 @@ app.listen(port, async () => {
         await sql.connect(sqlConfig)
         const userGuard = await sql.query(`select top(1) * from prguardias where fhasta >= convert(date, GETDATE())`)
         const userResult = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre, xemail, xcedula from seusuario where cusuario = ${userGuard.recordset[0].cusuario}`)
-        console.log(userResult);
+        // console.log(userResult);
         const result = await sql.query(aviso.xsqlaviso)
         if(result.recordset[0].return == 0) {
           
-          console.log(result.recordset[0].return);
           let emailHtml = `
             <style>
               .title {
@@ -98,8 +97,28 @@ app.listen(port, async () => {
             <h5 style="text-transform: uppercase;">${aviso.xmensaje}</h5>
             <p>Por favor, revise el proceso en la brevedad posible para solventar los problemas presentados.</p>
             </h2>
-            <p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>
           `
+          if(aviso.xsqlreporte) {
+            const querys = aviso.xsqlreporte.split('-----')
+            emailHtml += `<h5>Aquí algunos detalles del problema encontrado</h5>`
+            for (const query of querys) {
+              const report = await sql.query(query)
+              emailHtml += `<div>`
+              for (const element of report.recordset) {
+                const entries = Object.entries(element)
+                emailHtml += `<div style="display:flex; flex-direction:column; gap:5px;">`
+                for (const entry of entries) {
+                  for (const text of entry) {
+                    emailHtml += `<span>${text}</span>`
+                  }
+                }
+                emailHtml += `</div>`
+              }
+              emailHtml += `</div>`
+            }
+            
+          }
+          emailHtml += `<p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>`
           const transporter = nodemailer.createTransport({
             service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
             auth: {
@@ -115,7 +134,6 @@ app.listen(port, async () => {
             html: emailHtml
           };
           try {
-            console.log(emailHtml);
             const response = await transporter.sendMail(mailOptions);
             console.log('Correo enviado correctamente');
           } catch (error) {
