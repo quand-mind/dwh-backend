@@ -110,7 +110,8 @@ app.listen(port, async () => {
           const mailOptions = {
             from: 'La Mundial de Seguros',
             // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
-            to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+            // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+            to: ['quand.mind@gmail.com', userResult.recordset[0].xemail], // Cambia esto por la dirección de destino
             subject: `Problemas en proceso de ${aviso.xnombre}`,
             html: emailHtml
           };
