@@ -119,7 +119,7 @@ app.listen(port, async () => {
     }
     
   }
-  cron.schedule('0 20 0 * * *', async () => {
+  cron.schedule('0 30 1 * * *', async () => {
     console.log('running a task');
     
     
