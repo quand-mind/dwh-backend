@@ -77,9 +77,15 @@ app.listen(port, async () => {
     const frecuencias = aviso.xfrecuencia.split(',')
     for (const frecuencia of frecuencias) {
       cron.schedule(frecuencia, async() => {
+        console.log('running a task');
         await sql.connect(sqlConfig)
+        const userGuard = await sql.query(`select top(1) * from prguardias where fhasta >= convert(date, GETDATE())`)
+        const userResult = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre, xemail, xcedula from seusuario where cusuario = ${userGuard.recordset[0].cusuario}`)
+        console.log(userResult);
         const result = await sql.query(aviso.xsqlaviso)
-        if(!result.recordset[0].return) {
+        if(result.recordset[0].return == 0) {
+          
+          console.log(result.recordset[0].return);
           let emailHtml = `
             <style>
               .title {
@@ -87,9 +93,10 @@ app.listen(port, async () => {
                 font-weight: 700;
               }
             </style>
-            <h2>Estimado Usuario</h2>    
+            <h2>Estimado usuario: ${userResult.recordset[0].xnombre}</h2>    
             <h4 class="title">Se ha presentado un problema en el siguiente proceso:</h4>
-            <h5>${aviso.xmensaje}</h5>
+            <h5 style="text-transform: uppercase;">${aviso.xmensaje}</h5>
+            <p>Por favor, revise el proceso en la brevedad posible para solventar los problemas presentados.</p>
             </h2>
             <p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>
           `
@@ -105,10 +112,10 @@ app.listen(port, async () => {
             // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
             to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
             subject: `Problemas en proceso de ${aviso.xnombre}`,
-            html: emailHtml,
-            attachments: excelFiles
+            html: emailHtml
           };
           try {
+            console.log(emailHtml);
             const response = await transporter.sendMail(mailOptions);
             console.log('Correo enviado correctamente');
           } catch (error) {
@@ -120,8 +127,7 @@ app.listen(port, async () => {
     
   }
   cron.schedule('0 30 1 * * *', async () => {
-    console.log('running a task');
-    
+    console.log('running a task');    
     
     const responseGraphics = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
       method: "GET",
