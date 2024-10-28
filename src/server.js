@@ -109,7 +109,7 @@ app.listen(port, async () => {
                 emailHtml += `<div style="display:flex; flex-direction:column; gap:5px;">`
                 for (const entry of entries) {
                   for (const text of entry) {
-                    emailHtml += `<span>${text}</span>`
+                    emailHtml += `<span style="margin-right: 5px">${text}</span>`
                   }
                 }
                 emailHtml += `</div>`
@@ -226,13 +226,56 @@ app.listen(port, async () => {
     let date = new Date()
     console.log(date);
     console.log('ejecutandose');
+    let emailHtml = `
+      <style>
+        .title {
+          font-size: 16px;
+          font-weight: 700;
+        }
+      </style>
+      <h2>Saludos</h2>    
+    `;
     const usersAvailables = await Surveillance.getAvailableGuards(date)
     const mappedUsersAvailables = usersAvailables.map(user => user.cusuario)
     if (mappedUsersAvailables.length > 0){
       const userGuard = await Surveillance.setGuard(mappedUsersAvailables)
-      console.log(usersAvailables, userGuard);
-      const userGuardObject = usersAvailables.find(user => user.cusuario == userGuard)
+      console.log(usersAvailables);
+      const userGuardObject = usersAvailables.find(user => user.cusuario == userGuard.id)
       console.log('Usuario que tiene que estar de guardia:',userGuardObject.xnombre);
+      emailHtml += `
+        <h4 class="title">En el siguiente correo se informa sobre el  usuario que estará de guardia hasta el ${userGuard.fhasta}</h4>
+        <h5>Usuario asignado para estar de guardia esta semana: <b style="text-transfrom: uppercase;">${userGuardObject.xnombre}</b></h5>
+      `
+      const transporter = nodemailer.createTransport({
+        service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
+        auth: {
+          user: 'themultiacount@gmail.com',
+          pass: 'kfgb bnad gqpz etux'
+        }
+      });
+      const mailOptions = {
+        from: 'La Mundial de Seguros',
+        // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+        to: [
+          'quand.mind@gmail.com',
+          'aquintero@lamundialdeseguros.com',
+          'gidler@lamundialdeseguros.com',
+          'jalen@lamundialdeseguros.com',
+          'faraujo@lamundialdeseguros.com',
+          'gestacio@lamundialdeseguros.com',
+          'ralen@lamunidaldeseguros.com',
+          'marismendi@lamundialdeseguros.com',
+        ], // Cambia esto por la dirección de destino
+        subject: `Asignación de las guardias`,
+        html: emailHtml,
+        attachments: excelFiles
+      };
+      try {
+        const response = await transporter.sendMail(mailOptions);
+        console.log('Correo enviado correctamente');
+      } catch (error) {
+        console.error('Error al enviar el correo:', error.message);
+      }
     } else {
       console.log('No existen mas usuarios disponibles para guardias');
     }

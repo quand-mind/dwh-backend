@@ -61,7 +61,7 @@ const setGuard = async (users) => {
     const random = getRandomInt(users.length-1)
     console.log(users[random]);
     const setGuard = await sql.query(`insert into prguardias (cusuario, fdesde, fhasta) values (${users[random]}, '${newDateDesde.toLocaleDateString('en-US')}', '${newDateHasta.toLocaleDateString('en-US')}')`)
-    return users[random]
+    return {id: users[random], fdesde: newDateDesde.toLocaleDateString('en-CA'), fhasta: newDateHasta.toLocaleDateString('en-CA')}
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err
