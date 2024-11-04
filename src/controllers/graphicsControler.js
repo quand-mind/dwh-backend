@@ -63,6 +63,7 @@ const getItemsFiltered = async (req, res) => {
         status: false,
         message: items.error
       });
+      // 
     }
 
     res.send(items)
