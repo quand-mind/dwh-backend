@@ -11,6 +11,7 @@ import cron from 'node-cron'
 import nodemailer from 'nodemailer';
 import Excel from "exceljs";
 import fetch from 'node-fetch';
+import {ReportManager, ReportExecutionUrl} from 'mssql-ssrs';
 
 import clientRoutes from './routes/clientRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -66,6 +67,27 @@ app.use("/auth", authRoutes);
 app.use("/maestros", maestrosRoutes);
 app.use("/campaign", campaignRoutes);
 app.use("/graphics", graphicsRoutes);
+
+var url = 'http://pclm083/:80/reportserver';
+var serverConfig = {
+    server: 'serverName',
+    instance: 'serverInstance',
+    isHttps: false, // optional, default: false
+    port: 80, // optional, default: 80
+};
+
+var ssrs = new ReportManager([]);
+
+var auth = {
+  username: 'userName',
+  password: 'password',
+  workstation: '', // optional
+  domain: '' // optional
+};
+
+// await ssrs.start(url, auth, null, null);
+// console.log(re);
+// await ssrs.start(url, { username: 'sa', password: 'Seguros!' });
 
 app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`)
