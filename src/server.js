@@ -328,8 +328,7 @@ app.listen(port, async () => {
           'marismendi@lamundialdeseguros.com',
         ], // Cambia esto por la dirección de destino
         subject: `Asignación de las guardias`,
-        html: emailHtml,
-        attachments: excelFiles
+        html: emailHtml
       };
       try {
         const response = await transporter.sendMail(mailOptions);
