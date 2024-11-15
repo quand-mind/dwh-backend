@@ -129,12 +129,12 @@ app.listen(port, async () => {
   //   attachments: files
   // };
 
-  try {
-    const response = await transporter.sendMail(mailOptions);
-    console.log('Correo enviado correctamente');
-  } catch (error) {
-    console.error('Error al enviar el correo:', error.message);
-  }
+  // try {
+  //   const response = await transporter.sendMail(mailOptions);
+  //   console.log('Correo enviado correctamente');
+  // } catch (error) {
+  //   console.error('Error al enviar el correo:', error.message);
+  // }
 
   // 0 20 0 * * *
   const avisos = await Surveillance.getAvisos()
