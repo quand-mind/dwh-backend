@@ -11,7 +11,7 @@ import cron from 'node-cron'
 import nodemailer from 'nodemailer';
 import Excel from "exceljs";
 import fetch from 'node-fetch';
-import {ReportManager, ReportExecutionUrl, ReportService} from 'mssql-ssrs';
+// import {ReportManager, ReportExecutionUrl, ReportService} from 'mssql-ssrs';
 
 import clientRoutes from './routes/clientRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -68,61 +68,66 @@ app.use("/maestros", maestrosRoutes);
 app.use("/campaign", campaignRoutes);
 app.use("/graphics", graphicsRoutes);
 
-var url = 'http://pclm083:80/reportserver';
-var reportPath = '/recibos_anuales_2';
-var fileType = 'xlsx'
-var serverConfig = {
-    server: 'serverName',
-    instance: 'serverInstance',
-    isHttps: false, // optional, default: false
-    port: 80, // optional, default: 80
-};
+// Servidor de Reportes
 
-var ssrs = new ReportManager([]);
-var reportService = new ReportService();
+// var url = 'http://pclm083:80/reportserver';
+// var reportPath = '/recibos_anuales_2';
+// var fileType = 'xlsx'
+// var serverConfig = {
+//     server: 'serverName',
+//     instance: 'serverInstance',
+//     isHttps: false, // optional, default: false
+//     port: 80, // optional, default: 80
+// };
 
-var auth = {
-  username: 'aquintero',
-  password: '27798623Adqf..',
-  workstation: '', // optional
-  domain: '' // optional
-};
-var parameters = [
-  { Name: 'date', Value: '30/10/2024' },
-]
+// var ssrs = new ReportManager([]);
+// var reportService = new ReportService();
+
+// var auth = {
+//   username: 'aquintero',
+//   password: '27798623Adqf..',
+//   workstation: '', // optional
+//   domain: '' // optional
+// };
+// var parameters = [
+//   { Name: 'date', Value: '30/10/2024' },
+// ]
 
 // console.log(re);
 // await ssrs.start(url, { username: 'sa', password: 'Seguros!' });
 
 app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`)
-  await ssrs.start(url, auth, null, null);
-  await reportService.start(url, auth, null, null);
-  
-  var re = new ReportExecutionUrl(url, auth, null, null);
+  // Envio de reportes
 
-  var params = await reportService.getReportParams(reportPath);
-  // console.log(params);
-  const report = await re.getReport(reportPath, fileType, parameters, null);
-  console.log(report.data);
-  let files = []
-  files.push({filename: `prueba.${fileType}`, content: report.data})
-  const emailHtml = '<h1>Hola</h1>'
-  const transporter = nodemailer.createTransport({
-    service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
-    auth: {
-      user: 'themultiacount@gmail.com',
-      pass: 'kfgb bnad gqpz etux'
-    }
-  });
-  const mailOptions = {
-    from: 'La Mundial de Seguros',
-    to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
-    // to: ['quand.mind@gmail.com','gidler@lamundialdeseguros.com', 'jperez@lamundialdeseguros.com'], // Cambia esto por la dirección de destino
-    subject: `Prueba`,
-    html: emailHtml,
-    attachments: files
-  };
+
+  // await ssrs.start(url, auth, null, null);
+  // await reportService.start(url, auth, null, null);
+  
+  // var re = new ReportExecutionUrl(url, auth, null, null);
+
+  // var params = await reportService.getReportParams(reportPath);
+  // // console.log(params);
+  // const report = await re.getReport(reportPath, fileType, parameters, null);
+  // console.log(report.data);
+  // let files = []
+  // files.push({filename: `prueba.${fileType}`, content: report.data})
+  // const emailHtml = '<h1>Hola</h1>'
+  // const transporter = nodemailer.createTransport({
+  //   service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
+  //   auth: {
+  //     user: 'themultiacount@gmail.com',
+  //     pass: 'kfgb bnad gqpz etux'
+  //   }
+  // });
+  // const mailOptions = {
+  //   from: 'La Mundial de Seguros',
+  //   to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+  //   // to: ['quand.mind@gmail.com','gidler@lamundialdeseguros.com', 'jperez@lamundialdeseguros.com'], // Cambia esto por la dirección de destino
+  //   subject: `Prueba`,
+  //   html: emailHtml,
+  //   attachments: files
+  // };
 
   try {
     const response = await transporter.sendMail(mailOptions);
