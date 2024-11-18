@@ -324,12 +324,12 @@ app.listen(port, async () => {
         // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
         to: [
           'quand.mind@gmail.com',
-          'aquintero@lamundialdeseguros.com',
+          'andresquintero@lamundialdeseguros.com',
           'gidler@lamundialdeseguros.com',
           'jalen@lamundialdeseguros.com',
           'faraujo@lamundialdeseguros.com',
           'gestacio@lamundialdeseguros.com',
-          'ralen@lamunidaldeseguros.com',
+          'ralen@lamundialdeseguros.com',
           'marismendi@lamundialdeseguros.com',
         ], // Cambia esto por la dirección de destino
         subject: `Asignación de las guardias`,
