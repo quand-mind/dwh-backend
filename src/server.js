@@ -143,7 +143,8 @@ app.listen(port, async () => {
     const frecuencias = aviso.xfrecuencia.split(',')
     for (const frecuencia of frecuencias) {
       cron.schedule(frecuencia, async() => {
-        console.log('running a task');
+        console.log('running task:', aviso.xnombre);
+        console.log('query:', aviso.xsqlaviso);
         await sql.connect(sqlConfig)
         const userGuard = await sql.query(`select top(1) * from prguardias where fhasta >= convert(date, GETDATE())`)
         const userResult = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre, xemail, xcedula from seusuario where cusuario = ${userGuard.recordset[0].cusuario}`)
@@ -211,7 +212,7 @@ app.listen(port, async () => {
     
   }
   cron.schedule('0 30 1 * * *', async () => {
-    console.log('running a task');    
+    console.log('running task: Reportes Diarios');    
     
     const responseGraphics = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
       method: "GET",
@@ -234,6 +235,7 @@ app.listen(port, async () => {
     emailHtml += '<h2>'
     let x = 1
     for (const graphic of graphics) {
+      console.log(`running report: ${graphic.xnombre}`); 
       const responseFilters = await fetch(`${process.env.API_URL_PROD}/graphics/${graphic.id}/getFilters`, {
         method: "GET",
         headers: {"Content-type": "application/json;charset=UTF-8"}
@@ -291,7 +293,7 @@ app.listen(port, async () => {
   cron.schedule('0 0 0 * * 1', async() => {
     let date = new Date()
     console.log(date);
-    console.log('ejecutandose');
+    console.log('running task: Definicion de Guardias');
     let emailHtml = `
       <style>
         .title {
