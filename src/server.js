@@ -144,7 +144,6 @@ app.listen(port, async () => {
     for (const frecuencia of frecuencias) {
       cron.schedule(frecuencia, async() => {
         console.log('running task:', aviso.xnombre);
-        console.log('query:', aviso.xsqlaviso);
         await sql.connect(sqlConfig)
         const userGuard = await sql.query(`select top(1) * from prguardias where fhasta >= convert(date, GETDATE())`)
         const userResult = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre, xemail, xcedula from seusuario where cusuario = ${userGuard.recordset[0].cusuario}`)
