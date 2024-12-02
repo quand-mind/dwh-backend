@@ -125,8 +125,10 @@ const getDashboardClientData = async () => {
       let actualMonth = month +1
       let actualYear = year - 1
       let x = 0
+      let iter = 1
       // Ciclo para generar las fechas de cada mes y obtener los valores por mes
       while (x == 0) {
+        
         let lastDate = moment(new Date(actualYear, actualMonth + 1, 0)).format('MM-DD-YYYY');
         let firstDate = moment(new Date(actualYear, actualMonth, 0)).format('MM-DD-YYYY');
         // Query del 2do gráfico
@@ -146,10 +148,17 @@ const getDashboardClientData = async () => {
         } else {
           queryItems2 += ','
         }
+        if (iter == 12 ) {
+          x = 1
+          // queryItems1 = queryItems1.slice(0, -1)
+          
+        }
+        iter ++
       }
       z++
     }
     
+    queryItems2 = queryItems2.slice(0, -1)
     const query1 = `SELECT ${queryItems1} FROM lista_clientes`
     const query2 = `SELECT ${queryItems2} FROM lista_clientes`
     
@@ -159,6 +168,7 @@ const getDashboardClientData = async () => {
     
     let result2 = await sql.query(query2)
     records2 = result2.recordset[0]['']
+    console.log(result2.recordset[0]);
 
     let y = 0
     z = 0
@@ -183,7 +193,7 @@ const getDashboardClientData = async () => {
       item2.color = objectItem.color
       item2.data = []
       item2.label = objectItem.label
-
+      let iter = 1
 
 
       while (x == 0) {
@@ -200,6 +210,10 @@ const getDashboardClientData = async () => {
           x++
         }
         z++
+        if(iter == 12) {
+          x = 1
+        }
+        iter++
       }
       recordsData2.push(item2)
       y++
@@ -211,7 +225,7 @@ const getDashboardClientData = async () => {
     let arr1 = months.slice(0, month + 1);
     let arr2 = months.slice(month +1, month + months.length);
     months = arr2.concat(arr1)
-
+    console.log(recordsData2);
     return {recordsData1, recordsData2, months}
   } catch (err) {
     console.log('Error al Obtener los clientes', err)

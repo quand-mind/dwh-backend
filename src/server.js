@@ -42,14 +42,14 @@ const sqlConfig = {
 }
 
 
-// app.use(cors({
-//   origin: '*',  // o especifica el dominio permitido
-//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-//   optionsSuccessStatus: 204,
-//   credentials: true ,
-//   allowedHeaders: ['Content-Type', 'Authorization', 'x-client-channel'],
+app.use(cors({
+  origin: '*',  // o especifica el dominio permitido
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  optionsSuccessStatus: 204,
+  credentials: true ,
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-client-channel'],
   
-// }));
+}));
 
 // app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -291,7 +291,6 @@ app.listen(port, async () => {
   });
   cron.schedule('0 0 0 * * 1', async() => {
     let date = new Date()
-    console.log(date);
     console.log('running task: Definicion de Guardias');
     let emailHtml = `
       <style>
@@ -306,7 +305,6 @@ app.listen(port, async () => {
     const mappedUsersAvailables = usersAvailables.map(user => user.cusuario)
     if (mappedUsersAvailables.length > 0){
       const userGuard = await Surveillance.setGuard(mappedUsersAvailables)
-      console.log(usersAvailables);
       const userGuardObject = usersAvailables.find(user => user.cusuario == userGuard.id)
       console.log('Usuario que tiene que estar de guardia:',userGuardObject.xnombre);
       emailHtml += `
