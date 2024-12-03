@@ -168,7 +168,6 @@ const getDashboardClientData = async () => {
     
     let result2 = await sql.query(query2)
     records2 = result2.recordset[0]['']
-    console.log(result2.recordset[0]);
 
     let y = 0
     z = 0
@@ -225,7 +224,6 @@ const getDashboardClientData = async () => {
     let arr1 = months.slice(0, month + 1);
     let arr2 = months.slice(month +1, month + months.length);
     months = arr2.concat(arr1)
-    console.log(recordsData2);
     return {recordsData1, recordsData2, months}
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
@@ -317,7 +315,6 @@ const getAllClientsAndSearch = async (page, string, body) => {
     let initialQuery = 'SELECT orden, cid, xnombre, corigen, xorigen, fnacimiento, xtelefono1, xcompania, xcedula FROM lista_clientes'
 
     let finalQuery = setQuery(string, body, initialQuery, queryRowsA)
-    console.log(finalQuery);
     // make sure that any items are correctly URL encoded in the connection string    
     
     await sql.connect(sqlConfig)
@@ -349,7 +346,6 @@ const setQuery = (string, body, initialQuery) => {
       let filterItems = []
       if(key[0].includes('f')){
         const value_splitted = body[key].split(' - ')
-        console.log(value_splitted.length);
         let date1, date2 = ''
         if(value_splitted.length == 1) {
           date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
