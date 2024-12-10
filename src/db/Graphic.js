@@ -6,11 +6,13 @@ const sqlConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PWD,
   database: process.env.DB_NAME,
+  connectionTimeout: 50000,
+  requestTimeout: 50000,
   server: process.env.DB_server,
   pool: {
     max: 10,
     min: 0,
-    idleTimeoutMillis: 30000
+    idleTimeoutMillis: 50000
   },
   options: {
     encrypt: true, // for azure

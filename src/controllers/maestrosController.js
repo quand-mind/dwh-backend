@@ -77,10 +77,32 @@ const getOrigenesApi = async (req, res) => {
     
   }
 }
+const getCanalesVenta = async (req, res) => {
+  try {
+    const canales = await Maestros.getCanalesVenta();
+
+    const data = canales.map(item => {
+      return {text: item.text, value: item.value}
+    })
+    data.unshift({text: 'Sin Filtros', value: ''})
+
+    if (canales.error) {
+      return res.status(canales.code).send({
+        status: false,
+        message: canales.error
+      });
+    }
+    res.send(data)
+    
+  } catch (error) {
+    
+  }
+}
 
 
 export default {
   getRamos,
   getOrigenes,
-  getOrigenesApi
+  getOrigenesApi,
+  getCanalesVenta
 }

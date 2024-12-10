@@ -53,7 +53,7 @@ const getOrigenesApi = async () => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const result = await sql.query`select distinct(LTRIM(RTRIM(xcanal_venta))) as text, LTRIM(RTRIM(corigen_rel)) as value from maclientApiDes`
+   const result = await sql.query`select distinct(LTRIM(RTRIM(xcanal_venta))) as text, LTRIM(RTRIM(corigen_rel)) as value from Sis2000..maclient_api`
    
    const records = result.recordsets[0]
    
@@ -63,9 +63,25 @@ const getOrigenesApi = async () => {
    return err
   }
 }
+const getCanalesVenta = async () => {
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   const result = await sql.query`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from Sis2000..macanalalt`
+   
+   const records = result.recordsets[0]
+   
+   return records
+  } catch (err) {
+   console.log('Error al obtener los canales', err)
+   return err
+  }
+}
 
 export default {
   getAllRamos,
   getOrigenes,
-  getOrigenesApi
+  getOrigenesApi,
+  getCanalesVenta
 }

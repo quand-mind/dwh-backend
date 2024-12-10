@@ -8,6 +8,7 @@ router
     .get("/ramos", maestrosController.getRamos)
     .get("/origenes", maestrosController.getOrigenes)
     .get("/origenesApi", maestrosController.getOrigenesApi)
+    .get("/canalesVenta", maestrosController.getCanalesVenta)
 
     
 export default router;
