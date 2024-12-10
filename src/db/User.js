@@ -4,14 +4,20 @@ import sql from "mssql";
 const sqlConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PWD,
-    server: process.env.DB_server,
     database: process.env.DB_NAME,
-    requestTimeout: 60000,
+    connectionTimeout: 50000,
+    requestTimeout: 50000,
+    server: process.env.DB_server,
+    pool: {
+      max: 10,
+      min: 0,
+      idleTimeoutMillis: 50000
+    },
     options: {
-        encrypt: true,
-        trustServerCertificate: true
+      encrypt: true, // for azure
+      trustServerCertificate: true // change to true for local dev / self-signed certs
     }
-}
+  }
 
 const verifyIfUsernameExists = async (xlogin) => {
     try {
