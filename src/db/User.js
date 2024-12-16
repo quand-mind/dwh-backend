@@ -24,7 +24,7 @@ const verifyIfUsernameExists = async (xlogin) => {
         let pool = await sql.connect(sqlConfig);
         let result = await pool.request()
             .input('xemail', sql.NVarChar, xlogin)
-            .query('select CUSUARIO, XEMAIL, XNOMBRE from seusuario where xemail = @xemail and bactivo = true')
+            .query('select CUSUARIO, XEMAIL, XNOMBRE from seusuario where xemail = @xemail and bactivo = 1')
             await pool.close();
         return { 
             result: result 
