@@ -103,8 +103,7 @@ const getClientsProduct = async (corigen, cramo, data) => {
 const getClientsData = async (data) => {
   try {
     await sql.connect(sqlConfig)
-    const result = await sql.query(`
-      SELECT * FROM lista_clientes WHERE orden IN (${data.join(',')}) `)
+    const result = await sql.query(`SELECT * FROM lista_clientes WHERE orden IN (${data.join(',')})`)
     return result.recordset
   } catch (err) {
     console.log('Error al Obtener los clientes', err)

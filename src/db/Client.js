@@ -70,7 +70,7 @@ const getClientData = async (orden) => {
   try {
     clientsData = []
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * FROM lista_clientes WHERE orden = ${orden}`
+    const result = await sql.query(`SELECT * FROM lista_clientes WHERE orden = ${orden}`)
 
     const records = result.recordsets[0]
     records.forEach(item => {
@@ -410,7 +410,7 @@ const getClients = async (page) => {
 const countClients = async () => {
   try {
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT COUNT(orden) AS count from lista_clientes`
+    const result = await sql.query(`SELECT COUNT(orden) AS count from lista_clientes`)
     const resutlR = result.recordsets[0][0].count
     return resutlR
   } catch (err) {
