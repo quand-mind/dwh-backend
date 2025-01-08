@@ -160,14 +160,16 @@ const getDashboardClientData = async () => {
       z++
     }
     
-    queryItems2 = queryItems2.slice(0, -1)
+    var lastChar = queryItems2.substr(queryItems2.length - 1)
+    if(lastChar != ')'){
+      queryItems2 = queryItems2.slice(0, -1)
+    }
     const query1 = `SELECT ${queryItems1} FROM lista_clientes`
     const query2 = `SELECT ${queryItems2} FROM lista_clientes`
     
     
     let result1 = await sql.query(query1)
     records1 = result1.recordset[0]['']
-    
     let result2 = await sql.query(query2)
     records2 = result2.recordset[0]['']
 
