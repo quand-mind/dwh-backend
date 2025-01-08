@@ -35,9 +35,9 @@ function compareByCode( a, b ) {
 
 const setAllClients = async () => {
   try {
+    await sql.connect(sqlConfig)
     if(!countAllClients) {
-      await sql.connect(sqlConfig)
-      const result = await sql.query`SELECT COUNT(orden) AS count from lista_clientes`
+      const result = await sql.query(`SELECT COUNT(orden) AS count from lista_clientes`)
       countAllClients = result.recordsets[0][0].count
     }
     return countAllClients
