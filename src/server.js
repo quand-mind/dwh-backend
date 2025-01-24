@@ -304,44 +304,46 @@ app.listen(port, async () => {
     const usersAvailables = await Surveillance.getAvailableGuards(date)
     const mappedUsersAvailables = usersAvailables.map(user => user.cusuario)
     if (mappedUsersAvailables.length > 0){
-      const userGuard = await Surveillance.setGuard(mappedUsersAvailables)
-      const userGuardObject = usersAvailables.find(user => user.cusuario == userGuard.id)
-      console.log('Usuario que tiene que estar de guardia:',userGuardObject.xnombre);
-      emailHtml += `
-        <h4 class="title">En el siguiente correo se informa sobre el  usuario que estará de guardia hasta el ${userGuard.fhasta}</h4>
-        <h5>Usuario asignado para estar de guardia esta semana: <b style="text-transfrom: uppercase;">${userGuardObject.xnombre}</b></h5>
-      `
-      const transporter = nodemailer.createTransport({
-        service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
-        auth: {
-          user: 'themultiacount@gmail.com',
-          pass: 'kfgb bnad gqpz etux'
-        }
-      });
-      const mailOptions = {
-        from: 'La Mundial de Seguros',
-        // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
-        to: [
-          'quand.mind@gmail.com',
-          'andresquintero@lamundialdeseguros.com',
-          'gidler@lamundialdeseguros.com',
-          'jalen@lamundialdeseguros.com',
-          'faraujo@lamundialdeseguros.com',
-          'gestacio@lamundialdeseguros.com',
-          'ralen@lamundialdeseguros.com',
-          'marismendi@lamundialdeseguros.com',
-        ], // Cambia esto por la dirección de destino
-        subject: `Asignación de las guardias`,
-        html: emailHtml
-      };
-      try {
-        const response = await transporter.sendMail(mailOptions);
-        console.log('Correo enviado correctamente');
-      } catch (error) {
-        console.error('Error al enviar el correo:', error.message);
-      }
     } else {
       console.log('No existen mas usuarios disponibles para guardias');
+      usersAvailables.push({cusuario: 8, xnombre: 'Andrés Quintero'})
+      mappedUsersAvailables.push(8)
+    }
+    const userGuard = await Surveillance.setGuard(mappedUsersAvailables)
+    const userGuardObject = usersAvailables.find(user => user.cusuario == userGuard.id)
+    console.log('Usuario que tiene que estar de guardia:',userGuardObject.xnombre);
+    emailHtml += `
+      <h4 class="title">En el siguiente correo se informa sobre el  usuario que estará de guardia hasta el ${userGuard.fhasta}</h4>
+      <h5>Usuario asignado para estar de guardia esta semana: <b style="text-transfrom: uppercase;">${userGuardObject.xnombre}</b></h5>
+    `
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
+      auth: {
+        user: 'themultiacount@gmail.com',
+        pass: 'kfgb bnad gqpz etux'
+      }
+    });
+    const mailOptions = {
+      from: 'La Mundial de Seguros',
+      // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+      to: [
+        'quand.mind@gmail.com',
+        'andresquintero@lamundialdeseguros.com',
+        'gidler@lamundialdeseguros.com',
+        'jalen@lamundialdeseguros.com',
+        'faraujo@lamundialdeseguros.com',
+        'gestacio@lamundialdeseguros.com',
+        'ralen@lamundialdeseguros.com',
+        'marismendi@lamundialdeseguros.com',
+      ], // Cambia esto por la dirección de destino
+      subject: `Asignación de las guardias`,
+      html: emailHtml
+    };
+    try {
+      const response = await transporter.sendMail(mailOptions);
+      console.log('Correo enviado correctamente');
+    } catch (error) {
+      console.error('Error al enviar el correo:', error.message);
     }
   })
 })
