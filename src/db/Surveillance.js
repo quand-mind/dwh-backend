@@ -38,32 +38,42 @@ const getSurveillances = async (fdate) => {
     return err
   }
 }
-const getAvailableGuards = async (fdate) => {
+const getAvailableGuards = async (date) => {
   try {
+    let result = []
     await sql.connect(sqlConfig)
-    
-    let date = fdate;
-    const users = await sql.query(`select count(cusuario) as count from seusuario where crol = 2 and bactivo = 1`)
-    date.setDate(date.getDate() - (users.recordset[0].count * 7))
-    date = date.toLocaleDateString('en-US')
-    const result = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre from seusuario where crol = 2 and bactivo = 1 and cusuario not in (select cusuario from prguardias where fdesde >= '${date}')`)
-    return result.recordset
+    const getNewUsers = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre from seusuario where bactivo =1 and CROL = 2 and cusuario NOT IN(select distinct(cusuario) from prguardias)`)
+    if(getNewUsers.recordset.length > 0){
+
+      const users = getNewUsers.recordset.map(user => user.cusuario)
+      const random = getRandomInt(users.length-1)
+
+      result = getNewUsers.recordset.find(user => user.cusuario == users[random])
+    } else {
+      const getLastUser = await sql.query(`
+        select TOP(1) b.cusuario, b.xnombre +' ' + b.xapellido as xnombre,   max(a.fhasta) from prguardias a
+        left join seusuario b on b.CUSUARIO = a.cusuario
+        where b.BACTIVO = 1
+        GROUP BY b.CUSUARIO, b.xnombre, b.xapellido order by max(fhasta) asc
+      `)
+      result = getLastUser.recordset[0]
+    }
+    return result
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err
   }
 }
-const setGuard = async (users) => {
+const setGuard = async (user, date) => {
   try {
     await sql.connect(sqlConfig)
-    let newDateDesde = new Date()
-    let newDateHasta = new Date()
+    let newDateDesde = new Date(date)
+    let newDateHasta = new Date(date)
     newDateHasta.setDate(newDateHasta.getDate() + 6)
+    console.log(newDateHasta);
     
-    const random = getRandomInt(users.length-1)
-    console.log(users[random]);
-    const setGuard = await sql.query(`insert into prguardias (cusuario, fdesde, fhasta) values (${users[random]}, '${newDateDesde.toLocaleDateString('en-US')}', '${newDateHasta.toLocaleDateString('en-US')}')`)
-    return {id: users[random], fdesde: newDateDesde.toLocaleDateString('en-CA'), fhasta: newDateHasta.toLocaleDateString('en-CA')}
+    await sql.query(`insert into prguardias (cusuario, fdesde, fhasta) values (${user}, '${newDateDesde.toLocaleDateString('en-US')}', '${newDateHasta.toLocaleDateString('en-US')}')`)
+    return {id: user, fdesde: newDateDesde.toLocaleDateString('en-GB'), fhasta: newDateHasta.toLocaleDateString('en-GB')}
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err

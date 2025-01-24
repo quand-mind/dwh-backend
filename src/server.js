@@ -67,6 +67,7 @@ app.use("/auth", authRoutes);
 app.use("/maestros", maestrosRoutes);
 app.use("/campaign", campaignRoutes);
 app.use("/graphics", graphicsRoutes);
+const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 
 // Servidor de Reportes
 
@@ -289,33 +290,36 @@ app.listen(port, async () => {
     // console.log(result);
 
   });
-  cron.schedule('0 0 0 * * 1', async() => {
+  cron.schedule('0 0 0 1 * *', async() => {
+    // Cambiar aqui la funcion
+
     let date = new Date()
+    let newDate = new Date(date.setMonth(date.getMonth()+1)) 
+    // let newDate = new Date(date.setDate(date.getDate()+1)) 
+    console.log(newDate);
     console.log('running task: Definicion de Guardias');
     let emailHtml = `
-      <style>
-        .title {
-          font-size: 16px;
-          font-weight: 700;
-        }
+    <style>
+    .title {
+      font-size: 16px;
+      font-weight: 700;
+      }
       </style>
-      <h2>Saludos</h2>    
+      <h2>Saludos</h2>
+      <h4 class="title">En el siguiente correo se informa sobre la rotacion de guardias del Mes: ${months[date.getMonth()+1]}</h4>
     `;
-    const usersAvailables = await Surveillance.getAvailableGuards(date)
-    const mappedUsersAvailables = usersAvailables.map(user => user.cusuario)
-    if (mappedUsersAvailables.length > 0){
-    } else {
-      console.log('No existen mas usuarios disponibles para guardias');
-      usersAvailables.push({cusuario: 8, xnombre: 'Andrés Quintero'})
-      mappedUsersAvailables.push(8)
+    const weeks = 4
+    for (let week = 1; week <= weeks; week++) {
+      const weekDate = new Date(newDate.setDate(newDate.getDate() + 7))
+      let userAvailable = null
+      userAvailable = await Surveillance.getAvailableGuards(weekDate)
+      const userGuard = await Surveillance.setGuard(await userAvailable.cusuario, weekDate)
+      console.log('Usuario que tiene que estar de guardia:',await userAvailable.xnombre);
+      emailHtml += `
+      <h5>Usuario asignado para estar de guardia entre los dias ${userGuard.fdesde} y ${userGuard.fhasta}: <b style="text-transfrom: uppercase;">${userAvailable.xnombre}</b></h5>
+      `
     }
-    const userGuard = await Surveillance.setGuard(mappedUsersAvailables)
-    const userGuardObject = usersAvailables.find(user => user.cusuario == userGuard.id)
-    console.log('Usuario que tiene que estar de guardia:',userGuardObject.xnombre);
-    emailHtml += `
-      <h4 class="title">En el siguiente correo se informa sobre el  usuario que estará de guardia hasta el ${userGuard.fhasta}</h4>
-      <h5>Usuario asignado para estar de guardia esta semana: <b style="text-transfrom: uppercase;">${userGuardObject.xnombre}</b></h5>
-    `
+    console.log(emailHtml);
     const transporter = nodemailer.createTransport({
       service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
       auth: {
@@ -345,7 +349,11 @@ app.listen(port, async () => {
     } catch (error) {
       console.error('Error al enviar el correo:', error.message);
     }
+    
+
   })
+  // Aqui la funcion esta afuera
+  
 })
 
 
