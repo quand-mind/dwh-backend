@@ -38,10 +38,21 @@ const getSurveillances = async (fdate) => {
     return err
   }
 }
-const getAvailableGuards = async (date) => {
+const getAvailableGuards = async (date, week) => {
   try {
     let result = []
     await sql.connect(sqlConfig)
+    if(week == 1){
+      const getAvailableDate = await sql.query(`select top(1) fhasta from prguardias order by fhasta desc`)
+      if(getAvailableDate.recordset[0]){
+        const actualDate = new Date(getAvailableDate.recordset[0].fhasta)
+        console.log('fecha en base de datos', date);
+        if(actualDate != date) {
+          date = new Date(actualDate.setDate(actualDate.getDate()+1))
+        }
+        console.log('fecha final inicio:', date);
+      }
+    }
     const getNewUsers = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre from seusuario where bactivo =1 and CROL = 2 and cusuario NOT IN(select distinct(cusuario) from prguardias)`)
     if(getNewUsers.recordset.length > 0){
 
@@ -58,7 +69,7 @@ const getAvailableGuards = async (date) => {
       `)
       result = getLastUser.recordset[0]
     }
-    return result
+    return {user: result, date: date}
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err

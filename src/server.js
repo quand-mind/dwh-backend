@@ -291,11 +291,12 @@ app.listen(port, async () => {
 
   });
   cron.schedule('0 0 0 1 * *', async() => {
-    // Cambiar aqui la funcion
+    // Cambiar aqui la funcion    
 
     let date = new Date()
-    let newDate = new Date(date.setMonth(date.getMonth()+1)) 
-    // let newDate = new Date(date.setDate(date.getDate()+1)) 
+    // let correctedStartDate = new Date(date.setDate(date.getDate()+1)) 
+    let correctedStartDate = new Date(date.setMonth(date.getMonth()+1)) 
+    let newDate = new Date(Date.UTC(correctedStartDate.getFullYear(), correctedStartDate.getMonth(), correctedStartDate.getDate()));
     console.log(newDate);
     console.log('running task: Definicion de Guardias');
     let emailHtml = `
@@ -309,15 +310,19 @@ app.listen(port, async () => {
       <h4 class="title">En el siguiente correo se informa sobre la rotacion de guardias del Mes: ${months[date.getMonth()+1]}</h4>
     `;
     const weeks = 4
+    console.log('fecha inicial', newDate)
     for (let week = 1; week <= weeks; week++) {
-      const weekDate = new Date(newDate.setDate(newDate.getDate() + 7))
-      let userAvailable = null
-      userAvailable = await Surveillance.getAvailableGuards(weekDate)
+      let object = await Surveillance.getAvailableGuards(newDate, week)
+      let userAvailable = object.user
+      newDate = object.date
       const userGuard = await Surveillance.setGuard(await userAvailable.cusuario, weekDate)
       console.log('Usuario que tiene que estar de guardia:',await userAvailable.xnombre);
       emailHtml += `
       <h5>Usuario asignado para estar de guardia entre los dias ${userGuard.fdesde} y ${userGuard.fhasta}: <b style="text-transfrom: uppercase;">${userAvailable.xnombre}</b></h5>
       `
+      newDate = lastDate
+      console.log(`fecha de guardia ${week}`, newDate)
+      newDate = new Date(newDate.setDate(newDate.getDate() +  7))
     }
     console.log(emailHtml);
     const transporter = nodemailer.createTransport({
@@ -349,11 +354,11 @@ app.listen(port, async () => {
     } catch (error) {
       console.error('Error al enviar el correo:', error.message);
     }
-    
 
   })
   // Aqui la funcion esta afuera
   
+
 })
 
 
