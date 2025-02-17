@@ -78,13 +78,19 @@ const getAvailableGuards = async (date, week) => {
 const setGuard = async (user, date) => {
   try {
     await sql.connect(sqlConfig)
+    console.log('fecha ya esta buena la guachafita',date);
     let newDateDesde = new Date(date)
     let newDateHasta = new Date(date)
     newDateHasta.setDate(newDateHasta.getDate() + 6)
-    console.log(newDateHasta);
     
-    await sql.query(`insert into prguardias (cusuario, fdesde, fhasta) values (${user}, '${newDateDesde.toLocaleDateString('en-US')}', '${newDateHasta.toLocaleDateString('en-US')}')`)
-    return {id: user, fdesde: newDateDesde.toLocaleDateString('en-GB'), fhasta: newDateHasta.toLocaleDateString('en-GB')}
+    console.log('query', newDateDesde);
+    
+    const query = `insert into prguardias (cusuario, fdesde, fhasta) values (${user}, '${newDateDesde.toLocaleDateString('en-US', {timeZone: "Asia/kolkata"})}', '${newDateHasta.toLocaleDateString('en-US', {timeZone: "Asia/kolkata"})}')`
+
+    console.log('query', query);
+    
+    await sql.query(query)
+    return {id: user, fdesde: newDateDesde.toLocaleDateString('en-GB', {timeZone: "Asia/kolkata"}), fhasta: newDateHasta.toLocaleDateString('en-GB', {timeZone: "Asia/kolkata"})}
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err
