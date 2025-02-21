@@ -808,7 +808,7 @@ const getItemsTotals = async (query) => {
     return err
   }
 }
-const getDetailsTotal = async (values, requestVar, query, xllave) => {
+const getDetailsTotal = async (values, requestVar, query, xllave, detailsLetter) => {
   try{
     await sql.connect(sqlConfig)
     let queryDetails = query
@@ -818,12 +818,12 @@ const getDetailsTotal = async (values, requestVar, query, xllave) => {
     if(queryDetails.includes('group by')) {
       const querySplitGrouped = queryDetails.split('group by')
       queryDetails = querySplitGrouped[0]
-      finalQuery1 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso], queryDetails, xllave, 'a.')
+      finalQuery1 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso], queryDetails, xllave, detailsLetter)
       if(querySplitGrouped[1].includes('UNION')) {
         const querySplitUnion = querySplitGrouped[1].split('UNION')
         finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
         querySplitGrouped[1] = querySplitUnion[1]
-        finalQuery2 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso], querySplitGrouped[1], xllave, 'a.')
+        finalQuery2 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso], querySplitGrouped[1], xllave, detailsLetter)
         finalQuery2 =  ' UNION ' + finalQuery2
       } else {
         finalQuery1 = finalQuery1 + 'group by' + querySplitGrouped[1]
@@ -831,14 +831,15 @@ const getDetailsTotal = async (values, requestVar, query, xllave) => {
     } else {
       if(queryDetails.includes('UNION')) {
         const querySplitUnion = queryDetails.split('UNION')
-        finalQuery1 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso], queryDetails, xllave, 'a.')
+        finalQuery1 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso], queryDetails, xllave, detailsLetter)
         querySplitGrouped[1] = querySplitUnion[1]
-        finalQuery2 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso],querySplitGrouped[1], xllave, 'a.')
+        finalQuery2 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso],querySplitGrouped[1], xllave, detailsLetter)
       }
     }
     queryDetails = finalQuery1 + finalQuery2
     for (const value of values) {
       const queryDivided = queryDetails.replaceAll('@var', `'${value.value}'`)
+      console.log(queryDivided);
       const result = await sql.query(`${queryDivided}`)
       // const keys = Object.keys(result.recordset[0])
       // result.recordset.unshift({[keys[0]]: value})

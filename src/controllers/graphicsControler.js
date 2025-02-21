@@ -93,7 +93,9 @@ const getFilters = async (req, res) => {
           main_key:filter.bprincipal,
           controlValue: '',
           url: filter.xurl,
-          binverso: filter.binverso
+          binverso: filter.binverso,
+          bactivo_grafico: filter.bactivo_grafico,
+          bexport_total_key: filter.bexport_total_key
         }
       } else if(filter.xintervals) {
         const intervals = filter.xintervals.split(',')
@@ -106,7 +108,9 @@ const getFilters = async (req, res) => {
           controlValue: '',
           intervals: intervals,
           labelText: filter.xlabel,
-          binverso: filter.binverso
+          binverso: filter.binverso,
+          bactivo_grafico: filter.bactivo_grafico,
+          bexport_total_key: filter.bexport_total_key
         }
 
       } else if(filter.xdata) {
@@ -118,7 +122,9 @@ const getFilters = async (req, res) => {
           main_key:filter.bprincipal,
           controlValue: '',
           labelText: filter.xlabel,
-          binverso: filter.binverso
+          binverso: filter.binverso,
+          bactivo_grafico: filter.bactivo_grafico,
+          bexport_total_key: filter.bexport_total_key
         }
       } else if(filter.bcalendar) {
         return {
@@ -129,7 +135,9 @@ const getFilters = async (req, res) => {
           controlValue: '',
           calendar_value: '',
           labelText: filter.xlabel,
-          binverso: filter.binverso
+          binverso: filter.binverso,
+          bactivo_grafico: filter.bactivo_grafico,
+          bexport_total_key: filter.bexport_total_key
         }
       } else {
         return {
@@ -139,7 +147,9 @@ const getFilters = async (req, res) => {
           main_key:filter.bprincipal,
           controlValue: '',
           labelText: filter.xlabel,
-          binverso: filter.binverso
+          binverso: filter.binverso,
+          bactivo_grafico: filter.bactivo_grafico,
+          bexport_total_key: filter.bexport_total_key
         }
       }
     })
@@ -187,7 +197,7 @@ const exportDetails = async (req, res) => {
 }
 const exportTotal = async (req, res) => {
   try {
-
+    
     const graphic = await Graphic.getGraphic(req.body.id)
     if (graphic.error) {
       return res.status(graphic.code).send({
@@ -196,7 +206,6 @@ const exportTotal = async (req, res) => {
       });
     }
     const itemsLabels = await Graphic.getItemsTotals(graphic.xsqlitems)
-
     if (itemsLabels.error) {
       return res.status(itemsLabels.code).send({
         status: false,
@@ -204,6 +213,13 @@ const exportTotal = async (req, res) => {
       });
     }
 
+    const keyFixed = req.body.requestVar.key.split('.')
+    let detailsLetter = 'a.'
+    if(keyFixed.length > 1) {
+      req.body.requestVar.key = keyFixed[1]
+      detailsLetter = keyFixed[0] + '.'
+    }
+    
     const itemsTotals = await Graphic.getTotals(req.body.requestVar, graphic.xsqlexporttotal);
 
     if (itemsTotals.error) {
@@ -213,8 +229,7 @@ const exportTotal = async (req, res) => {
       });
     }
 
-    const itemsDetails = await Graphic.getDetailsTotal(itemsLabels, req.body.requestVar, graphic.xsqlexportdetalles, graphic.xllave)
-
+    const itemsDetails = await Graphic.getDetailsTotal(itemsLabels, req.body.requestVar, graphic.xsqlexportdetallestotal, graphic.xllave, detailsLetter)
     if (itemsDetails.error) {
       return res.status(itemsDetails.code).send({
         status: false,

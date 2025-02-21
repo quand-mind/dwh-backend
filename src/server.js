@@ -51,7 +51,7 @@ const sqlConfig = {
   
 // }));
 
-// app.use(cors());
+app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
@@ -242,19 +242,21 @@ app.listen(port, async () => {
       })
       const filters = await responseFilters.json()
       for (const filter of filters) {
-        filter.controlValue = date.toLocaleDateString('en-CA')
-        const requestVar = {value: filter.controlValue, key: filter.key, binverso: filter.binverso}
-        const responseExportTotal = await fetch(`${process.env.API_URL_PROD}/graphics/exportTotal`, {
-          method: "POST",
-          headers: {"Content-type": "application/json;charset=UTF-8"},
-          body: JSON.stringify({
-              requestVar: requestVar,
-              id: graphic.id
+        if(filter.bexport_total_key){
+          filter.controlValue = date.toLocaleDateString('en-CA')
+          const requestVar = {value: filter.controlValue, key: filter.key, binverso: filter.binverso}
+          const responseExportTotal = await fetch(`${process.env.API_URL_PROD}/graphics/exportTotal`, {
+            method: "POST",
+            headers: {"Content-type": "application/json;charset=UTF-8"},
+            body: JSON.stringify({
+                requestVar: requestVar,
+                id: graphic.id
+            })
           })
-        })
-        const exportTotal = await responseExportTotal.json()
-        const excelFile = await excelService.exportAllToExcel(exportTotal.items, `dwh_reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}`, graphic.xnombre)
-        excelFiles.push({filename: `dwh_reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}.xlsx`, content: Buffer.from(excelFile)})
+          const exportTotal = await responseExportTotal.json()
+          const excelFile = await excelService.exportAllToExcel(exportTotal.items, `dwh_reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}`, graphic.xnombre)
+          excelFiles.push({filename: `La Mundial de Seguros C.A, reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}.xlsx`, content: Buffer.from(excelFile)})
+        }
         
       }
       emailHtml += `${graphic.xnombre}`
