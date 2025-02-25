@@ -278,7 +278,7 @@ app.listen(port, async () => {
     const mailOptions = {
       from: 'La Mundial de Seguros',
       // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
-      to: ['quand.mind@gmail.com','gidler@lamundialdeseguros.com', 'jperez@lamundialdeseguros.com'], // Cambia esto por la dirección de destino
+      to: ['quand.mind@gmail.com','gidler@lamundialdeseguros.com', 'jperez@lamundialdeseguros.com', 'fbelisario@lamundialdeseguros.com'], // Cambia esto por la dirección de destino
       subject: `Reportes del día ${date.toLocaleDateString('en-US')}`,
       html: emailHtml,
       attachments: excelFiles
