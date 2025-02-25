@@ -205,21 +205,6 @@ const exportTotal = async (req, res) => {
         message: graphic.error
       });
     }
-    const itemsLabels = await Graphic.getItemsTotals(graphic.xsqlitems)
-    if (itemsLabels.error) {
-      return res.status(itemsLabels.code).send({
-        status: false,
-        message: itemsLabels.error
-      });
-    }
-
-    const keyFixed = req.body.requestVar.key.split('.')
-    let detailsLetter = 'a.'
-    if(keyFixed.length > 1) {
-      req.body.requestVar.key = keyFixed[1]
-      detailsLetter = keyFixed[0] + '.'
-    }
-    
     const itemsTotals = await Graphic.getTotals(req.body.requestVar, graphic.xsqlexporttotal);
 
     if (itemsTotals.error) {
@@ -228,19 +213,38 @@ const exportTotal = async (req, res) => {
         message: itemsTotals.error
       });
     }
+    let items =  [{label: 'Totales', data: itemsTotals}]
+    let itemsDetails = null
+    if(graphic.iexporttotal == 2) {
 
-    const itemsDetails = await Graphic.getDetailsTotal(itemsLabels, req.body.requestVar, graphic.xsqlexportdetallestotal, graphic.xllave, detailsLetter)
-    if (itemsDetails.error) {
-      return res.status(itemsDetails.code).send({
-        status: false,
-        message: itemsDetails.error
-      });
+      const itemsLabels = await Graphic.getItemsTotals(graphic.xsqlitems)
+      if (itemsLabels.error) {
+        return res.status(itemsLabels.code).send({
+          status: false,
+          message: itemsLabels.error
+        });
+      }
+
+      const keyFixed = req.body.requestVar.key.split('.')
+      let detailsLetter = 'a.'
+      if(keyFixed.length > 1) {
+        req.body.requestVar.key = keyFixed[1]
+        detailsLetter = keyFixed[0] + '.'
+      }
+    
+      itemsDetails = await Graphic.getDetailsTotal(itemsLabels, req.body.requestVar, graphic.xsqlexportdetallestotal, graphic.xllave, detailsLetter)
+      if (itemsDetails.error) {
+        return res.status(itemsDetails.code).send({
+          status: false,
+          message: itemsDetails.error
+        });
+      }
+      items = [
+        ...items,
+        ...itemsDetails
+      ]
     }
-    const items = [
-      ...itemsDetails,
-      {label: 'Totales', data: itemsTotals},
-    ]
-    items.reverse()
+    // items.reverse()
 
     res.send({items})
     

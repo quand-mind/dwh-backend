@@ -787,10 +787,8 @@ const getTotals = async (requestVar, query) => {
   try{
     await sql.connect(sqlConfig)
 
-    query = query.replaceAll('@2var', `'${requestVar.value}'`)
-    // console.log(query);
-
-    const result = await sql.query(`${query}`)
+    let queryNew = query.replaceAll('@2var', `'${requestVar.value}'`)
+    const result = await sql.query(`${queryNew}`)
     return result.recordset
   } catch {
     console.log('Error al Obtener los graficos', err)
