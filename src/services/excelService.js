@@ -83,6 +83,7 @@ const  exportAllToExcel = async (selectedLists, fileName, graphicName) => {
       lastRow.font = {bold: true}
       let totalCell = lastRow.getCell(1)
       if(typeof totalCell.value  == 'string'){
+        totalCell.value = totalCell.value.substring(3)
         totalCell.value = totalCell.value.toUpperCase()
       }
       totalCell.alignment={vertical: 'middle', horizontal: 'left', wrapText: true}

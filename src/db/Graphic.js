@@ -762,8 +762,8 @@ const exportDetails = async (filters, requestVar, id) => {
           finalQuery1 = sqlOtrosDetalles
         }
       }
-      // console.log(finalQuery1);
-      const resultOtherDetails = await sql.query(finalQuery1)
+      console.log(finalQuery1);
+      const resultOtherDetails = await sql.query(`${finalQuery1}`)
       result = resultOtherDetails.recordset
       // console.log(resultOtherDetails.recordset.length)
     }
