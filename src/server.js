@@ -288,7 +288,8 @@ app.listen(port, async () => {
         'jmatute@lamundialdeseguros.com',
         'lmoreno@lamundialdeseguros.com',
         'lbarraez@lamundialdeseguros.com',
-        'areyes@lamundialdeseguros.com'
+        'areyes@lamundialdeseguros.com',
+        'rmunoz@lamundialdeseguros.com'
       ], // Cambia esto por la dirección de destino
       subject: `Reportes del día ${date.toLocaleDateString('en-US')}`,
       html: emailHtml,
