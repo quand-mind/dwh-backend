@@ -280,8 +280,8 @@ const searchWithTable = async (table) => {
 const getSystemData = async (table) => {
   try {
     let fields = {id:'',email:'',telefono:'',nacimiento:''}
-    if(table == 'maclientes') {
-      fields.id = 'id'; fields.email = 'xcorreo1', fields.telefono = 'xtelefono1', fields.nacimiento = 'fnacimiento'
+    if(table == 'Clientes_Sis2000') {
+      fields.id = 'id'; fields.email = 'xcorreo', fields.telefono = 'xtelefono', fields.nacimiento = 'fnacimiento'
     } else if( table == 'clcliente'){
       fields.id = 'ccliente'; fields.email = 'xemail', fields.telefono = 'xtelefono', fields.nacimiento = 'fnacimiento'
     } else if(table == 'Clientes_ManMar') {
@@ -426,7 +426,7 @@ const getProducts = async (rif) => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const query = `SELECT * FROM maVclientes_productos WHERE id = '${rif}'`;
+   const query = `SELECT * FROM maVclientes_productos WHERE cci_rif = '${rif}'`;
    const result = await sql.query(query)
    
    return result.recordsets[0]
@@ -455,7 +455,7 @@ const getReceipts = async (cnpoliza) => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const result = await sql.query(`SELECT xrecibo, mmonto_ext, xcontrato, fdesde, iestadorec FROM recibos_all WHERE xcontrato = '${cnpoliza}'`)
+   const result = await sql.query(`SELECT xrecibo, mmonto_ext, xcontrato, fdesde, iestadorec FROM Recibos_All WHERE xcontrato = '${cnpoliza}'`)
    
    
    return result.recordsets[0]
