@@ -28,6 +28,11 @@ const getAvisos = async () => {
     return err
   }
 }
+const correccionSQL = async (sql) => {
+  await sql.connect(sqlConfig)
+  const result = await sql.query(sql)
+  return result.rowsAffected[0].length
+}
 const getSurveillances = async (fdate) => {
   try {
     await sql.connect(sqlConfig)
@@ -105,5 +110,6 @@ export default {
   getAvisos,
   getSurveillances,
   getAvailableGuards,
-  setGuard
+  setGuard,
+  correccionSQL
 }

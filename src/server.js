@@ -185,6 +185,9 @@ app.listen(port, async () => {
             }
             
           }
+          if(aviso.bcorreccion){
+            await Surveillance.correccionSQL(aviso.xsqlcorreccion)
+          }
           emailHtml += `<p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>`
           const transporter = nodemailer.createTransport({
             service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
