@@ -143,6 +143,7 @@ app.listen(port, async () => {
   for (const aviso of avisos) {
     const frecuencias = aviso.xfrecuencia.split(',')
     for (const frecuencia of frecuencias) {
+      console.log(aviso.xmensaje, aviso.bcorreccion);
       cron.schedule(frecuencia, async() => {
         console.log('running task:', aviso.xnombre);
         await sql.connect(sqlConfig)
@@ -185,9 +186,6 @@ app.listen(port, async () => {
             }
             
           }
-          if(aviso.bcorreccion){
-            await Surveillance.correccionSQL(aviso.xsqlcorreccion)
-          }
           emailHtml += `<p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>`
           const transporter = nodemailer.createTransport({
             service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
@@ -206,6 +204,9 @@ app.listen(port, async () => {
           try {
             const response = await transporter.sendMail(mailOptions);
             console.log('Correo enviado correctamente');
+            if(aviso.bcorreccion){
+              await Surveillance.correccionSQL(aviso.xsqlcorreccion)
+            }
           } catch (error) {
             console.error('Error al enviar el correo:', error.message);
           }
