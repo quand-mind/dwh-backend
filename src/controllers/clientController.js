@@ -99,7 +99,7 @@ const getCompanies = async (req, res) => {
       });
     }
     const companiesF = companies.map(element => {
-      return {text: element.xorigen, value: element.corigen, url: element.xtabla_export}
+      return {text: element.xorigen, value: element.corigen, clients_url: element.xtabla_export, products_url: element.xtabla_export_polizas, receipts_url: element.xtabla_export_recibos}
     });
 
     res.send(companiesF)
