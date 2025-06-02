@@ -180,6 +180,44 @@ const getClients = async (req, res) => {
     
   }
 }
+const getAllClientsToExport = async (req, res) => {
+  try {
+    let data = {clientes: null, productos: null, recibos: null}
+    data.clientes = await Client.getAllClientsToExport();
+    // console.log(plans)
+    if (data.clientes.error) {
+      return res.status(data.clientes.code).send({
+        status: false,
+        message: data.clientes.error
+      });
+    }
+    console.log('ya se obtuvieron todos los clientes');
+    data.productos = await Client.getAllProducts();
+
+    if (data.productos.error) {
+      return res.status(data.productos.code).send({
+        status: false,
+        message: data.productos.error
+      });
+    }
+    console.log('ya se obtuvieron todos los productos');
+
+    data.recibos = await Client.getAllRecibos();
+    
+    if (data.recibos.error) {
+      return res.status(data.recibos.code).send({
+        status: false,
+        message: data.recibos.error
+      });
+    }
+    console.log('ya se obtuvieron todos los recibos');
+    
+    res.send(data)
+    
+  } catch (error) {
+    
+  }
+}
 const getAllClientsAndSearch = async (req, res) => {
   try {
     const data = await Client.getAllClientsAndSearch(req.params.page, req.params.string, req.body);
@@ -279,6 +317,7 @@ const addObservation = async (req, res) => {
 export default {
   getAllClients,
   getClients,
+  getAllClientsToExport,
   searchWithTable,
   getClientData,
   countClients,

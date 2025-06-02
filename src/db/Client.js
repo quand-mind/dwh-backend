@@ -50,16 +50,19 @@ const queryRows = (firstItem) => {
   return `ORDER BY orden OFFSET ${parseInt(firstItem)} ROWS FETCH NEXT 10 ROWS ONLY`
 }
 const getAllClients = async (firstItem) => {
-  
   try {
-    const queryRowsA = queryRows(firstItem)
+    const queryRowsA = firstItem ? queryRows(firstItem) : ''
     await sql.connect(sqlConfig)
-    const query = `SELECT cid, xnombre, corigen, xorigen, fnacimiento, orden, xtelefono1, xcompania, xcedula FROM lista_clientes`
-    const result = await sql.query(`${query} ${queryRowsA}`)
+    let query = `SELECT cid, xnombre, corigen, xorigen, fnacimiento, orden, xtelefono1, xcompania, xcedula FROM lista_clientes`
+    query = query + queryRowsA
+    const result = await sql.query(`${query}`)
     
-    const records = result.recordsets[0]
-    
-    return {records, query}
+    const records = result.recordset
+    if(firstItem) {
+      return {records, query}
+    } else {
+      return records
+    }
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err
@@ -402,13 +405,14 @@ const getClients = async (page) => {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
     const offsetRows = (page * 10) - 10
-    const result = await getAllClients(offsetRows)
+    const result = await getAllClients(offsetRows|| null)
     return result
   } catch (err) {
    console.log('Error al Obtener los clientes', err)
    return err
   }
 }
+
 const countClients = async () => {
   try {
     await sql.connect(sqlConfig)
@@ -418,6 +422,49 @@ const countClients = async () => {
   } catch (err) {
     console.log('Error al Obtener el total de los clientes', err)
     return err
+  }
+}
+
+const getAllClientsToExport = async () => {
+  
+  try {
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const result = await sql.query(`SELECT * from lista_clientes`)
+    return result.recordset
+  } catch (err) {
+   console.log('Error al Obtener los clientes', err)
+   return err
+  }
+}
+
+const getAllProducts = async () => {
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   const query = `SELECT * FROM maVclientes_productos`;
+   const result = await sql.query(query)
+   
+   return result.recordset
+  } catch (err) {
+   console.log('Error al Obtener los productos del cliente', err)
+   return err
+  }
+}
+
+const getAllRecibos = async () => {
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   const query = `SELECT * FROM Recibos_All`;
+   const result = await sql.query(query)
+   
+   return result.recordset
+  } catch (err) {
+   console.log('Error al Obtener los productos del cliente', err)
+   return err
   }
 }
 
@@ -490,6 +537,9 @@ export default {
   getAllClients,
   getClientData,
   getProducts,
+  getAllClientsToExport,
+  getAllProducts,
+  getAllRecibos,
   getObservations,
   getDashboardClientData,
   getReceipts,
