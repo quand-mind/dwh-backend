@@ -252,6 +252,30 @@ const exportTotal = async (req, res) => {
     
   }
 }
+const exportDataTotal = async (req, res) => {
+  try {
+    
+    const graphic = await Graphic.getGraphic(req.body.id)
+    if (graphic.error) {
+      return res.status(graphic.code).send({
+        status: false,
+        message: graphic.error
+      });
+    }
+    const items = await Graphic.getDataTotal(graphic.xsqlexporttotal_n_var)
+    if (items.error) {
+      return res.status(items.code).send({
+        status: false,
+        message: items.error
+      });
+    }
+
+    res.send(items)
+    
+  } catch (error) {
+    
+  }
+}
 
 export default {
   getGraphicCompanies,
@@ -261,5 +285,6 @@ export default {
   getItems,
   getDetails,
   exportDetails,
-  exportTotal
+  exportTotal,
+  exportDataTotal
 }

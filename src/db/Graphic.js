@@ -853,6 +853,17 @@ const getDetailsTotal = async (values, requestVar, query, xllave, detailsLetter)
     return err
   }
 }
+const getDataTotal = async (query) => {
+  try{
+    await sql.connect(sqlConfig)
+    const result = await sql.query(`${query}`)
+    
+    return result.recordset
+  } catch {
+    console.log('Error al Obtener los graficos', err)
+    return err
+  }
+}
 export default {
   getGraphicCompanies,
   getGraphicsById,
@@ -864,5 +875,6 @@ export default {
   getTotals,
   getGraphic,
   getItemsTotals,
-  getDetailsTotal
+  getDetailsTotal,
+  getDataTotal,
 }

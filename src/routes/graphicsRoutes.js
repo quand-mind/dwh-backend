@@ -13,6 +13,7 @@ router
     .post("/getDetails/:id", graphicsController.getDetails)
     .post("/exportDetails", graphicsController.exportDetails)
     .post("/exportTotal", graphicsController.exportTotal)
+    .post("/exportDataTotal", graphicsController.exportDataTotal)
 
     
 export default router;
