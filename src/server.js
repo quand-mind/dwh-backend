@@ -215,7 +215,7 @@ app.listen(port, async () => {
     }
     
   }
-  cron.schedule('0 30 1 * * *', async () => {
+  // cron.schedule('0 30 1 * * *', async () => {
     console.log('running task: Reportes Diarios');    
     
     const responseGraphics = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
@@ -284,17 +284,17 @@ app.listen(port, async () => {
       // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
       to: [
         'quand.mind@gmail.com',
-        'gidler@lamundialdeseguros.com',
-        'jperez@lamundialdeseguros.com',
-        'fbelisario@lamundialdeseguros.com',
-        'hmartinez@lamundialdeseguros.com',
-        'clorenzo@lamundialdeseguros.com',
-        'jmatute@lamundialdeseguros.com',
-        'lmoreno@lamundialdeseguros.com',
-        'lbarraez@lamundialdeseguros.com',
-        'areyes@lamundialdeseguros.com',
-        'rmunoz@lamundialdeseguros.com',
-        'chernandez@lamundialdeseguros.com'
+        // 'gidler@lamundialdeseguros.com',
+        // 'jperez@lamundialdeseguros.com',
+        // 'fbelisario@lamundialdeseguros.com',
+        // 'hmartinez@lamundialdeseguros.com',
+        // 'clorenzo@lamundialdeseguros.com',
+        // 'jmatute@lamundialdeseguros.com',
+        // 'lmoreno@lamundialdeseguros.com',
+        // 'lbarraez@lamundialdeseguros.com',
+        // 'areyes@lamundialdeseguros.com',
+        // 'rmunoz@lamundialdeseguros.com',
+        // 'chernandez@lamundialdeseguros.com'
       ], // Cambia esto por la dirección de destino
       subject: `Reportes del día ${date.toLocaleDateString('en-US')}`,
       html: emailHtml,
@@ -308,7 +308,7 @@ app.listen(port, async () => {
     }
     // console.log(result);
 
-  });
+  // });
   cron.schedule('0 0 0 1 * *', async() => {
     // Cambiar aqui la funcion    
 
@@ -317,7 +317,6 @@ app.listen(port, async () => {
     const date = firstDateOfMonth(new Date())
     let correctedStartDate = new Date(date.setMonth(date.getMonth()+1));
     let newDate = new Date(Date.UTC(correctedStartDate.getFullYear(), correctedStartDate.getMonth(), correctedStartDate.getDate()));
-    console.log(newDate);
 
     console.log('running task: Definicion de Guardias');
 
@@ -350,7 +349,6 @@ app.listen(port, async () => {
       console.log(`fecha de guardia ${week}`, newDate)
       newDate = new Date(newDate.setDate(newDate.getDate() +  7))
     }
-    console.log(emailHtml);
     const transporter = nodemailer.createTransport({
       service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
       auth: {

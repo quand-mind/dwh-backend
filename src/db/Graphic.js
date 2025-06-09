@@ -703,9 +703,7 @@ const exportDetails = async (filters, requestVar, id) => {
               finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave, 'a.')
               if(sqlOtrosDetallesD[1].includes('UNION')) {
                 const querySplitUnion = sqlOtrosDetallesD[1].split('UNION')
-                console.log(querySplitUnion);
                 finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
-                console.log(finalQuery1);
                 sqlOtrosDetallesD[1] = querySplitUnion[1]
                 finalQuery2 = setQuery(filter.key, filter.controlValue, sqlOtrosDetallesD[1], graphic.xllave, 'a.')
                 finalQuery2 =  ' UNION ' + finalQuery2
@@ -762,7 +760,6 @@ const exportDetails = async (filters, requestVar, id) => {
           finalQuery1 = sqlOtrosDetalles
         }
       }
-      console.log(finalQuery1);
       const resultOtherDetails = await sql.query(`${finalQuery1}`)
       result = resultOtherDetails.recordset
       // console.log(resultOtherDetails.recordset.length)
@@ -837,7 +834,6 @@ const getDetailsTotal = async (values, requestVar, query, xllave, detailsLetter)
     queryDetails = finalQuery1 + finalQuery2
     for (const value of values) {
       const queryDivided = queryDetails.replaceAll('@var', `'${value.value}'`)
-      console.log(queryDivided);
       const result = await sql.query(`${queryDivided}`)
       // const keys = Object.keys(result.recordset[0])
       // result.recordset.unshift({[keys[0]]: value})
