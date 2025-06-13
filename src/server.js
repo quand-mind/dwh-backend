@@ -215,7 +215,7 @@ app.listen(port, async () => {
     }
     
   }
-  cron.schedule('0 30 1 * * *', async () => {
+  cron.schedule('0 0 5 * * *', async () => {
     console.log('running task: Reportes Diarios');    
     
     const responseGraphics = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
