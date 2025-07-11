@@ -12,7 +12,6 @@ import nodemailer from 'nodemailer';
 import Excel from "exceljs";
 import fetch from 'node-fetch';
 // import {ReportManager, ReportExecutionUrl, ReportService} from 'mssql-ssrs';
-import moneda from './services/updateMoneda.js';
 
 import clientRoutes from './routes/clientRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -139,9 +138,6 @@ app.listen(port, async () => {
   // }
 
   // 0 20 0 * * *
-  cron.schedule('0 0 0 * * *', async () => {
-    await moneda.updateMoneda()
-  })
   const avisos = await Surveillance.getAvisos()
   
   for (const aviso of avisos) {
@@ -219,7 +215,7 @@ app.listen(port, async () => {
     }
     
   }
-  cron.schedule('0 0 5 * * *', async () => { 
+  cron.schedule('0 0 5 * * *', async () => {
     console.log('running task: Reportes Diarios');    
     
     const responseGraphics = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
