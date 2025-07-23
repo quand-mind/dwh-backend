@@ -316,14 +316,14 @@ const getSystemData = async (table) => {
 const getProductsByUser = async (user, page, string) => {
   try {
     await sql.connect(sqlConfig)
-    
+
     const resultClient = await sql.query(`SELECT b.cgestor from seusuario a inner join magestor b on a.XEMAIL = b.xcorreo WHERE a.cusuario = ${user}`)
     if(resultClient.recordset.length > 0) {
       const body = {cgestor: `${resultClient.recordset[0].cgestor}%(LIKE)`} 
       const offsetRows = (page * 10) - 10
       const queryRowsA = queryRows(offsetRows, 'cnpoliza')
 
-      let initialQuery = 'SELECT cnpoliza, casegurado, fdesde, fhasta, cplan FROM adpoliza'
+      let initialQuery = 'SELECT cnpoliza, casegurado, ctenedor, fdesde, fhasta, cplan FROM adpoliza'
       let initialQuery2 = 'SELECT count(*) as total FROM adpoliza'
 
       let finalQuery = setQuery(string, body, initialQuery)
@@ -480,6 +480,31 @@ const getAllClientsToExport = async () => {
   }
 }
 
+const getProductDetail = async (id) => {
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, d.xcanalalt FROM adpoliza a inner join Sis2000..maclient b on a.casegurado = b.cci_rif inner join Sis2000..maclient c on a.ctenedor = c.cci_rif inner join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt  WHERE a.cnpoliza = '${id}'`;
+   console.log(query);
+   const result = await sql.query(query)
+   if(result.recordset.length > 0) {
+    const product = result.recordset[0]
+
+    const query2 = `SELECT * FROM adrecibos WHERE cnpoliza = '${product.cnpoliza}' and fanopol = ${product.fanopol} and fmespol =${product.fmespol}`;
+    const result2 = await sql.query(query2)
+    product.receipts = result2.recordset
+    
+    return product
+   } else {
+    return {error: 'Producto no encontrado', code: 404}
+   }
+  } catch (err) {
+   console.log('Error al Obtener los datos del producto', err)
+   return err
+  }
+}
+
 const getAllProducts = async () => {
   
   try {
@@ -582,6 +607,7 @@ export default {
   getProducts,
   getAllClientsToExport,
   getAllProducts,
+  getProductDetail,
   getAllRecibos,
   getObservations,
   getDashboardClientData,

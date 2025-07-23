@@ -20,6 +20,7 @@ router
     .get("/getProducts/:rif", clientController.getProducts)
     .post("/countClients", clientController.countClients)
     .get("/getCompanies", clientController.getCompanies)
+    .get("/getProductDetail/:id", clientController.getProductDetail)
 
     
 export default router;

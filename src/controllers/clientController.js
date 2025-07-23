@@ -296,6 +296,22 @@ const getProducts = async (req, res) => {
     
   }
 }
+const getProductDetail = async (req, res) => {
+  try {
+    const productData = await Client.getProductDetail(req.params.id);
+    if (productData.error) {
+      return res.status(productData.code).send({
+        status: false,
+        message: productData.error
+      });
+    }
+    
+    res.send(productData) 
+    
+  } catch (error) {
+    
+  }
+}
 const getObservations = async (orden) => {
   try {
     const observations = await Client.getObservations(orden);
@@ -341,6 +357,7 @@ export default {
   getAllClientsAndSearch,
   getCountClientsAndSearch,
   getProducts,
+  getProductDetail,
   getDashboardClientData,
   addObservation,
   setAllClients,
