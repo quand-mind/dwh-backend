@@ -147,6 +147,22 @@ const getDashboardClientData = async (req, res) => {
     
   }
 }
+const getProductsByUser = async (req, res) => {
+  try {
+    const products = await Client.getProductsByUser(req.params.id, req.params.page, req.params.string);
+    // console.log(plans)
+    if (products.error) {
+      return res.status(products.code).send({
+        status: false,
+        message: products.error
+      });
+    }
+    res.send(products)
+    
+  } catch (error) {
+    
+  }
+}
 const getClients = async (req, res) => {
   try {
     const data = await Client.getClients(req.params.page);
@@ -317,6 +333,7 @@ const addObservation = async (req, res) => {
 export default {
   getAllClients,
   getClients,
+  getProductsByUser,
   getAllClientsToExport,
   searchWithTable,
   getClientData,

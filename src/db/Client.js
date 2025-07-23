@@ -46,12 +46,12 @@ const setAllClients = async () => {
     return err
   }
 }
-const queryRows = (firstItem) => {
-  return `ORDER BY orden OFFSET ${parseInt(firstItem)} ROWS FETCH NEXT 10 ROWS ONLY`
+const queryRows = (firstItem, varItem) => {
+  return `ORDER BY ${varItem} OFFSET ${parseInt(firstItem)} ROWS FETCH NEXT 10 ROWS ONLY`
 }
 const getAllClients = async (firstItem) => {
   try {
-    const queryRowsA = firstItem ? queryRows(firstItem) : ''
+    const queryRowsA = firstItem ? queryRows(firstItem, 'orden') : ''
     await sql.connect(sqlConfig)
     let query = `SELECT cid, xnombre, corigen, xorigen, fnacimiento, orden, xtelefono1, xcompania, xcedula FROM lista_clientes`
     query = query + queryRowsA
@@ -240,7 +240,7 @@ const getDashboardClientData = async () => {
 const getCountClientsAndSearch = async (string, body) => {
   let initialQuery = 'SELECT COUNT(orden) AS count from lista_clientes'
 
-  let finalQuery = setQuery(string, body, initialQuery, null)
+  let finalQuery = setQuery(string, body, initialQuery, 'lista_clientes.')
 
   await sql.connect(sqlConfig)
 
@@ -313,15 +313,50 @@ const getSystemData = async (table) => {
   }
 
 }
+const getProductsByUser = async (user, page, string) => {
+  try {
+    await sql.connect(sqlConfig)
+    
+    const resultClient = await sql.query(`SELECT b.cgestor from seusuario a inner join magestor b on a.XEMAIL = b.xcorreo WHERE a.cusuario = ${user}`)
+    if(resultClient.recordset.length > 0) {
+      const body = {cgestor: `${resultClient.recordset[0].cgestor}%(LIKE)`} 
+      const offsetRows = (page * 10) - 10
+      const queryRowsA = queryRows(offsetRows, 'cnpoliza')
+
+      let initialQuery = 'SELECT cnpoliza, casegurado, fdesde, fhasta, cplan FROM adpoliza'
+      let initialQuery2 = 'SELECT count(*) as total FROM adpoliza'
+
+      let finalQuery = setQuery(string, body, initialQuery)
+      let finalQuery2 = setQuery(string, body, initialQuery2)
+      console.log(finalQuery);
+      // make sure that any items are correctly URL encoded in the connection string    
+      
+      
+      const result = await sql.query(`${finalQuery} ${queryRowsA}`)
+      const result2 = await sql.query(`${finalQuery2}`)
+      const total = result2.recordset[0].total
+      const records = result.recordset
+      return {data:records, total}
+
+    } else {
+      return {error: 'Usuario No encontrado', code: 403}
+    }
+
+    
+  } catch (err) {
+   console.log('Error al Obtener los clientes', err)
+   return err
+  }
+}
 const getAllClientsAndSearch = async (page, string, body) => {
   try {
 
     const offsetRows = (page * 10) - 10
-    const queryRowsA = queryRows(offsetRows)
+    const queryRowsA = queryRows(offsetRows, 'orden')
 
     let initialQuery = 'SELECT orden, cid, xnombre, corigen, xorigen, fnacimiento, xtelefono1, xcompania, xcedula FROM lista_clientes'
 
-    let finalQuery = setQuery(string, body, initialQuery, queryRowsA)
+    let finalQuery = setQuery(string, body, initialQuery, 'lista_clientes.')
     // make sure that any items are correctly URL encoded in the connection string    
     
     await sql.connect(sqlConfig)
@@ -336,7 +371,7 @@ const getAllClientsAndSearch = async (page, string, body) => {
   }
 }
 
-const setQuery = (string, body, initialQuery) => {
+const setQuery = (string, body, initialQuery, table) => {
 
   const bodyKeys = Object.keys(body)
 
@@ -357,31 +392,34 @@ const setQuery = (string, body, initialQuery) => {
         if(value_splitted.length == 1) {
           date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
           if(value_splitted[0].includes('>')) {
-            queryFilters += `(lista_clientes.${key} <= '${date1}')`
+            queryFilters += `(${table || ''}${key} <= '${date1}')`
           } else {
-            queryFilters += `(lista_clientes.${key} >= '${date1}')`
+            queryFilters += `(${table || ''}${key} >= '${date1}')`
           }
         } else {
           date2 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
           date1 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
           if(value_splitted[0].includes('>')) {
-            queryFilters += `(lista_clientes.${key} >= '${date1}')`
+            queryFilters += `(${table || ''}${key} >= '${date1}')`
           } else if(value_splitted[1].includes('>')) {
-            queryFilters += `(lista_clientes.${key} <= '${date2}')`
+            queryFilters += `(${table || ''}${key} <= '${date2}')`
           } else {
-            queryFilters += `(lista_clientes.${key} <= '${date2}' AND lista_clientes.${key} >= '${date1}')`
+            queryFilters += `(${table || ''}${key} <= '${date2}' AND ${table || ''}${key} >= '${date1}')`
           }
         }
       } else if(key.includes('_')){
         queryFilters += `xcedula NOT IN (SELECT id FROM maVclientes_productos WHERE cramo = ${body[key]})`
-      } else{
-        queryFilters += `lista_clientes.${key} = ${body[key]}`
+      } else if(body[key].includes('(LIKE)')) {
+        const searchVar = body[key].split('(LIKE)')[0]
+        queryFilters += `${table || ''}${key} LIKE '${searchVar}'`
       }
       x++
       if(x == bodyKeys.length && string != '------') {
         queryFilters += ' AND '
       }
-      clientsData = filterItems
+      if(table == 'lista_clientes.') {
+        clientsData = filterItems
+      }
     }
   }
 
@@ -391,7 +429,11 @@ const setQuery = (string, body, initialQuery) => {
     if(bodyKeys.length == 0) {
       queryFilters += ' WHERE '
     }
-    queryString = `(xcedula LIKE '${string}' + '%' OR xnombre LIKE '${string}' + '%' OR fnacimiento LIKE '${string}' + '%' OR xtelefono1 LIKE '${string}' + '%' OR xcompania LIKE '${string}' + '%')`
+    if(table == 'lista_clientes.') {
+      queryString = `(xcedula LIKE '${string}' + '%' OR xnombre LIKE '${string}' + '%' OR fnacimiento LIKE '${string}' + '%' OR xtelefono1 LIKE '${string}' + '%' OR xcompania LIKE '${string}' + '%')`
+    } else {
+      queryString = `(cnpoliza LIKE '${string}' + '%' OR casegurado LIKE '${string}' + '%' OR ctenedor LIKE '${string}' + '%' OR cbeneficiario LIKE '${string}' + '%' OR femision LIKE '${string}' + '%')`
+    }
   }
 
   
@@ -535,6 +577,7 @@ export default {
   getAllClientsAndSearch,
   getCountClientsAndSearch,
   getAllClients,
+  getProductsByUser,
   getClientData,
   getProducts,
   getAllClientsToExport,
