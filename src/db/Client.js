@@ -432,7 +432,7 @@ const setQuery = (string, body, initialQuery, table) => {
     if(table == 'lista_clientes.') {
       queryString = `(xcedula LIKE '${string}' + '%' OR xnombre LIKE '${string}' + '%' OR fnacimiento LIKE '${string}' + '%' OR xtelefono1 LIKE '${string}' + '%' OR xcompania LIKE '${string}' + '%')`
     } else {
-      queryString = `(cnpoliza LIKE '${string}' + '%' OR casegurado LIKE '${string}' + '%' OR ctenedor LIKE '${string}' + '%' OR cbeneficiario LIKE '${string}' + '%' OR fdesde LIKE '${string}' + '%')`
+      queryString = `(cnpoliza LIKE '${string}' + '%' OR casegurado LIKE '${string}' + '%' OR ctenedor LIKE '${string}' + '%' OR cbeneficiario LIKE '${string}' + '%')`
     }
   }
 
