@@ -432,7 +432,7 @@ const setQuery = (string, body, initialQuery, table) => {
     if(table == 'lista_clientes.') {
       queryString = `(xcedula LIKE '${string}' + '%' OR xnombre LIKE '${string}' + '%' OR fnacimiento LIKE '${string}' + '%' OR xtelefono1 LIKE '${string}' + '%' OR xcompania LIKE '${string}' + '%')`
     } else {
-      queryString = `(cnpoliza LIKE '${string}' + '%' OR casegurado LIKE '${string}' + '%' OR ctenedor LIKE '${string}' + '%' OR cbeneficiario LIKE '${string}' + '%' OR femision LIKE '${string}' + '%')`
+      queryString = `(cnpoliza LIKE '${string}' + '%' OR casegurado LIKE '${string}' + '%' OR ctenedor LIKE '${string}' + '%' OR cbeneficiario LIKE '${string}' + '%')`
     }
   }
 
@@ -485,7 +485,7 @@ const getProductDetail = async (id) => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, d.xcanalalt FROM adpoliza a inner join Sis2000..maclient b on a.casegurado = b.cci_rif inner join Sis2000..maclient c on a.ctenedor = c.cci_rif inner join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt  WHERE a.cnpoliza = '${id}'`;
+   const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, d.xcanalalt, (e.xplan) as xplan FROM adpoliza a inner join Sis2000..maclient b on a.casegurado = b.cci_rif inner join Sis2000..maclient c on a.ctenedor = c.cci_rif inner join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt left join Sis2000..maplanes e on a.cplan = e.cplan WHERE a.cnpoliza = '${id}'`;
    console.log(query);
    const result = await sql.query(query)
    if(result.recordset.length > 0) {
