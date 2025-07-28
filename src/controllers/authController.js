@@ -46,6 +46,7 @@ const createJWT = async (req, res) => {
                 // bconsultar: user.bconsultar,
                 // bmodificar: user.bmodificar,
                 // beliminar: user.beliminar,
+                xusuario: `${user.XNOMBRE}${user.XAPELLIDO ?  `${user.XAPELLIDO}` : ''}`,
                 ccompania: user.CCOMPANIA,
                 xemail: user.XEMAIL,
                 cpais: user.CPAIS,
