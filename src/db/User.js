@@ -61,6 +61,12 @@ const getOneUser = async (xlogin) => {
         if (result.rowsAffected < 1) {
             return false;
         }
+        const gestor = await await pool.request().query(`select * from magestor where xcorreo = '${xlogin}'`)
+        if (gestor.recordset.length > 0) {
+            result.recordset[0].cgestor = gestor.recordset[0].cgestor;
+            result.recordset[0].ccanalalt = gestor.recordset[0].ccanalalt;
+        }
+
         await pool.close();
         return result.recordset[0];
     }

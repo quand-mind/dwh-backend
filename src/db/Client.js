@@ -485,7 +485,7 @@ const getProductDetail = async (id) => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, d.xcanalalt, (e.xplan) as xplan FROM adpoliza a inner join Sis2000..maclient b on a.casegurado = b.cci_rif inner join Sis2000..maclient c on a.ctenedor = c.cci_rif inner join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt left join Sis2000..maplanes e on a.cplan = e.cplan WHERE a.cnpoliza = '${id}'`;
+   const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, d.xcanalalt, (e.xplan) as xplan FROM adpoliza a inner join Sis2000..maclient b on a.casegurado = b.cci_rif inner join Sis2000..maclient c on a.ctenedor = c.cci_rif left join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt left join Sis2000..maplanes e on a.cplan = e.cplan WHERE a.cnpoliza = '${id}'`;
    console.log(query);
    const result = await sql.query(query)
    if(result.recordset.length > 0) {
@@ -594,6 +594,24 @@ const addObservation = async (orden, data) => {
    return err
   }
 }
+
+const getDataUser = async (ccanal) => {
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   let date = new Date
+   date = date.toLocaleDateString('en-US')
+   const query = `select * from Sis2000..macanalalt where ccanalalt = ${ccanal}`
+   const result = await sql.query(query)
+   
+  //  await sql.close()
+   return result.recordsets[0]
+  } catch (err) {
+   console.log('Error al agregar la Observacion', err)
+   return err
+  }
+}
+
 export default {
   getClients,
   addObservation,
@@ -614,5 +632,6 @@ export default {
   getReceipts,
   setAllClients,
   getCompanies,
-  getSystemData
+  getSystemData,
+  getDataUser
 }

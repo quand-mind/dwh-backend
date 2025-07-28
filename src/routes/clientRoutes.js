@@ -21,6 +21,7 @@ router
     .post("/countClients", clientController.countClients)
     .get("/getCompanies", clientController.getCompanies)
     .get("/getProductDetail/:id", clientController.getProductDetail)
+    .get("/getDataUser/:ccanal", clientController.getDataUser)
 
     
 export default router;

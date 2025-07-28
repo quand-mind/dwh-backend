@@ -345,6 +345,23 @@ const addObservation = async (req, res) => {
   }
 }
 
+const getDataUser = async (req, res) => {
+  try {
+    const data = await Client.getDataUser(req.params.ccanal);
+    if (data.error) {
+      return res.status(data.code).send({
+        status: false,
+        message: data.error
+      });
+    }
+    
+    res.send(data) 
+    
+  } catch (error) {
+    
+  }
+}
+
 
 export default {
   getAllClients,
@@ -362,5 +379,6 @@ export default {
   addObservation,
   setAllClients,
   getCompanies,
-  getSystemData
+  getSystemData,
+  getDataUser
 }
