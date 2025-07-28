@@ -485,7 +485,7 @@ const getProductDetail = async (id) => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, d.xcanalalt, (e.xplan) as xplan FROM adpoliza a inner join Sis2000..maclient b on a.casegurado = b.cci_rif inner join Sis2000..maclient c on a.ctenedor = c.cci_rif left join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt left join Sis2000..maplanes e on a.cplan = e.cplan WHERE a.cnpoliza = '${id}'`;
+   const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, (g.cgestor) as cgestor_m, (g.xnombre) as xgestor_m, d.xcanalalt, e.xplan FROM adpoliza a inner join Sis2000..maclient b on a.casegurado = b.cci_rif inner join Sis2000..maclient c on a.ctenedor = c.cci_rif left join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt left join Sis2000..maplanes e on a.cplan = e.cplan left join producto_gestor f on f.cproducto = trim(a.cnpoliza) left join magestor g on f.cgestor = g.cgestor WHERE a.cnpoliza = '${id}'`;
    console.log(query);
    const result = await sql.query(query)
    if(result.recordset.length > 0) {
