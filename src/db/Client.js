@@ -505,6 +505,74 @@ const getProductDetail = async (id) => {
   }
 }
 
+const exportGestorProductsData = async (cgestor) => {
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   const query = `SELECT 
+    trim(a.cnpoliza) as 'N° de Póliza',
+    convert(date,a.fdesde) as 'Fecha de Incio',
+    convert(date,a.fhasta) as 'Fecha Fin',
+    trim(b.xcliente) as 'Asegurado',
+    trim(b.cid) as 'Doc_Asegurado',
+    trim(c.xcliente) as 'Tenedor',
+    trim(b.cid) as 'Doc_Tenedor',
+    trim(z.xdescripcion_l) as 'Ramo',
+    d.xcanalalt as 'Canal',
+    e.xplan as 'Plan',
+    concat(g.xnombre,' (', g.cgestor, ')') as 'Gestor',
+    trim(x.cnrecibo) as 'N° de Recibo',
+    case when x.iestadorec = 'P' then 'Pendiente' when x.iestadorec = 'C' then 'Cobrado' when x.iestadorec = 'A' then 'Anulado' when x.iestadorec = 'N' then 'Notificado' else 'N/A' end as 'Estatus del Recibo',
+    CONVERT(varchar, CAST(x.mprimabruta AS money), 1) as 'Monto Prima',
+    CONVERT(varchar, CAST(x.mprimabrutaext AS money), 1) as 'Monto Prima ($)',
+    CONVERT(varchar, CAST(x.mpagado AS money), 1) as 'Monto Pagado',
+    CONVERT(varchar, CAST(x.mpagadoext AS money), 1) as 'Monto Pagado ($)',
+    convert(date,x.fcobro) as 'Fecha de Cobro',
+    x.ptasamon_pago as 'Tasa de Cobro'
+    FROM adpoliza a 
+    inner join Sis2000..maclient b on a.casegurado = b.cci_rif
+    inner join Sis2000..maclient c on a.ctenedor = c.cci_rif
+    inner join Sis2000..adrecibos x on a.cnpoliza = x.cnpoliza
+    left join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt
+    inner join Sis2000..maramos z on a.cramo = z.cramo
+    left join maplanes e on a.cplan = e.cplan and a.cramo = e.cramo
+    left join producto_gestor f on f.cproducto = trim(a.cnpoliza)
+    left join magestor g on f.cgestor = g.cgestor WHERE g.cgestor like '${cgestor}%'
+    UNION ALL
+    SELECT
+    'ZZZTotal' 'N° de Póliza',
+    null 'Fecha de Incio',
+    null 'Fecha Fin',
+    '' 'Asegurado',
+    '' 'Doc_Asegurado',
+    '' 'Tenedor',
+    '' 'Doc_Tenedor',
+    null 'Ramo',
+    '' 'Canal',
+    '' 'Plan',
+    '' 'Gestor',
+    '' 'N° de Recibo',
+    '' 'Estatus del Recibo',
+    CONVERT(varchar, CAST(sum(x.mprimabruta) AS money), 1) 'Monto Prima',
+    CONVERT(varchar, CAST(sum(x.mprimabrutaext) AS money), 1) 'Monto Prima ($)',
+    CONVERT(varchar, CAST(sum(x.mpagado) AS money), 1) 'Monto Pagado',
+    CONVERT(varchar, CAST(sum(x.mpagadoext) AS money), 1) 'Monto Pagado ($)',
+    null 'Fecha de Cobro',
+    null 'Tasa de Cobro'
+    FROM adpoliza a 
+    inner join Sis2000..adrecibos x on a.cnpoliza = x.cnpoliza
+    left join producto_gestor f on f.cproducto = trim(a.cnpoliza)
+    left join magestor g on f.cgestor = g.cgestor WHERE g.cgestor like '${cgestor}%'`;
+    const result = await sql.query(query)
+
+    return result.recordset
+  } catch (err) {
+   console.log('Error al Obtener los datos del producto', err)
+   return err
+  }
+}
+
 const getAllProducts = async () => {
   
   try {
@@ -626,6 +694,7 @@ export default {
   getAllClientsToExport,
   getAllProducts,
   getProductDetail,
+  exportGestorProductsData,
   getAllRecibos,
   getObservations,
   getDashboardClientData,

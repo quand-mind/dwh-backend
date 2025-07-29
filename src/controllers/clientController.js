@@ -361,6 +361,22 @@ const getDataUser = async (req, res) => {
     
   }
 }
+const exportGestorProductsData = async (req, res) => {
+  try {
+    const data = await Client.exportGestorProductsData(req.body.cgestor);
+    if (data.error) {
+      return res.status(data.code).send({
+        status: false,
+        message: data.error
+      });
+    }
+    
+    res.send(data) 
+    
+  } catch (error) {
+    
+  }
+}
 
 
 export default {
@@ -380,5 +396,6 @@ export default {
   setAllClients,
   getCompanies,
   getSystemData,
-  getDataUser
+  getDataUser,
+  exportGestorProductsData
 }
