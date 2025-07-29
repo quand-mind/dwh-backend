@@ -512,8 +512,8 @@ const exportGestorProductsData = async (cgestor) => {
    await sql.connect(sqlConfig)
    const query = `SELECT 
     trim(a.cnpoliza) as 'N° de Póliza',
-    convert(varchar(100),convert(date,a.fdesde)) as 'Fecha de Incio',
-    convert(varchar(100),convert(date,a.fhasta)) as 'Fecha Fin',
+    convert(varchar(100),FORMAT(convert(date,a.fdesde),'dd/MM/yyyy')) as 'Fecha de Incio',
+    convert(varchar(100),FORMAT(convert(date,a.fhasta),'dd/MM/yyyy')) as 'Fecha Fin',
     trim(b.xcliente) as 'Asegurado',
     trim(b.cid) as 'Doc_Asegurado',
     trim(c.xcliente) as 'Tenedor',
@@ -528,7 +528,7 @@ const exportGestorProductsData = async (cgestor) => {
     CONVERT(varchar, CAST(x.mprimabrutaext AS money), 1) as 'Monto Prima ($)',
     CONVERT(varchar, CAST(x.mpagado AS money), 1) as 'Monto Pagado',
     CONVERT(varchar, CAST(x.mpagadoext AS money), 1) as 'Monto Pagado ($)',
-    convert(varchar(100),convert(date,x.fcobro)) as 'Fecha de Cobro',
+    convert(varchar(100),FORMAT(convert(date,x.fcobro), 'dd/MM/yyyy')) as 'Fecha de Cobro',
     x.ptasamon_pago as 'Tasa de Cobro'
     FROM adpoliza a 
     inner join Sis2000..maclient b on a.casegurado = b.cci_rif
