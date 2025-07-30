@@ -35,6 +35,33 @@ const getRamos = async (req, res) => {
     
   }
 }
+const getGestores = async (req, res) => {
+  try {
+    console.log(req.params.ccanal);
+    const gestores = await Maestros.getGestores(req.params.ccanal);
+
+    const data = gestores.map(item => {
+      return {text: item.xnombre, value: item.cgestor}
+    })
+    
+
+    data.sort(compare);
+
+    data.unshift({text: 'Sin Filtros', value: ''})
+
+    if (gestores.error) {
+      return res.status(gestores.code).send({
+        status: false,
+        message: gestores.error
+      });
+    }
+    res.send(data)
+    
+  } catch (error) {
+    
+  }
+}
+
 const getOrigenes = async (req, res) => {
   try {
     const origenes = await Maestros.getOrigenes();
@@ -102,6 +129,7 @@ const getCanalesVenta = async (req, res) => {
 
 export default {
   getRamos,
+  getGestores,
   getOrigenes,
   getOrigenesApi,
   getCanalesVenta

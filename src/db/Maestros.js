@@ -35,6 +35,22 @@ const getAllRamos = async () => {
   }
 }
 
+const getGestores = async (ccanal) => {
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   console.log(`SELECT * FROM magestor WHERE ccanalalt = ${ccanal}`);
+   const result = await sql.query(`SELECT * FROM magestor WHERE ccanalalt = ${ccanal}`)
+   
+   const records = result.recordset
+   
+   return records
+  } catch (err) {
+   console.log('Error al obtener los ramos', err)
+   return err
+  }
+}
 const getOrigenes = async () => {
   
   try {
@@ -83,6 +99,7 @@ const getCanalesVenta = async () => {
 
 export default {
   getAllRamos,
+  getGestores,
   getOrigenes,
   getOrigenesApi,
   getCanalesVenta

@@ -313,13 +313,19 @@ const getSystemData = async (table) => {
   }
 
 }
-const getProductsByUser = async (user, page, string) => {
+const getProductsByUser = async (user, page, string, body) => {
   try {
     await sql.connect(sqlConfig)
 
     const resultClient = await sql.query(`SELECT b.cgestor from seusuario a inner join magestor b on a.XEMAIL = b.xcorreo WHERE a.cusuario = ${user}`)
     if(resultClient.recordset.length > 0) {
-      const body = {cgestor: `${resultClient.recordset[0].cgestor}%(LIKE)`} 
+      delete body.ccanalalt
+      if(!body.cgestor) {
+        body.cgestor = `${resultClient.recordset[0].cgestor}%(LIKE)` 
+      } else {
+        body.cgestor = `${body.cgestor}%(LIKE)`
+      }
+      console.log(body);
       const offsetRows = (page * 10) - 10
       const queryRowsA = queryRows(offsetRows, 'cnpoliza')
 
@@ -329,6 +335,7 @@ const getProductsByUser = async (user, page, string) => {
       let finalQuery = setQuery(string, body, initialQuery)
       let finalQuery2 = setQuery(string, body, initialQuery2)
       console.log(finalQuery);
+      console.log(finalQuery2);
       // make sure that any items are correctly URL encoded in the connection string    
       
       
@@ -379,39 +386,43 @@ const setQuery = (string, body, initialQuery, table) => {
   let queryFilters = ''
   let x = 0
   if(bodyKeys.length > 0) {
-    for (const key of bodyKeys) {
+    for (let key of bodyKeys) {
       if(x > 0) {
         queryFilters += ' AND '
       } else {
         queryFilters += ' WHERE '
       }
       let filterItems = []
+      console.log(body[key]);
       if(key[0].includes('f')){
         const value_splitted = body[key].split(' - ')
         let date1, date2 = ''
+        key = `CONVERT(date, ${table || ''}${key})`
         if(value_splitted.length == 1) {
           date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
           if(value_splitted[0].includes('>')) {
-            queryFilters += `(${table || ''}${key} <= '${date1}')`
+            queryFilters += `(${key} <= '${date1}')`
           } else {
-            queryFilters += `(${table || ''}${key} >= '${date1}')`
+            queryFilters += `(${key} >= '${date1}')`
           }
         } else {
           date2 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
           date1 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
           if(value_splitted[0].includes('>')) {
-            queryFilters += `(${table || ''}${key} >= '${date1}')`
+            queryFilters += `(${key} >= '${date1}')`
           } else if(value_splitted[1].includes('>')) {
-            queryFilters += `(${table || ''}${key} <= '${date2}')`
+            queryFilters += `(${key} <= '${date2}')`
           } else {
-            queryFilters += `(${table || ''}${key} <= '${date2}' AND ${table || ''}${key} >= '${date1}')`
+            queryFilters += `(${key} <= '${date2}' AND ${key} >= '${date1}')`
           }
         }
       } else if(key.includes('_')){
         queryFilters += `xcedula NOT IN (SELECT id FROM maVclientes_productos WHERE cramo = ${body[key]})`
-      } else if(body[key].includes('(LIKE)')) {
+      } else if(typeof body[key] == 'string' && body[key].includes('(LIKE)')) {
         const searchVar = body[key].split('(LIKE)')[0]
         queryFilters += `${table || ''}${key} LIKE '${searchVar}'`
+      } else{
+        queryFilters += `${table || ''}${key} = ${body[key]}`
       }
       x++
       if(x == bodyKeys.length && string != '------') {

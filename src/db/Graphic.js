@@ -109,7 +109,7 @@ const getItemsFiltered = async (filters, filtersInvert, id) => {
       defaultValue = await sql.query(graph.recordset[0].xvalordefecto)
       queryTotal = queryTotal.replaceAll('@2var', `'${defaultValue.recordset[0].default_value}'`)
     }
-    
+    console.log(queryItems);
     const items = await sql.query(`${queryItems}`)
     const valuesToSearch = items.recordset
     let varQueryArr = queryTotal.split('count(')
@@ -211,6 +211,7 @@ const getItemsFiltered = async (filters, filtersInvert, id) => {
           }
         }
         let finalQuery = setQueryArray(filters, filtersInvert, newQueryTotal, varQuery)
+        console.log(finalQuery);
         const values2 = await sql.query(`${finalQuery}`)
         let valueF2 = values2.recordset[0].value
         total += valueF2

@@ -84,24 +84,40 @@ const getFilters = async (req, res) => {
       });
     }
     const filtersFil = filters.map((filter) => {
-      if(filter.xurl) {
-
-        return {
-          text: filter.xnombre,
-          key: filter.xllave,
-          data: [],
-          main_key:filter.bprincipal,
-          controlValue: '',
-          url: filter.xurl,
-          binverso: filter.binverso,
-          bactivo_grafico: filter.bactivo_grafico,
-          bexport_total_key: filter.bexport_total_key
+      if(filter.xtipo == 'select_simple') {
+        if(filter.xurl) {
+          return {
+            text: filter.xnombre,
+            key: filter.xllave,
+            type: filter.xtipo,
+            data: [],
+            main_key:filter.bprincipal,
+            controlValue: '',
+            url: filter.xurl,
+            binverso: filter.binverso,
+            bactivo_grafico: filter.bactivo_grafico,
+            bexport_total_key: filter.bexport_total_key
+          }
+        } else if(filter.xdata) {
+          return {
+            text: filter.xnombre,
+            key: filter.xllave,
+            type: filter.xtipo,
+            data: filter.xdata.split(','),
+            main_key:filter.bprincipal,
+            controlValue: '',
+            labelText: filter.xlabel,
+            binverso: filter.binverso,
+            bactivo_grafico: filter.bactivo_grafico,
+            bexport_total_key: filter.bexport_total_key
+          } 
         }
-      } else if(filter.xintervals) {
+      } else if(filter.xtipo == 'date_interval_layout') {
         const intervals = filter.xintervals.split(',')
         return {
           text: filter.xnombre,
           key: filter.xllave,
+          type: filter.xtipo,
           range: [],
           data: [],
           main_key:filter.bprincipal,
@@ -113,24 +129,25 @@ const getFilters = async (req, res) => {
           bexport_total_key: filter.bexport_total_key
         }
 
-      } else if(filter.xdata) {
-
+      }  else if(filter.xtipo == 'date_interval') {
         return {
           text: filter.xnombre,
           key: filter.xllave,
-          data: filter.xdata.split(','),
+          type: filter.xtipo,
           main_key:filter.bprincipal,
           controlValue: '',
+          startValue: '',
+          endValue: '',
           labelText: filter.xlabel,
           binverso: filter.binverso,
           bactivo_grafico: filter.bactivo_grafico,
           bexport_total_key: filter.bexport_total_key
         }
-      } else if(filter.bcalendar) {
+      }  else if(filter.xtipo == 'date_simple') {
         return {
           text: filter.xnombre,
           key: filter.xllave,
-          bcalendar: filter.bcalendar,
+          type: filter.xtipo,
           main_key:filter.bprincipal,
           controlValue: '',
           calendar_value: '',
@@ -143,6 +160,7 @@ const getFilters = async (req, res) => {
         return {
           text: filter.xnombre,
           key: filter.xllave,
+          type: filter.xtipo,
           data: [],
           main_key:filter.bprincipal,
           controlValue: '',
