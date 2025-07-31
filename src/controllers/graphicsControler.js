@@ -110,7 +110,37 @@ const getFilters = async (req, res) => {
             binverso: filter.binverso,
             bactivo_grafico: filter.bactivo_grafico,
             bexport_total_key: filter.bexport_total_key
-          } 
+          }
+        }
+      } else if(filter.xtipo == 'select_multiple') {
+        if(filter.xurl) {
+          return {
+            text: filter.xnombre,
+            key: filter.xllave,
+            type: filter.xtipo,
+            data: [],
+            main_key:filter.bprincipal,
+            values: [],
+            controlValue: '',
+            url: filter.xurl,
+            binverso: filter.binverso,
+            bactivo_grafico: filter.bactivo_grafico,
+            bexport_total_key: filter.bexport_total_key
+          }
+        } else if(filter.xdata) {
+          return {
+            text: filter.xnombre,
+            key: filter.xllave,
+            type: filter.xtipo,
+            data: filter.xdata.split(','),
+            main_key:filter.bprincipal,
+            values: [],
+            controlValue: '',
+            labelText: filter.xlabel,
+            binverso: filter.binverso,
+            bactivo_grafico: filter.bactivo_grafico,
+            bexport_total_key: filter.bexport_total_key
+          }
         }
       } else if(filter.xtipo == 'date_interval_layout') {
         const intervals = filter.xintervals.split(',')
@@ -129,7 +159,7 @@ const getFilters = async (req, res) => {
           bexport_total_key: filter.bexport_total_key
         }
 
-      }  else if(filter.xtipo == 'date_interval') {
+      } else if(filter.xtipo == 'date_interval') {
         return {
           text: filter.xnombre,
           key: filter.xllave,
@@ -143,7 +173,7 @@ const getFilters = async (req, res) => {
           bactivo_grafico: filter.bactivo_grafico,
           bexport_total_key: filter.bexport_total_key
         }
-      }  else if(filter.xtipo == 'date_simple') {
+      } else if(filter.xtipo == 'date_simple') {
         return {
           text: filter.xnombre,
           key: filter.xllave,

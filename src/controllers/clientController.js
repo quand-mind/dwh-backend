@@ -363,7 +363,7 @@ const getDataUser = async (req, res) => {
 }
 const exportGestorProductsData = async (req, res) => {
   try {
-    const data = await Client.exportGestorProductsData(req.body.cgestor);
+    const data = await Client.exportGestorProductsData(req.body.cgestor, req.body.filters);
     if (data.error) {
       return res.status(data.code).send({
         status: false,

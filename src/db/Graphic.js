@@ -109,87 +109,65 @@ const getItemsFiltered = async (filters, filtersInvert, id) => {
       defaultValue = await sql.query(graph.recordset[0].xvalordefecto)
       queryTotal = queryTotal.replaceAll('@2var', `'${defaultValue.recordset[0].default_value}'`)
     }
-    console.log(queryItems);
+    const main = filters.main
+    delete filters.main
     const items = await sql.query(`${queryItems}`)
-    const valuesToSearch = items.recordset
+    let valuesToSearch = items.recordset
+    if (main) {
+      const itemsMain = main.split('-')
+      console.log(itemsMain);
+      valuesToSearch = valuesToSearch.filter(item => itemsMain.includes(item.value))
+    }
+    console.log(valuesToSearch);
     let varQueryArr = queryTotal.split('count(')
     let varQuery = varQueryArr[1].split(')')[0]
     
     const variables = await sql.query(`select* from mavaloresgraficos where cgrafico = ${id}`)
+    
     const bodyEntries = Object.entries(filters)
     if(type == 'bar') {
-      if(filters.main){
-        const labelToFind = valuesToSearch.find((element) => element.value == filters.main)
-        if(labelToFind) {
-          let newQueryTotal = queryTotal.replaceAll('@var',`'${filters.main}'`)
-          delete filters.main
-          const bodyKeys = Object.keys(filters)
-          const values = await sql.query(`${newQueryTotal}`)
-          const valueF = values.recordset[0].value
-          let x = 0
-          for (const key of bodyKeys) {
-            let result2 = []
-            
-            
-            let finalQuery = setQuery(key, filters[key], newQueryTotal,varQuery)
-            if(finalQuery.trim() != newQueryTotal.trim()){
-              let valueF2 = values.recordset[0].value
-              const values2 = await sql.query(`${finalQuery}`)
-              valueF2 = values2.recordset[0].value
-              result2.push({color: setBg(), data: valueF2, label: labelToFind.label, id: labelToFind.value})
-              resultsApart.push({result:result2, label: `${filters[key]}`})
-            }
-          }
-          result.push({color: setBg(), data: valueF, label: labelToFind.label, id: labelToFind.value})
-          total += valueF
-          data.push({data: result, total: total})
-          if(resultsApart.length > 0) {
-            resultsApart.forEach(result2A => {
-              data.push({data: result2A.result, total: total, label: result2A.label})        
-            });
+      
+      result = []
+      resultsApart = []
+      let x = 0
+      let result2 = []
+      for (const value of valuesToSearch) {
+        
+        let newQueryTotal = queryTotal
+        if(value.value) { 
+          newQueryTotal = queryTotal.replaceAll('@var', `'${value.value}'`)
+        } else {
+          value.label = 'No especificado'
+          newQueryTotal = newQueryTotal.replaceAll('=@var', `IS NULL`)
+        }
+        const values = await sql.query(`${newQueryTotal}`)
+        let valueF = values.recordset[0].value
+        const bodyKeys = Object.keys(filters)
+        for (const key of bodyKeys) {
+          let finalQuery = setQuery(key, filters[key], newQueryTotal, varQuery)
+          // if(finalQuery.trim() != newQueryTotal.trim()){
+          let valueF2 = values.recordset[0].value
+          const values2 = await sql.query(`${finalQuery}`)
+          valueF2 = values2.recordset[0].value
+          result2.push({color: setBg(), data: valueF2, label: `${filters[key]}`, id: value.value})
+          // }
+          if(x == valuesToSearch.length > 1) {
+            resultsApart.push({result:result2, label: `${filters[key]}`})
           }
         }
-      } else {
-        result = []
-        resultsApart = []
-        let x = 0
-        let result2 = []
-        for (const value of valuesToSearch) {
-          
-          let newQueryTotal = queryTotal
-          if(value.value) { 
-            newQueryTotal = queryTotal.replaceAll('@var', `'${value.value}'`)
-          } else {
-            value.label = 'No especificado'
-            newQueryTotal = newQueryTotal.replaceAll('=@var', `IS NULL`)
-          }
-          const values = await sql.query(`${newQueryTotal}`)
-          let valueF = values.recordset[0].value
-          const bodyKeys = Object.keys(filters)
-          for (const key of bodyKeys) {
-            let finalQuery = setQuery(key, filters[key], newQueryTotal, varQuery)
-            // if(finalQuery.trim() != newQueryTotal.trim()){
-            let valueF2 = values.recordset[0].value
-            const values2 = await sql.query(`${finalQuery}`)
-            valueF2 = values2.recordset[0].value
-            result2.push({color: setBg(), data: valueF2, label: `${filters[key]}`, id: value.value})
-            // }
-            if(x == valuesToSearch.length > 1) {
-              resultsApart.push({result:result2, label: `${filters[key]}`})
-            }
-          }
-          x++
-          
-          result.push({color: setBg(), data: valueF, label: value.label, id: value.value})
-          total += valueF
-        }
-        data.push({data: result, total: total})
-        if(resultsApart.length > 0) {
-          resultsApart.forEach(result2A => {
-            data.push({data: result2A.result, total: total, label: result2A.label})   
-          });
-          
-        }
+        x++
+        
+        result.push({color: setBg(), data: valueF, label: value.label, id: value.value})
+        total += valueF
+      }
+      console.log('result 1',result);
+      console.log('result 2',resultsApart);
+      data.push({data: result, total: total})
+      if(resultsApart.length > 0) {
+        resultsApart.forEach(result2A => {
+          data.push({data: result2A.result, total: total, label: result2A.label})   
+        });
+        
       }
     } else {
       result = []

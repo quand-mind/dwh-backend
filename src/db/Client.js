@@ -393,7 +393,7 @@ const setQuery = (string, body, initialQuery, table) => {
         queryFilters += ' WHERE '
       }
       let filterItems = []
-      console.log(body[key]);
+      console.log('jkashdj',body[key]);
       if(key[0].includes('f')){
         const value_splitted = body[key].split(' - ')
         let date1, date2 = ''
@@ -449,6 +449,65 @@ const setQuery = (string, body, initialQuery, table) => {
 
   
   let finalQuery = `${initialQuery} ${queryFilters} ${queryString}`
+  
+  return finalQuery
+}
+const setQueryAdd = (string, body, initialQuery, table) => {
+
+  const bodyKeys = Object.keys(body)
+
+    
+  let queryFilters = ''
+  let x = 0
+  console.log(table);
+  if(bodyKeys.length > 0) {
+    for (let key of bodyKeys) {
+      queryFilters += ' AND '
+      let filterItems = []
+      console.log('jkashdj',body[key]);
+      if(key[0].includes('f')){
+        const value_splitted = body[key].split(' - ')
+        let date1, date2 = ''
+        key = `CONVERT(date, ${table || ''}${key})`
+        if(value_splitted.length == 1) {
+          date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
+          if(value_splitted[0].includes('>')) {
+            queryFilters += `(${key} <= '${date1}')`
+          } else {
+            queryFilters += `(${key} >= '${date1}')`
+          }
+        } else {
+          date2 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
+          date1 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
+          if(value_splitted[0].includes('>')) {
+            queryFilters += `(${key} >= '${date1}')`
+          } else if(value_splitted[1].includes('>')) {
+            queryFilters += `(${key} <= '${date2}')`
+          } else {
+            queryFilters += `(${key} <= '${date2}' AND ${key} >= '${date1}')`
+          }
+        }
+      } else if(key.includes('_')){
+        queryFilters += `xcedula NOT IN (SELECT id FROM maVclientes_productos WHERE cramo = ${body[key]})`
+      } else if(typeof body[key] == 'string' && body[key].includes('(LIKE)')) {
+        const searchVar = body[key].split('(LIKE)')[0]
+        queryFilters += `${table || ''}${key} LIKE '${searchVar}'`
+      } else{
+        queryFilters += `${table || ''}${key} = ${body[key]}`
+      }
+    }
+  }
+
+
+  let queryString =''
+  if(table == 'lista_clientes.') {
+    queryString = `(xcedula LIKE '${string}' + '%' OR xnombre LIKE '${string}' + '%' OR fnacimiento LIKE '${string}' + '%' OR xtelefono1 LIKE '${string}' + '%' OR xcompania LIKE '${string}' + '%')`
+  } else {
+    queryString = `(cnpoliza LIKE '${string}' + '%' OR casegurado LIKE '${string}' + '%' OR ctenedor LIKE '${string}' + '%' OR cbeneficiario LIKE '${string}' + '%')`
+  }
+
+  
+  let finalQuery = `${initialQuery} ${queryFilters}`
   
   return finalQuery
 }
@@ -516,12 +575,12 @@ const getProductDetail = async (id) => {
   }
 }
 
-const exportGestorProductsData = async (cgestor) => {
+const exportGestorProductsData = async (cgestor, filters) => {
   
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
-   const query = `SELECT 
+   let query = `SELECT 
     trim(a.cnpoliza) as 'N° de Póliza',
     convert(varchar(100),FORMAT(convert(date,a.fdesde),'dd/MM/yyyy')) as 'Fecha de Incio',
     convert(varchar(100),FORMAT(convert(date,a.fhasta),'dd/MM/yyyy')) as 'Fecha Fin',
@@ -550,7 +609,7 @@ const exportGestorProductsData = async (cgestor) => {
     left join maplanes e on a.cplan = e.cplan and a.cramo = e.cramo
     left join producto_gestor f on f.cproducto = trim(a.cnpoliza)
     left join magestor g on f.cgestor = g.cgestor WHERE g.cgestor like '${cgestor}%'
-    UNION ALL
+    UNION
     SELECT
     'ZZZTotal' 'N° de Póliza',
     null 'Fecha de Incio',
@@ -575,7 +634,39 @@ const exportGestorProductsData = async (cgestor) => {
     inner join Sis2000..adrecibos x on a.cnpoliza = x.cnpoliza
     left join producto_gestor f on f.cproducto = trim(a.cnpoliza)
     left join magestor g on f.cgestor = g.cgestor WHERE g.cgestor like '${cgestor}%'`;
-    const result = await sql.query(query)
+
+    let finalQuery1, finalQuery2
+    if(filters != {}) {
+      if(query.includes('group by')) {
+        const sqlOtrosDetallesD = query.split('group by')
+        query = sqlOtrosDetallesD[0]
+        finalQuery1 = setQueryAdd('', filters, query, 'a.')
+        if(sqlOtrosDetallesD[1].includes('UNION')) {
+          const querySplitUnion = sqlOtrosDetallesD[1].split('UNION')
+          finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
+          sqlOtrosDetallesD[1] = querySplitUnion[1]
+          finalQuery2 = setQueryAdd('', filters, sqlOtrosDetallesD[1], 'a.')
+          finalQuery2 =  ' UNION ' + finalQuery2
+          finalQuery1 = finalQuery1 + finalQuery2
+        } else {
+          finalQuery1 = finalQuery1 + 'group by' + sqlOtrosDetallesD[1]
+        }
+      } else {
+        if(query.includes('UNION')) {
+          const querySplitUnion = query.split('UNION')
+          console.log(querySplitUnion);
+          finalQuery1 = setQueryAdd('', filters, querySplitUnion[0], 'a.')
+          finalQuery2 = setQueryAdd('', filters, querySplitUnion[1], 'a.')
+          finalQuery2 =  ' UNION ' + finalQuery2
+        } else {
+          finalQuery1 = setQueryAdd('', filters, query, 'a.')
+        }
+      }
+    } else {
+      finalQuery1 = query
+    }
+    console.log(finalQuery1);
+    const result = await sql.query(`${finalQuery1} ${finalQuery2}`)
 
     return result.recordset
   } catch (err) {
