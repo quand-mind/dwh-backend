@@ -267,6 +267,7 @@ const setQuery = (key, value, initialQuery, mainVar, grouped) => {
       }
     }
   } else if(key.includes('/?/')){
+    
     const keySplit = key.split('/?/')
     let keyFilter = ''
     if(keySplit[1].includes('f')){
@@ -315,6 +316,9 @@ const setQuery = (key, value, initialQuery, mainVar, grouped) => {
       queryFilters += `${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
     }
   } else{
+    if(grouped) {
+      key = grouped + key 
+    }
     queryFilters += `${key} = ${value}`
   }  
   let finalQuery = `${initialQuery} ${queryFilters}`
@@ -594,7 +598,6 @@ const getDetails = async (id, filter, requestVar, filterInverso) => {
       const bodyKeys = Object.keys(filter)
       if(bodyKeys.length> 0) {
         if(graphic.xtipografico == 'bar'){
-          
           finalQuery = setQuery(bodyKeys[0], filter[bodyKeys[0]], sqlDetalles, graphic.xllave)
         } else {
           finalQuery = setQueryArray(filter, filterInverso, sqlDetalles, graphic.xllave)
@@ -608,6 +611,7 @@ const getDetails = async (id, filter, requestVar, filterInverso) => {
         let sqlOtrosDetalles = graphic.xsqlotrosdetalles.replaceAll('@var', `'${requestVar}'`)
         if(bodyKeys.length> 0) {
           if(graphic.xtipografico == 'bar'){
+            const checkGroup = sqlOtrosDetalles.split('adpoliza')
             if(sqlOtrosDetalles.includes('group by')) {
               const sqlOtrosDetallesD = sqlOtrosDetalles.split('group by')
               sqlOtrosDetalles = sqlOtrosDetallesD[0]
@@ -677,6 +681,7 @@ const exportDetails = async (filters, requestVar, id) => {
         if(filters.length > 0) {
           for (const filter of filters) {
             if(sqlOtrosDetalles.includes('group by')) {
+              console.log(sqlOtrosDetalles);
               const sqlOtrosDetallesD = sqlOtrosDetalles.split('group by')
               sqlOtrosDetalles = sqlOtrosDetallesD[0]
               finalQuery1 = setQuery(filter.key, filter.controlValue, sqlOtrosDetalles, graphic.xllave, 'a.')
@@ -688,7 +693,7 @@ const exportDetails = async (filters, requestVar, id) => {
                 finalQuery2 =  ' UNION ' + finalQuery2
                 finalQuery1 = finalQuery1 + finalQuery2
               } else {
-                finalQuery1 = finalQuery1 + 'group by' + sqlOtrosDetallesD[1]
+                finalQuery1 = finalQuery1 + ' group by' + sqlOtrosDetallesD[1]
               }
             } else {
               if(sqlOtrosDetalles[1].includes('UNION')) {
@@ -739,6 +744,7 @@ const exportDetails = async (filters, requestVar, id) => {
           finalQuery1 = sqlOtrosDetalles
         }
       }
+      console.log(finalQuery1);
       const resultOtherDetails = await sql.query(`${finalQuery1}`)
       result = resultOtherDetails.recordset
       // console.log(resultOtherDetails.recordset.length)

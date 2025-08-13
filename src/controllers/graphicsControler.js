@@ -84,122 +84,41 @@ const getFilters = async (req, res) => {
       });
     }
     const filtersFil = filters.map((filter) => {
-      if(filter.xtipo == 'select_simple') {
-        if(filter.xurl) {
-          return {
-            text: filter.xnombre,
-            key: filter.xllave,
-            type: filter.xtipo,
-            data: [],
-            main_key:filter.bprincipal,
-            controlValue: '',
-            url: filter.xurl,
-            binverso: filter.binverso,
-            bactivo_grafico: filter.bactivo_grafico,
-            bexport_total_key: filter.bexport_total_key
-          }
-        } else if(filter.xdata) {
-          return {
-            text: filter.xnombre,
-            key: filter.xllave,
-            type: filter.xtipo,
-            data: filter.xdata.split(','),
-            main_key:filter.bprincipal,
-            controlValue: '',
-            labelText: filter.xlabel,
-            binverso: filter.binverso,
-            bactivo_grafico: filter.bactivo_grafico,
-            bexport_total_key: filter.bexport_total_key
-          }
-        }
-      } else if(filter.xtipo == 'select_multiple') {
-        if(filter.xurl) {
-          return {
-            text: filter.xnombre,
-            key: filter.xllave,
-            type: filter.xtipo,
-            data: [],
-            main_key:filter.bprincipal,
-            values: [],
-            controlValue: '',
-            url: filter.xurl,
-            binverso: filter.binverso,
-            bactivo_grafico: filter.bactivo_grafico,
-            bexport_total_key: filter.bexport_total_key
-          }
-        } else if(filter.xdata) {
-          return {
-            text: filter.xnombre,
-            key: filter.xllave,
-            type: filter.xtipo,
-            data: filter.xdata.split(','),
-            main_key:filter.bprincipal,
-            values: [],
-            controlValue: '',
-            labelText: filter.xlabel,
-            binverso: filter.binverso,
-            bactivo_grafico: filter.bactivo_grafico,
-            bexport_total_key: filter.bexport_total_key
-          }
-        }
-      } else if(filter.xtipo == 'date_interval_layout') {
-        const intervals = filter.xintervals.split(',')
-        return {
-          text: filter.xnombre,
-          key: filter.xllave,
-          type: filter.xtipo,
-          range: [],
-          data: [],
-          main_key:filter.bprincipal,
-          controlValue: '',
-          intervals: intervals,
-          labelText: filter.xlabel,
-          binverso: filter.binverso,
-          bactivo_grafico: filter.bactivo_grafico,
-          bexport_total_key: filter.bexport_total_key
-        }
-
-      } else if(filter.xtipo == 'date_interval') {
-        return {
-          text: filter.xnombre,
-          key: filter.xllave,
-          type: filter.xtipo,
-          main_key:filter.bprincipal,
-          controlValue: '',
-          startValue: '',
-          endValue: '',
-          labelText: filter.xlabel,
-          binverso: filter.binverso,
-          bactivo_grafico: filter.bactivo_grafico,
-          bexport_total_key: filter.bexport_total_key
-        }
-      } else if(filter.xtipo == 'date_simple') {
-        return {
-          text: filter.xnombre,
-          key: filter.xllave,
-          type: filter.xtipo,
-          main_key:filter.bprincipal,
-          controlValue: '',
-          calendar_value: '',
-          labelText: filter.xlabel,
-          binverso: filter.binverso,
-          bactivo_grafico: filter.bactivo_grafico,
-          bexport_total_key: filter.bexport_total_key
-        }
-      } else {
-        return {
-          text: filter.xnombre,
-          key: filter.xllave,
-          type: filter.xtipo,
-          data: [],
-          main_key:filter.bprincipal,
-          controlValue: '',
-          labelText: filter.xlabel,
-          binverso: filter.binverso,
-          bactivo_grafico: filter.bactivo_grafico,
-          bexport_total_key: filter.bexport_total_key
-        }
+      let filterItem = {
+        text: filter.xnombre,
+        key: filter.xllave,
+        type: filter.xtipo,
+        main_key:filter.bprincipal,
+        url: filter.xurl,
+        controlValue: '',
+        binverso: filter.binverso,
+        bactivo_grafico: filter.bactivo_grafico,
+        bexport_total_key: filter.bexport_total_key
       }
+       
+      if(filter.xtipo == 'select_multiple') {
+        filterItem.values = []
+      } else if(filter.xtipo == 'date_interval_layout') {
+        filterItem.range = []
+        filterItem.data = []
+        filterItem.intervals = filter.xintervals.split(',')
+      } else if(filter.xtipo == 'date_interval') {
+        filterItem.startValue = ''
+        filterItem.endValue = ''
+      } else if(filter.xtipo == 'date_simple') {
+        filterItem.calendar_value = ''
+      } else {
+          filterItem.data = []
+      }
+
+      if(filter.xurl) { filterItem.data = [] }
+      if(filter.xdata) { filterItem.data = filter.xdata.split(',') }
+      if(filter.xdependencia){
+        filterItem.depends = filter.xdependencia
+        filterItem.dependsState = false
+      }
+      
+      return filterItem
     })
     
     res.send(filtersFil)

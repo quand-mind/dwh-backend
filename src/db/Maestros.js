@@ -96,11 +96,27 @@ const getCanalesVenta = async () => {
    return err
   }
 }
+const getSubCanalesVenta = async (ccanal) => {
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   const result = await sql.query`select TRIM(xdescripcion) as text, cscanalalt as value, ccanalalt as depends from Sis2000..mascanalalt where ccanalalt = ${Number(ccanal)}`
+   
+   const records = result.recordsets[0]
+   
+   return records
+  } catch (err) {
+   console.log('Error al obtener los canales', err)
+   return err
+  }
+}
 
 export default {
   getAllRamos,
   getGestores,
   getOrigenes,
   getOrigenesApi,
-  getCanalesVenta
+  getCanalesVenta,
+  getSubCanalesVenta
 }

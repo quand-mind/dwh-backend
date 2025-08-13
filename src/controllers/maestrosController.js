@@ -125,6 +125,27 @@ const getCanalesVenta = async (req, res) => {
     
   }
 }
+const getSubCanalesVenta = async (req, res) => {
+  try {
+    const subcanales = await Maestros.getSubCanalesVenta(req.params.ccanal);
+
+    const data = subcanales.map(item => {
+      return {text: item.text, value: item.value, depends: item.depends}
+    })
+    data.unshift({text: 'Sin Filtros', value: '', depends: null})
+
+    if (subcanales.error) {
+      return res.status(subcanales.code).send({
+        status: false,
+        message: subcanales.error
+      });
+    }
+    res.send(data)
+    
+  } catch (error) {
+    
+  }
+}
 
 
 export default {
@@ -132,5 +153,6 @@ export default {
   getGestores,
   getOrigenes,
   getOrigenesApi,
-  getCanalesVenta
+  getCanalesVenta,
+  getSubCanalesVenta
 }

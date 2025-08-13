@@ -10,6 +10,7 @@ router
     .get("/gestores/:ccanal", maestrosController.getGestores)
     .get("/origenesApi", maestrosController.getOrigenesApi)
     .get("/canalesVenta", maestrosController.getCanalesVenta)
+    .get("/subcanales/:ccanal", maestrosController.getSubCanalesVenta)
 
     
 export default router;
