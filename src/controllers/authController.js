@@ -38,19 +38,16 @@ const createJWT = async (req, res) => {
             status: true, 
             message: 'Usuario Autenticado',
             data: {
-                cusuario: user.CUSUARIO,
-                crol: user.CROL,
+                cusuario: user.cusuario,
+                crol: user.crol,
                 ccanal: user.ccanalalt,
                 cgestor: user.cgestor,
                 // bcrear: user.bcrear,
                 // bconsultar: user.bconsultar,
                 // bmodificar: user.bmodificar,
                 // beliminar: user.beliminar,
-                xusuario: `${user.XNOMBRE}${user.XAPELLIDO ?  `${user.XAPELLIDO}` : ''}`,
-                ccompania: user.CCOMPANIA,
-                xemail: user.XEMAIL,
-                cpais: user.CPAIS,
-                ctipo_sistema: user.CTIPO_SISTEMA,
+                xusuario: user.xnombre,
+                xemail: user.xemail,
                 token: 'Bearer ' + jwt
             }
         });

@@ -24,7 +24,7 @@ const verifyIfUsernameExists = async (xlogin) => {
         let pool = await sql.connect(sqlConfig);
         let result = await pool.request()
             .input('xemail', sql.NVarChar, xlogin)
-            .query('select CUSUARIO, XEMAIL, XNOMBRE from seusuario where xemail = @xemail and bactivo = 1')
+            .query('select cusuario, xemail, xnombre from seusuarios_portal where xemail = @xemail and bactivo = 1')
             await pool.close();
         return { 
             result: result 
@@ -42,7 +42,7 @@ const verifyIfPasswordMatchs = async (xlogin, xcontrasena) => {
         let result = await pool.request()
             .input('xemail', sql.NVarChar, xlogin)
             .input('xcontrasena', sql.NVarChar, xcontrasena)
-            .query('select CUSUARIO from seusuario where xemail = @xemail and xcontrasena = @xcontrasena')
+            .query('select cusuario from seusuarios_portal where xemail = @xemail and xcontrasena = @xcontrasena')
             await pool.close();
         return { result: result };
     }
@@ -57,7 +57,7 @@ const getOneUser = async (xlogin) => {
         let pool = await sql.connect(sqlConfig);
         let result = await pool.request()
            .input('xemail', sql.NVarChar, xlogin)
-           .query('select * from seusuario where xemail = @xemail')
+           .query('select * from seusuarios_portal where xemail = @xemail')
         if (result.rowsAffected < 1) {
             return false;
         }
