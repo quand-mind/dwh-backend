@@ -17,9 +17,12 @@ import clientRoutes from './routes/clientRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import maestrosRoutes from './routes/maestrosRoutes.js';
 import campaignRoutes from './routes/campaignRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
 import graphicsRoutes from './routes/graphicsRoutes.js';
 import excelService from './services/excelService.js';
 import Surveillance from './db/Surveillance.js'
+import reportsController from './controllers/reportsController.js';
+import Reports from './db/Reports.js';
 
 const { diskStorage } = multer;
 const app = express(); 
@@ -51,7 +54,9 @@ const sqlConfig = {
   
 // }));
 
-// app.use(cors());
+if(process.env.PORT == 'LOCAL'){
+  app.use(cors());
+} 
 app.use(express.json({ limit: '10mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
@@ -67,6 +72,7 @@ app.use("/auth", authRoutes);
 app.use("/maestros", maestrosRoutes);
 app.use("/campaign", campaignRoutes);
 app.use("/graphics", graphicsRoutes);
+app.use("/reports", reportRoutes);
 const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 
 // Servidor de Reportes
@@ -246,7 +252,7 @@ app.listen(port, async () => {
       })
       const filters = await responseFilters.json()
       for (const filter of filters) {
-        if(filter.bexport_total_key){
+        if(filter.bexport_total_key) {
           filter.controlValue = date.toLocaleDateString('en-CA')
           const requestVar = {value: filter.controlValue, key: filter.key, binverso: filter.binverso}
           const responseExportTotal = await fetch(`${process.env.API_URL_PROD}/graphics/exportTotal`, {
@@ -380,7 +386,60 @@ app.listen(port, async () => {
     }
 
   })
-  // Aqui la funcion esta afuera
+  
+  cron.schedule('0 0 1 * * *', async() => {
+    const date = new Date()
+    const finicio = new Date(date.getFullYear(), 1, 1).toLocaleDateString('en-US');
+    const ffin =  new Date().toLocaleDateString('en-US')
+  
+    let emailHtml = ``
+    //Gestores
+    console.log(`running report: gestores`); 
+    const excelFiles = []
+    
+    const responsePoliza = await Reports.gestoresPoliza({finicio, ffin})
+    const responseRecibos = await Reports.gestoresPoliza({finicio, ffin})
+    const dataFile = [
+      {label: 'POLIZAS', data: responsePoliza},
+      {label: 'RECIBOS', data: responseRecibos}
+    ]
+
+    const excelFilePoliza = await excelService.exportAllToExcel(dataFile, `dwh_reporte_total_gestores_poliza-${finicio}-${ffin}`, 'Reporte de Gestores')
+    excelFiles.push({filename: `La Mundial de Seguros C.A, reporte_total_gestores-${finicio}-${ffin}.xlsx`, content: Buffer.from(excelFilePoliza)})
+
+    emailHtml += `${graphic.xnombre}`
+    if(x < graphics.length) {
+      emailHtml += ' - '
+    }
+    x++
+    emailHtml += `
+    <h5>Reporte de  Gestores: <b style="text-transfrom: uppercase;">(${finicio} - ${ffin})</b></h5>
+    `
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
+      auth: {
+        user: 'themultiacount@gmail.com',
+        pass: 'kfgb bnad gqpz etux'
+      }
+    });
+    const mailOptions = {
+      from: 'La Mundial de Seguros',
+      // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+      to: [
+        'quand.mind@gmail.com',
+        'andres.quintero@exelixi.com'
+      ], // Cambia esto por la dirección de destino
+      subject: `Reporte de Gestores`,
+      html: emailHtml
+    };
+    try {
+      const response = await transporter.sendMail(mailOptions);
+      console.log('Correo enviado correctamente');
+    } catch (error) {
+      console.error('Error al enviar el correo:', error.message);
+    }
+
+  })
 })
 
 

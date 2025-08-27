@@ -123,8 +123,8 @@ const fitToColumn = (items) => {
   // get maximum character of each column
   let maxItems = []
   items.forEach((element, i) => {
-    const keys = Object.keys(element).map((a) => a.toString().length)
-    const values = Object.values(element).map((a) => a.toString().length)
+    const keys = Object.keys(element).map((a) => a?.toString().length || 0)
+    const values = Object.values(element).map((a) => a?.toString().length || 0)
     // console.log('values', maxItems);
     if(maxItems.length > 0) {
       let i = 0
