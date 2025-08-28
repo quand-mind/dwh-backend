@@ -154,7 +154,7 @@ app.listen(port, async () => {
         console.log(aviso.xmensaje, frecuencia);
         await sql.connect(sqlConfig)
         const userGuard = await sql.query(`select top(1) * from prguardias where fhasta >= convert(date, GETDATE())`)
-        const userResult = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre, xemail, xcedula from seusuario where cusuario = ${userGuard.recordset[0].cusuario}`)
+        const userResult = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre, xemail, xcedula from seusuario where cusuario = 21`)
         // console.log(userResult);
         const result = await sql.query(aviso.xsqlaviso)
         if(result.recordset[0].return == 0) {
@@ -315,79 +315,79 @@ app.listen(port, async () => {
     // console.log(result);
 
   });
-  cron.schedule('0 0 0 1 * *', async() => {
-    // Cambiar aqui la funcion    
+  // cron.schedule('0 0 0 1 * *', async() => {
+  //   // Cambiar aqui la funcion    
 
-    const firstDateOfMonth = (date = new Date()) => new Date(date.getFullYear(), date.getMonth(), 1);
-    // let correctedStartDate = new Date(date.setDate(date.getDate()+1)) 
-    const date = firstDateOfMonth(new Date())
-    let correctedStartDate = new Date(date.setMonth(date.getMonth()+1));
-    let newDate = new Date(Date.UTC(correctedStartDate.getFullYear(), correctedStartDate.getMonth(), correctedStartDate.getDate()));
+  //   const firstDateOfMonth = (date = new Date()) => new Date(date.getFullYear(), date.getMonth(), 1);
+  //   // let correctedStartDate = new Date(date.setDate(date.getDate()+1)) 
+  //   const date = firstDateOfMonth(new Date())
+  //   let correctedStartDate = new Date(date.setMonth(date.getMonth()+1));
+  //   let newDate = new Date(Date.UTC(correctedStartDate.getFullYear(), correctedStartDate.getMonth(), correctedStartDate.getDate()));
 
-    console.log('running task: Definicion de Guardias');
+  //   console.log('running task: Definicion de Guardias');
 
-    let emailHtml = ``
+  //   let emailHtml = ``
       
-    const weeks = 4
-    console.log('fecha inicial', newDate)
-    for (let week = 1; week <= weeks; week++) {
+  //   const weeks = 4
+  //   console.log('fecha inicial', newDate)
+  //   for (let week = 1; week <= weeks; week++) {
 
-      let object = await Surveillance.getAvailableGuards(newDate, week)
-      let userAvailable = object.user
-      newDate = object.date
-      if(week == 1) {
-        emailHtml = `
-          <style>
-          .title {
-            font-size: 16px;
-            font-weight: 700;
-            }
-            </style>
-            <h2>Saludos</h2>
-            <h4 class="title">En el siguiente correo se informa sobre la rotacion de guardias del Mes de ${months[newDate.getMonth()+1]}</h4>
-          `;
-      }
-      const userGuard = await Surveillance.setGuard(await userAvailable.cusuario, newDate)
-      console.log('Usuario que tiene que estar de guardia:',await userAvailable.xnombre);
-      emailHtml += `
-      <h5>Usuario asignado para estar de guardia entre los dias ${userGuard.fdesde} y ${userGuard.fhasta}: <b style="text-transfrom: uppercase;">${userAvailable.xnombre}</b></h5>
-      `
-      console.log(`fecha de guardia ${week}`, newDate)
-      newDate = new Date(newDate.setDate(newDate.getDate() +  7))
-    }
-    const transporter = nodemailer.createTransport({
-      service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
-      auth: {
-        user: 'themultiacount@gmail.com',
-        pass: 'kfgb bnad gqpz etux'
-      }
-    });
-    const mailOptions = {
-      from: 'La Mundial de Seguros',
-      // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
-      to: [
-        'quand.mind@gmail.com',
-        'andresquintero@lamundialdeseguros.com',
-        'gidler@lamundialdeseguros.com',
-        'jalen@lamundialdeseguros.com',
-        'faraujo@lamundialdeseguros.com',
-        'gestacio@lamundialdeseguros.com',
-        'ralen@lamundialdeseguros.com',
-        'marismendi@lamundialdeseguros.com',
-      ], // Cambia esto por la dirección de destino
-      subject: `Asignación de las guardias`,
-      html: emailHtml
-    };
-    try {
-      const response = await transporter.sendMail(mailOptions);
-      console.log('Correo enviado correctamente');
-    } catch (error) {
-      console.error('Error al enviar el correo:', error.message);
-    }
+  //     let object = await Surveillance.getAvailableGuards(newDate, week)
+  //     let userAvailable = object.user
+  //     newDate = object.date
+  //     if(week == 1) {
+  //       emailHtml = `
+  //         <style>
+  //         .title {
+  //           font-size: 16px;
+  //           font-weight: 700;
+  //           }
+  //           </style>
+  //           <h2>Saludos</h2>
+  //           <h4 class="title">En el siguiente correo se informa sobre la rotacion de guardias del Mes de ${months[newDate.getMonth()+1]}</h4>
+  //         `;
+  //     }
+  //     const userGuard = await Surveillance.setGuard(await userAvailable.cusuario, newDate)
+  //     console.log('Usuario que tiene que estar de guardia:',await userAvailable.xnombre);
+  //     emailHtml += `
+  //     <h5>Usuario asignado para estar de guardia entre los dias ${userGuard.fdesde} y ${userGuard.fhasta}: <b style="text-transfrom: uppercase;">${userAvailable.xnombre}</b></h5>
+  //     `
+  //     console.log(`fecha de guardia ${week}`, newDate)
+  //     newDate = new Date(newDate.setDate(newDate.getDate() +  7))
+  //   }
+  //   const transporter = nodemailer.createTransport({
+  //     service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
+  //     auth: {
+  //       user: 'themultiacount@gmail.com',
+  //       pass: 'kfgb bnad gqpz etux'
+  //     }
+  //   });
+  //   const mailOptions = {
+  //     from: 'La Mundial de Seguros',
+  //     // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+  //     to: [
+  //       'quand.mind@gmail.com',
+  //       'andresquintero@lamundialdeseguros.com',
+  //       'gidler@lamundialdeseguros.com',
+  //       'jalen@lamundialdeseguros.com',
+  //       'faraujo@lamundialdeseguros.com',
+  //       'gestacio@lamundialdeseguros.com',
+  //       'ralen@lamundialdeseguros.com',
+  //       'marismendi@lamundialdeseguros.com',
+  //     ], // Cambia esto por la dirección de destino
+  //     subject: `Asignación de las guardias`,
+  //     html: emailHtml
+  //   };
+  //   try {
+  //     const response = await transporter.sendMail(mailOptions);
+  //     console.log('Correo enviado correctamente');
+  //   } catch (error) {
+  //     console.error('Error al enviar el correo:', error.message);
+  //   }
 
-  })
+  // })
   
-  cron.schedule('0 0 1 * * *', async() => {
+  cron.schedule('0 1 0 * * *', async() => {
     const date = new Date()
     const finicio = new Date(date.getFullYear(), 1, 1).toLocaleDateString('en-US');
     const ffin =  new Date().toLocaleDateString('en-US')
@@ -398,23 +398,26 @@ app.listen(port, async () => {
     const excelFiles = []
     
     const responsePoliza = await Reports.gestoresPoliza({finicio, ffin})
-    const responseRecibos = await Reports.gestoresPoliza({finicio, ffin})
+    const responseRecibos = await Reports.gestoresRecibos({finicio, ffin})
     const dataFile = [
       {label: 'POLIZAS', data: responsePoliza},
       {label: 'RECIBOS', data: responseRecibos}
     ]
-
-    const excelFilePoliza = await excelService.exportAllToExcel(dataFile, `dwh_reporte_total_gestores_poliza-${finicio}-${ffin}`, 'Reporte de Gestores')
+    const excelFilePoliza = await excelService.exportAllToExcel(dataFile, `dwh_reporte_total_gestores_poliza-${finicio}-${ffin}`, 'Gestores (Poliza y Recibos)')
     excelFiles.push({filename: `La Mundial de Seguros C.A, reporte_total_gestores-${finicio}-${ffin}.xlsx`, content: Buffer.from(excelFilePoliza)})
-
-    emailHtml += `${graphic.xnombre}`
-    if(x < graphics.length) {
-      emailHtml += ' - '
-    }
-    x++
+    
     emailHtml += `
-    <h5>Reporte de  Gestores: <b style="text-transfrom: uppercase;">(${finicio} - ${ffin})</b></h5>
-    `
+      <style>
+        .title {
+        font-size: 16px;
+        font-weight: 700;
+        }
+      </style>
+      <h2>Saludos</h2>
+      <h4 class="title">En el siguiente correo se envía el reporten diario de</h4>
+      <h2 class="title">Gestores</h2>
+      <p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>
+    `;
     const transporter = nodemailer.createTransport({
       service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
       auth: {
@@ -430,7 +433,8 @@ app.listen(port, async () => {
         'andres.quintero@exelixi.com'
       ], // Cambia esto por la dirección de destino
       subject: `Reporte de Gestores`,
-      html: emailHtml
+      html: emailHtml,
+      attachments: excelFiles
     };
     try {
       const response = await transporter.sendMail(mailOptions);
