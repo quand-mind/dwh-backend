@@ -54,7 +54,7 @@ const sqlConfig = {
   
 // }));
 
-if(process.env.PORT == 'LOCAL'){
+if(process.env.AMBIENTE == 'LOCAL'){
   app.use(cors());
 } 
 app.use(express.json({ limit: '10mb' }));
@@ -414,7 +414,7 @@ app.listen(port, async () => {
         }
       </style>
       <h2>Saludos</h2>
-      <h4 class="title">En el siguiente correo se envía el reporten diario de</h4>
+      <h4 class="title">En el siguiente correo se envía el reporte diario de</h4>
       <h2 class="title">Gestores</h2>
       <p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>
     `;
@@ -430,7 +430,15 @@ app.listen(port, async () => {
       // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
       to: [
         'quand.mind@gmail.com',
-        'andres.quintero@exelixi.com'
+        'andres.quintero@exelixitech.com',
+        'lmoreno@lamundialdeseguros.com',
+        'carmen.sanz@exelixitech.com',
+        'hamilton.leon@exelixitech.com',
+        'egarcia@lamundialdeseguros.com',
+        'graciela.idler@exelixitech.com',
+        'jquintero@lamundialdeseguros.com',
+        'jfernandez@lamundialdeseguros.com',
+        'jizquierdo@lamundialdeseguros.com',
       ], // Cambia esto por la dirección de destino
       subject: `Reporte de Gestores`,
       html: emailHtml,
