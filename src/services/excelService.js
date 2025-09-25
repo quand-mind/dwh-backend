@@ -79,21 +79,21 @@ const  exportAllToExcel = async (selectedLists, fileName, graphicName) => {
       }
     })
     if(lastRow) {
-      lastRow.height=25
-      lastRow.font = {bold: true}
       let totalCell = lastRow.getCell(1)
       if(typeof totalCell.value  == 'string'){
         if(totalCell.value.includes('ZZZ')) {
+          lastRow.height=25
+          lastRow.font = {bold: true}
           totalCell.value = totalCell.value.substring(3)
+          totalCell.value = totalCell.value.toUpperCase()
+          totalCell.alignment={vertical: 'middle', horizontal: 'left', wrapText: true}
+          totalCell.font = {color: { argb: 'FFFFFF' }, bold: true}
+          totalCell.fill = {
+            type: 'pattern',
+            pattern:'solid',
+            fgColor:{argb:'2A377B'},
+          }
         }
-        totalCell.value = totalCell.value.toUpperCase()
-      }
-      totalCell.alignment={vertical: 'middle', horizontal: 'left', wrapText: true}
-      totalCell.font = {color: { argb: 'FFFFFF' }, bold: true}
-      totalCell.fill = {
-        type: 'pattern',
-        pattern:'solid',
-        fgColor:{argb:'2A377B'},
       }
     }
     
@@ -123,8 +123,8 @@ const fitToColumn = (items) => {
   // get maximum character of each column
   let maxItems = []
   items.forEach((element, i) => {
-    const keys = Object.keys(element).map((a) => a.toString().length)
-    const values = Object.values(element).map((a) => a.toString().length)
+    const keys = Object.keys(element).map((a) => a?.toString().length || 0)
+    const values = Object.values(element).map((a) => a?.toString().length || 0)
     // console.log('values', maxItems);
     if(maxItems.length > 0) {
       let i = 0
