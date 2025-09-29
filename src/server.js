@@ -222,7 +222,7 @@ app.listen(port, async () => {
     
   }
   cron.schedule('0 0 5 * * *', async () => {
-    console.log('running task: Reportes Diarios');    
+    console.log('running task: Reportes Diarios');
     
     const responseGraphics = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
       method: "GET",
@@ -387,7 +387,7 @@ app.listen(port, async () => {
 
   // })
   
-  cron.schedule('0 1 0 * * *', async() => {
+  cron.schedule('0 0 1 * * *', async() => {
     const date = new Date()
     const finicio = new Date(date.getFullYear(), 1, 1).toLocaleDateString('en-US');
     const ffin =  new Date().toLocaleDateString('en-US')
