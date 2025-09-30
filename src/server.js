@@ -315,77 +315,79 @@ app.listen(port, async () => {
     // console.log(result);
 
   });
-  // cron.schedule('0 0 0 1 * *', async() => {
+  cron.schedule('0 0 0 1 * *', async() => {
   //   // Cambiar aqui la funcion    
 
-  //   const firstDateOfMonth = (date = new Date()) => new Date(date.getFullYear(), date.getMonth(), 1);
-  //   // let correctedStartDate = new Date(date.setDate(date.getDate()+1)) 
-  //   const date = firstDateOfMonth(new Date())
-  //   let correctedStartDate = new Date(date.setMonth(date.getMonth()+1));
-  //   let newDate = new Date(Date.UTC(correctedStartDate.getFullYear(), correctedStartDate.getMonth(), correctedStartDate.getDate()));
+    const firstDateOfMonth = (date = new Date()) => new Date(date.getFullYear(), date.getMonth(), 1);
+    // let correctedStartDate = new Date(date.setDate(date.getDate()+1)) 
+    const date = firstDateOfMonth(new Date())
+    let correctedStartDate = new Date(date.setMonth(date.getMonth()+1));
+    let newDate = new Date(Date.UTC(correctedStartDate.getFullYear(), correctedStartDate.getMonth(), correctedStartDate.getDate()));
 
-  //   console.log('running task: Definicion de Guardias');
+    console.log('running task: Definicion de Guardias');
 
-  //   let emailHtml = ``
+    let emailHtml = ``
       
-  //   const weeks = 4
-  //   console.log('fecha inicial', newDate)
-  //   for (let week = 1; week <= weeks; week++) {
+    const weeks = 4
+    console.log('fecha inicial', newDate)
+    for (let week = 1; week <= weeks; week++) {
 
-  //     let object = await Surveillance.getAvailableGuards(newDate, week)
-  //     let userAvailable = object.user
-  //     newDate = object.date
-  //     if(week == 1) {
-  //       emailHtml = `
-  //         <style>
-  //         .title {
-  //           font-size: 16px;
-  //           font-weight: 700;
-  //           }
-  //           </style>
-  //           <h2>Saludos</h2>
-  //           <h4 class="title">En el siguiente correo se informa sobre la rotacion de guardias del Mes de ${months[newDate.getMonth()+1]}</h4>
-  //         `;
-  //     }
-  //     const userGuard = await Surveillance.setGuard(await userAvailable.cusuario, newDate)
-  //     console.log('Usuario que tiene que estar de guardia:',await userAvailable.xnombre);
-  //     emailHtml += `
-  //     <h5>Usuario asignado para estar de guardia entre los dias ${userGuard.fdesde} y ${userGuard.fhasta}: <b style="text-transfrom: uppercase;">${userAvailable.xnombre}</b></h5>
-  //     `
-  //     console.log(`fecha de guardia ${week}`, newDate)
-  //     newDate = new Date(newDate.setDate(newDate.getDate() +  7))
-  //   }
-  //   const transporter = nodemailer.createTransport({
-  //     service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
-  //     auth: {
-  //       user: 'themultiacount@gmail.com',
-  //       pass: 'kfgb bnad gqpz etux'
-  //     }
-  //   });
-  //   const mailOptions = {
-  //     from: 'La Mundial de Seguros',
-  //     // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
-  //     to: [
-  //       'quand.mind@gmail.com',
-  //       'andresquintero@lamundialdeseguros.com',
-  //       'gidler@lamundialdeseguros.com',
-  //       'jalen@lamundialdeseguros.com',
-  //       'faraujo@lamundialdeseguros.com',
-  //       'gestacio@lamundialdeseguros.com',
-  //       'ralen@lamundialdeseguros.com',
-  //       'marismendi@lamundialdeseguros.com',
-  //     ], // Cambia esto por la dirección de destino
-  //     subject: `Asignación de las guardias`,
-  //     html: emailHtml
-  //   };
-  //   try {
-  //     const response = await transporter.sendMail(mailOptions);
-  //     console.log('Correo enviado correctamente');
-  //   } catch (error) {
-  //     console.error('Error al enviar el correo:', error.message);
-  //   }
+      let object = await Surveillance.getAvailableGuards(newDate, week)
+      let userAvailable = object.user
+      newDate = object.date
+      if(week == 1) {
+        emailHtml = `
+          <style>
+          .title {
+            font-size: 16px;
+            font-weight: 700;
+            }
+            </style>
+            <h2>Saludos</h2>
+            <h4 class="title">En el siguiente correo se informa sobre la rotacion de guardias del Mes de ${months[newDate.getMonth()+1]}</h4>
+          `;
+      }
+      const userGuard = await Surveillance.setGuard(await userAvailable.cusuario, newDate)
+      console.log('Usuario que tiene que estar de guardia:',await userAvailable.xnombre);
+      emailHtml += `
+      <h5>Usuario asignado para estar de guardia entre los dias ${userGuard.fdesde} y ${userGuard.fhasta}: <b style="text-transfrom: uppercase;">${userAvailable.xnombre}</b></h5>
+      `
+      console.log(`fecha de guardia ${week}`, newDate)
+      newDate = new Date(newDate.setDate(newDate.getDate() +  7))
+    }
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
+      auth: {
+        user: 'themultiacount@gmail.com',
+        pass: 'kfgb bnad gqpz etux'
+      }
+    });
+    const mailOptions = {
+      from: 'La Mundial de Seguros',
+      // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+      to: [
+        'quand.mind@gmail.com',
+        'andres.quintero@exelixitech.com',
+        'graciela.idler@exelixitech.com',
+        'franjhely.araujo@exelixitech.com',
+        'gabriel.estacio@exelixitech.com',
+        'hamilton.leon@exelixitech.com',
+        'angel.estrada@exelixitech.com',
+        // 'jalen@lamundialdeseguros.com',
+        // 'ralen@lamundialdeseguros.com',
+        // 'marismendi@lamundialdeseguros.com',
+      ], // Cambia esto por la dirección de destino
+      subject: `Asignación de las guardias`,
+      html: emailHtml
+    };
+    try {
+      const response = await transporter.sendMail(mailOptions);
+      console.log('Correo enviado correctamente');
+    } catch (error) {
+      console.error('Error al enviar el correo:', error.message);
+    }
 
-  // })
+  })
   
   cron.schedule('0 0 1 * * *', async() => {
     const date = new Date()
