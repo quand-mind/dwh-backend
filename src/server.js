@@ -389,7 +389,7 @@ app.listen(port, async () => {
 
   })
   
-  cron.schedule('0 0 1 * * *', async() => {
+  cron.schedule('0 0 7 * * *', async() => {
     const date = new Date()
     const finicio = new Date(date.getFullYear(), 1, 1).toLocaleDateString('en-US');
     const ffin =  new Date().toLocaleDateString('en-US')
