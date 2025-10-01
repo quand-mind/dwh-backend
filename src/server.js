@@ -433,6 +433,7 @@ app.listen(port, async () => {
       to: [
         'quand.mind@gmail.com',
         'andres.quintero@exelixitech.com',
+        'gabriel.estacio@exelixitech.com',
         'lmoreno@lamundialdeseguros.com',
         'carmen.sanz@exelixitech.com',
         'hamilton.leon@exelixitech.com',
@@ -441,7 +442,7 @@ app.listen(port, async () => {
         'jquintero@lamundialdeseguros.com',
         'jfernandez@lamundialdeseguros.com',
         'jizquierdo@lamundialdeseguros.com',
-      ], // Cambia esto por la dirección de destino
+      ],
       subject: `Reporte de Gestores`,
       html: emailHtml,
       attachments: excelFiles
