@@ -267,6 +267,19 @@ const getCompanies = async (table) => {
   }
 
 }
+const getReports = async (table) => {
+  try {
+    await sql.connect(sqlConfig)
+    const result = await sql.query(`SELECT * FROM mareportes where bactivo = 1`)
+    const records = result.recordset
+
+    return records
+  } catch (err) {
+    console.log('Error al Obtener los reportes', err)
+    return err
+  }
+
+}
 const searchWithTable = async (table) => {
   try {
     await sql.connect(sqlConfig)
@@ -803,6 +816,7 @@ export default {
   getReceipts,
   setAllClients,
   getCompanies,
+  getReports,
   getSystemData,
   getDataUser
 }

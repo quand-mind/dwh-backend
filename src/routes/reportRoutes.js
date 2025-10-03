@@ -6,5 +6,6 @@ const router = express.Router();
 
 router
     .post("/poliza/gestores", reportsController.gestoresPoliza)
+    .post("/recibos/gestores", reportsController.gestoresRecibos)
     
 export default router;

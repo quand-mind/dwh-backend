@@ -105,7 +105,32 @@ const getCompanies = async (req, res) => {
     res.send(companiesF)
     
   } catch (error) {
+    console.error(error)
+  }
+}
+const getReports = async (req, res) => {
+  try {
+    const reports = await Client.getReports();
+
+    if (reports.error) {
+      return res.status(reports.code).send({
+        status: false,
+        message: reports.error
+      });
+    }
+    const reportsF = reports.map(element => {
+      let variables = []
+      if(element.xvariables){
+        const vars = JSON.parse(element.xvariables)
+        variables = vars.vars
+      }
+      return {text: element.xreporte, value: element.id, url: element.xurl, variables}
+    });
+
+    res.send(reportsF)
     
+  } catch (error) {
+    console.error(error)
   }
 }
 const getClientData = async (req, res) => {
@@ -395,6 +420,7 @@ export default {
   addObservation,
   setAllClients,
   getCompanies,
+  getReports,
   getSystemData,
   getDataUser,
   exportGestorProductsData

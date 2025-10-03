@@ -83,6 +83,27 @@ const getOrigenes = async (req, res) => {
     
   }
 }
+const getReports = async (req, res) => {
+  try {
+    const reports = await Maestros.getReports();
+
+    const data = reports.map(item => {
+      return {text: item.xreporte, value: item.id, url: item.xurl, variables: item.variables}
+    })
+    data.unshift({text: 'Sin Filtros', value: null, url: null, xvariables: null})
+
+    if (reports.error) {
+      return res.status(reports.code).send({
+        status: false,
+        message: reports.error
+      });
+    }
+    res.send(data)
+    
+  } catch (error) {
+    
+  }
+}
 const getOrigenesApi = async (req, res) => {
   try {
     const origenes = await Maestros.getOrigenesApi();
@@ -152,6 +173,7 @@ export default {
   getRamos,
   getGestores,
   getOrigenes,
+  getReports,
   getOrigenesApi,
   getCanalesVenta,
   getSubCanalesVenta

@@ -20,6 +20,7 @@ router
     .get("/getProducts/:rif", clientController.getProducts)
     .post("/countClients", clientController.countClients)
     .get("/getCompanies", clientController.getCompanies)
+    .get("/getReports", clientController.getReports)
     .get("/getProductDetail/:id", clientController.getProductDetail)
     .get("/getDataUser/:ccanal", clientController.getDataUser)
     .post("/exportGestorProductsData", clientController.exportGestorProductsData)

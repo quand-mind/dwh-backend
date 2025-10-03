@@ -66,6 +66,21 @@ const getOrigenes = async () => {
    return err
   }
 }
+const getReports = async () => {
+  
+  try {
+   // make sure that any items are correctly URL encoded in the connection string
+   await sql.connect(sqlConfig)
+   const result = await sql.query`SELECT * FROM mareportes where bactivo = 1`
+   
+   const records = result.recordsets[0]
+   
+   return records
+  } catch (err) {
+   console.log('Error al obtener los reportes', err)
+   return err
+  }
+}
 const getOrigenesApi = async () => {
   
   try {
@@ -116,6 +131,7 @@ export default {
   getAllRamos,
   getGestores,
   getOrigenes,
+  getReports,
   getOrigenesApi,
   getCanalesVenta,
   getSubCanalesVenta
