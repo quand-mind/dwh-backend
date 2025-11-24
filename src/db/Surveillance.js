@@ -50,21 +50,19 @@ const correccionSQL = async (xsql) => {
     return err
   }
 }
-const getAvailableGuards = async (date, week) => {
+const getAvailableGuards = async (week) => {
   try {
     let result = []
     await sql.connect(sqlConfig)
-    if(week == 1){
+    let date = null
+    // if(week == 1){
       const getAvailableDate = await sql.query(`select top(1) fhasta from prguardias order by fhasta desc`)
       if(getAvailableDate.recordset[0]){
+        console.log(getAvailableDate.recordset[0].fhasta)
         const actualDate = new Date(getAvailableDate.recordset[0].fhasta)
-        console.log('fecha en base de datos', date);
-        if(actualDate != date) {
-          date = new Date(actualDate.setDate(actualDate.getDate()+1))
-        }
-        console.log('fecha final inicio:', date);
+        date = new Date(actualDate.setDate(actualDate.getDate()+1))
       }
-    }
+    // }
     const getNewUsers = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre from seusuario where bactivo =1 and CROL = 2 and cusuario NOT IN(select distinct(cusuario) from prguardias)`)
     if(getNewUsers.recordset.length > 0){
 
@@ -76,7 +74,7 @@ const getAvailableGuards = async (date, week) => {
       const getLastUser = await sql.query(`
         select TOP(1) b.cusuario, b.xnombre +' ' + b.xapellido as xnombre,   max(a.fhasta) from prguardias a
         left join seusuario b on b.CUSUARIO = a.cusuario
-        where b.BACTIVO = 1
+        where b.BACTIVO = 1 and b.crol = 2
         GROUP BY b.CUSUARIO, b.xnombre, b.xapellido order by max(fhasta) asc
       `)
       result = getLastUser.recordset[0]
@@ -95,7 +93,7 @@ const setGuard = async (user, date) => {
     let newDateHasta = new Date(date)
     newDateHasta.setDate(newDateHasta.getDate() + 6)
     
-    console.log('query', newDateDesde);
+    console.log('fecha ya esta buena la guachafita locura', newDateHasta);
     
     const query = `insert into prguardias (cusuario, fdesde, fhasta) values (${user}, '${newDateDesde.toLocaleDateString('en-US', {timeZone: "Asia/kolkata"})}', '${newDateHasta.toLocaleDateString('en-US', {timeZone: "Asia/kolkata"})}')`
 

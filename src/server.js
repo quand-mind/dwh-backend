@@ -316,23 +316,19 @@ app.listen(port, async () => {
 
   });
   cron.schedule('0 0 0 1 * *', async() => {
-  //   // Cambiar aqui la funcion    
+    // Cambiar aqui la funcion    
 
-    const firstDateOfMonth = (date = new Date()) => new Date(date.getFullYear(), date.getMonth(), 1);
     // let correctedStartDate = new Date(date.setDate(date.getDate()+1)) 
-    const date = firstDateOfMonth(new Date())
-    let correctedStartDate = new Date(date.setMonth(date.getMonth()+1));
-    let newDate = new Date(Date.UTC(correctedStartDate.getFullYear(), correctedStartDate.getMonth(), correctedStartDate.getDate()));
-
+    
     console.log('running task: Definicion de Guardias');
 
     let emailHtml = ``
       
     const weeks = 4
-    console.log('fecha inicial', newDate)
+    let newDate = null
     for (let week = 1; week <= weeks; week++) {
 
-      let object = await Surveillance.getAvailableGuards(newDate, week)
+      let object = await Surveillance.getAvailableGuards(week)
       let userAvailable = object.user
       newDate = object.date
       if(week == 1) {
@@ -344,7 +340,7 @@ app.listen(port, async () => {
             }
             </style>
             <h2>Saludos</h2>
-            <h4 class="title">En el siguiente correo se informa sobre la rotacion de guardias del Mes de ${months[newDate.getMonth()+1]}</h4>
+            <h4 class="title">En el siguiente correo se informa sobre la rotacion de guardias</h4>
           `;
       }
       const userGuard = await Surveillance.setGuard(await userAvailable.cusuario, newDate)
@@ -353,7 +349,6 @@ app.listen(port, async () => {
       <h5>Usuario asignado para estar de guardia entre los dias ${userGuard.fdesde} y ${userGuard.fhasta}: <b style="text-transfrom: uppercase;">${userAvailable.xnombre}</b></h5>
       `
       console.log(`fecha de guardia ${week}`, newDate)
-      newDate = new Date(newDate.setDate(newDate.getDate() +  7))
     }
     const transporter = nodemailer.createTransport({
       service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
