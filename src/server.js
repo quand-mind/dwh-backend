@@ -145,81 +145,82 @@ app.listen(port, async () => {
 
   // 0 20 0 * * *
   const avisos = await Surveillance.getAvisos()
-  
-  for (const aviso of avisos) {
-    const frecuencias = aviso.xfrecuencia.split(',')
-    for (const frecuencia of frecuencias) {
-      cron.schedule(frecuencia, async() => {
-        console.log('running task:', aviso.xnombre);
-        console.log(aviso.xmensaje, frecuencia);
-        await sql.connect(sqlConfig)
-        const userGuard = await sql.query(`select top(1) * from prguardias where fhasta >= convert(date, GETDATE())`)
-        const userResult = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre, xemail, xcedula from seusuario where cusuario = 21`)
-        // console.log(userResult);
-        const result = await sql.query(aviso.xsqlaviso)
-        if(result.recordset[0].return == 0) {
-          
-          let emailHtml = `
-            <style>
-              .title {
-                font-size: 16px;
-                font-weight: 700;
-              }
-            </style>
-            <h2>Estimado usuario: ${userResult.recordset[0].xnombre}</h2>    
-            <h4 class="title">Se ha presentado un problema en el siguiente proceso:</h4>
-            <h5 style="text-transform: uppercase;">${aviso.xmensaje}</h5>
-            <p>Por favor, revise el proceso en la brevedad posible para solventar los problemas presentados.</p>
-            </h2>
-          `
-          if(aviso.xsqlreporte) {
-            const querys = aviso.xsqlreporte.split('-----')
-            emailHtml += `<h5>Aquí algunos detalles del problema encontrado</h5>`
-            for (const query of querys) {
-              const report = await sql.query(query)
-              emailHtml += `<div>`
-              for (const element of report.recordset) {
-                const entries = Object.entries(element)
-                emailHtml += `<div style="display:flex; flex-direction:column; gap:5px;">`
-                for (const entry of entries) {
-                  for (const text of entry) {
-                    emailHtml += `<span style="margin-right: 5px">${text}</span>`
+  if(avisos?.length > 0){
+    for (const aviso of avisos) {
+      const frecuencias = aviso.xfrecuencia.split(',')
+      for (const frecuencia of frecuencias) {
+        cron.schedule(frecuencia, async() => {
+          console.log('running task:', aviso.xnombre);
+          console.log(aviso.xmensaje, frecuencia);
+          await sql.connect(sqlConfig)
+          const userGuard = await sql.query(`select top(1) * from prguardias where fhasta >= convert(date, GETDATE())`)
+          const userResult = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre, xemail, xcedula from seusuario where cusuario = 21`)
+          // console.log(userResult);
+          const result = await sql.query(aviso.xsqlaviso)
+          if(result.recordset[0].return == 0) {
+            
+            let emailHtml = `
+              <style>
+                .title {
+                  font-size: 16px;
+                  font-weight: 700;
+                }
+              </style>
+              <h2>Estimado usuario: ${userResult.recordset[0].xnombre}</h2>    
+              <h4 class="title">Se ha presentado un problema en el siguiente proceso:</h4>
+              <h5 style="text-transform: uppercase;">${aviso.xmensaje}</h5>
+              <p>Por favor, revise el proceso en la brevedad posible para solventar los problemas presentados.</p>
+              </h2>
+            `
+            if(aviso.xsqlreporte) {
+              const querys = aviso.xsqlreporte.split('-----')
+              emailHtml += `<h5>Aquí algunos detalles del problema encontrado</h5>`
+              for (const query of querys) {
+                const report = await sql.query(query)
+                emailHtml += `<div>`
+                for (const element of report.recordset) {
+                  const entries = Object.entries(element)
+                  emailHtml += `<div style="display:flex; flex-direction:column; gap:5px;">`
+                  for (const entry of entries) {
+                    for (const text of entry) {
+                      emailHtml += `<span style="margin-right: 5px">${text}</span>`
+                    }
                   }
+                  emailHtml += `</div>`
                 }
                 emailHtml += `</div>`
               }
-              emailHtml += `</div>`
+              
             }
-            
+            emailHtml += `<p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>`
+            const transporter = nodemailer.createTransport({
+              service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
+              auth: {
+                user: 'themultiacount@gmail.com',
+                pass: 'kfgb bnad gqpz etux'
+              }
+            });
+            const mailOptions = {
+              from: 'La Mundial de Seguros',
+              // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+              to: ['quand.mind@gmail.com', userResult.recordset[0].xemail], // Cambia esto por la dirección de destino
+              subject: `Problemas en proceso de ${aviso.xnombre}`,
+              html: emailHtml
+            };
+            try {
+              const response = await transporter.sendMail(mailOptions);
+              console.log('Correo enviado correctamente');
+              if(aviso.bcorreccion){
+                await Surveillance.correccionSQL(aviso.xsqlcorreccion)
+              }
+            } catch (error) {
+              console.error('Error al enviar el correo:', error.message);
+            }
           }
-          emailHtml += `<p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>`
-          const transporter = nodemailer.createTransport({
-            service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
-            auth: {
-              user: 'themultiacount@gmail.com',
-              pass: 'kfgb bnad gqpz etux'
-            }
-          });
-          const mailOptions = {
-            from: 'La Mundial de Seguros',
-            // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
-            to: ['quand.mind@gmail.com', userResult.recordset[0].xemail], // Cambia esto por la dirección de destino
-            subject: `Problemas en proceso de ${aviso.xnombre}`,
-            html: emailHtml
-          };
-          try {
-            const response = await transporter.sendMail(mailOptions);
-            console.log('Correo enviado correctamente');
-            if(aviso.bcorreccion){
-              await Surveillance.correccionSQL(aviso.xsqlcorreccion)
-            }
-          } catch (error) {
-            console.error('Error al enviar el correo:', error.message);
-          }
-        }
-      })
+        })
+      }
+      
     }
-    
   }
   cron.schedule('0 0 5 * * *', async () => {
     console.log('running task: Reportes Diarios');
