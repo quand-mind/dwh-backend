@@ -154,7 +154,7 @@ app.listen(port, async () => {
           console.log(aviso.xmensaje, frecuencia);
           await sql.connect(sqlConfig)
           const userGuard = await sql.query(`select top(1) * from prguardias where fhasta >= convert(date, GETDATE())`)
-          const userResult = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre, xemail, xcedula from seusuario where cusuario = 21`)
+          const userResult = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre, xemail, xcedula from seusuario where cusuario = ${userGuard.recordset[0].cusuario}`)
           // console.log(userResult);
           const result = await sql.query(aviso.xsqlaviso)
           if(result.recordset[0].return == 0) {
