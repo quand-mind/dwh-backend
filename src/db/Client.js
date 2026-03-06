@@ -608,6 +608,16 @@ const exportGestorProductsData = async (cgestor, filters) => {
     trim(z.xdescripcion_l) as 'Ramo',
     d.xcanalalt as 'Canal',
     e.xplan as 'Plan',
+    case 
+      when a.corigen_rel = '07' then 'TARJETAS'
+      when a.corigen_rel = '01' then 'PASARELA'
+      when (corigen_rel <> '07' OR corigen_rel <> '01') and corigen_rel is not null then 'API'
+      else case 
+        when a.cprog = 'EmiCAlt' then 'QR'
+        when a.cprog = 'MarkPl' then 'QR Marketplace'
+        else 'WEB'
+      end
+    end as 'Origen',
     concat(g.xnombre,' (', g.cgestor, ')') as 'Gestor',
     trim(x.cnrecibo) as 'N° de Recibo',
     case when x.iestadorec = 'P' then 'Pendiente' when x.iestadorec = 'C' then 'Cobrado' when x.iestadorec = 'A' then 'Anulado' when x.iestadorec = 'N' then 'Notificado' else 'N/A' end as 'Estatus del Recibo',
