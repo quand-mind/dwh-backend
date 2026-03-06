@@ -603,6 +603,8 @@ const exportGestorProductsData = async (cgestor, filters) => {
     trim((select xcorreo from maclient_correo where cci_rif = b.cci_rif)) as 'Correo_Asegurado',
     trim(c.xcliente) as 'Tomador',
     trim(c.cid) as 'Doc_Tomador',
+    trim((select xtelefono from maclient_tel where cci_rif = c.cci_rif)) as 'Telefono_Tomador',
+    trim((select xcorreo from maclient_correo where cci_rif = c.cci_rif)) as 'Correo_Tomador',
     trim(z.xdescripcion_l) as 'Ramo',
     d.xcanalalt as 'Canal',
     e.xplan as 'Plan',
