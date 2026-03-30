@@ -101,6 +101,7 @@ const getCanalesVenta = async () => {
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
+   console.log(`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from Sis2000..macanalalt where ctipocanal <> 'T' and bgrafico = 1`)
    const result = await sql.query`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from Sis2000..macanalalt where ctipocanal <> 'T' and bgrafico = 1`
    
    const records = result.recordsets[0]
