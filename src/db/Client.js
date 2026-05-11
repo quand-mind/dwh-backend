@@ -331,6 +331,7 @@ const getProductsByUser = async (user, page, string, body) => {
     await sql.connect(sqlConfig)
 
     const resultClient = await sql.query(`SELECT b.cgestor from seusuarios_portal a inner join magestor b on a.xemail = b.xcorreo WHERE a.cusuario = ${user}`)
+    const canal = body.ccanalalt
     if(resultClient.recordset.length > 0) {
       delete body.ccanalalt
       if(!body.cgestor) {
@@ -345,8 +346,8 @@ const getProductsByUser = async (user, page, string, body) => {
       let initialQuery = 'SELECT cnpoliza, casegurado, ctenedor, fdesde, fhasta, cplan FROM adpoliza'
       let initialQuery2 = 'SELECT count(*) as total FROM adpoliza'
 
-      let finalQuery = setQuery(string, body, initialQuery)
-      let finalQuery2 = setQuery(string, body, initialQuery2)
+      let finalQuery = setQuery(string, user.main ? body : {ccanalalt: canal}, initialQuery)
+      let finalQuery2 = setQuery(string, user.main ? body : {ccanalalt: canal}, initialQuery2)
       console.log(finalQuery);
       console.log(finalQuery2);
       // make sure that any items are correctly URL encoded in the connection string    
@@ -589,7 +590,6 @@ const getProductDetail = async (id) => {
 }
 
 const exportGestorProductsData = async (cgestor, filters) => {
-  
   try {
    // make sure that any items are correctly URL encoded in the connection string
    await sql.connect(sqlConfig)
@@ -635,7 +635,9 @@ const exportGestorProductsData = async (cgestor, filters) => {
     inner join Sis2000..maramos z on a.cramo = z.cramo
     left join maplanes e on a.cplan = e.cplan and a.cramo = e.cramo
     left join producto_gestor f on f.cproducto = trim(a.cnpoliza)
-    left join magestor g on f.cgestor = g.cgestor WHERE g.cgestor like '${cgestor}%'
+    left join magestor g on f.cgestor = g.cgestor
+    WHERE
+    ${filters.ccanalalt ? `a.ccanalalt = ${filters.ccanalalt}` : `g.cgestor like '${cgestor}%'`}
     UNION
     SELECT
     'ZZZTotal' 'N° de Póliza',
@@ -665,8 +667,11 @@ const exportGestorProductsData = async (cgestor, filters) => {
     FROM adpoliza a 
     inner join Sis2000..adrecibos x on a.cnpoliza = x.cnpoliza
     left join producto_gestor f on f.cproducto = trim(a.cnpoliza)
-    left join magestor g on f.cgestor = g.cgestor WHERE g.cgestor like '${cgestor}%'`;
+    left join magestor g on f.cgestor = g.cgestor
+    WHERE 
+    ${filters.ccanalalt ? `a.ccanalalt = ${filters.ccanalalt}` : `g.cgestor like '${cgestor}%'`}`;
 
+    delete filters.ccanalalt;
     let finalQuery1, finalQuery2
     if(filters != {}) {
       if(query.includes('group by')) {
@@ -686,7 +691,7 @@ const exportGestorProductsData = async (cgestor, filters) => {
       } else {
         if(query.includes('UNION')) {
           const querySplitUnion = query.split('UNION')
-          console.log(querySplitUnion);
+          // console.log(querySplitUnion);
           finalQuery1 = setQueryAdd('', filters, querySplitUnion[0], 'a.')
           finalQuery2 = setQueryAdd('', filters, querySplitUnion[1], 'a.')
           finalQuery2 =  ' UNION ' + finalQuery2
@@ -697,7 +702,7 @@ const exportGestorProductsData = async (cgestor, filters) => {
     } else {
       finalQuery1 = query
     }
-    console.log(finalQuery1);
+    console.log('aqui', finalQuery1);
     const result = await sql.query(`${finalQuery1} ${finalQuery2}`)
 
     return result.recordset

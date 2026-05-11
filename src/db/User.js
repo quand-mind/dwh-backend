@@ -66,6 +66,7 @@ const getOneUser = async (xlogin) => {
             result.recordset[0].cgestor = gestor.recordset[0].cgestor;
             result.recordset[0].ccanalalt = gestor.recordset[0].ccanalalt;
         }
+        if(gestor.recordset[0].ccanalalt && !(gestor.recordset[0].cscanalalt)) { result.recordset[0].main = true } else { result.recordset[0].main = false }
 
         await pool.close();
         return result.recordset[0];
