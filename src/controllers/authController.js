@@ -24,6 +24,7 @@ const createJWT = async (req, res) => {
         return;
     }
     const user = await authService.getOneUser(xlogin);
+    console.log(user)
     if (user.error) {
         return res
             .status(user.code)
