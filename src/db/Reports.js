@@ -55,7 +55,7 @@ const gestoresRecibos = async (body) => {
   };
   
   for (const [key, param] of Object.entries(inputs)) { request.input(key, param.type, param.value); }
-  let catrina = await request.execute('spRecibosGestores');
+  let catrina = await request.execute('spRecibosGestores_V3');
 
   return catrina.recordset
 }
