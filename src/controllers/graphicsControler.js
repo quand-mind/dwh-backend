@@ -147,7 +147,7 @@ const getDetails = async (req, res) => {
 }
 const exportDetails = async (req, res) => {
   try {
-    const items = await Graphic.exportDetails(req.body.filter, req.body.requestVar, req.body.id);
+    const items = await Graphic.exportDetails(req.body.filter, req.body.filterInverso, req.body.requestVar, req.body.id);
 
     if (items.error) {
       return res.status(items.code).send({
