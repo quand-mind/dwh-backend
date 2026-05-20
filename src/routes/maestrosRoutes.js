@@ -8,6 +8,7 @@ router
     .get("/ramos", maestrosController.getRamos)
     .get("/origenes", maestrosController.getOrigenes)
     .get("/reports", maestrosController.getReports)
+    .get("/productos", maestrosController.getProductos)
     .get("/gestores/:ccanal", maestrosController.getGestores)
     .get("/origenesApi", maestrosController.getOrigenesApi)
     .get("/canalesVenta", maestrosController.getCanalesVenta)

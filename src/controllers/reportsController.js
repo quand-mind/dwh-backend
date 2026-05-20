@@ -33,8 +33,25 @@ const gestoresRecibos = async (req, res) => {
     
   }
 }
+const gestoresRecibosProducto = async (req, res) => {
+  try {
+    const report = await Reports.gestoresRecibosProducto(req.body);
+
+    if (report.error) {
+      return res.status(report.code).send({
+        status: false,
+        message: report.error
+      });
+    }
+    res.send(report)
+    
+  } catch (error) {
+    
+  }
+}
 
 export default {
   gestoresPoliza,
-  gestoresRecibos
+  gestoresRecibos,
+  gestoresRecibosProducto
 }

@@ -168,6 +168,23 @@ const getSubCanalesVenta = async (req, res) => {
   }
 }
 
+const getProductos = async (req, res) => {
+  try {
+    const productos = await Maestros.getProductos();
+    const data = productos.map(item => {
+      return {text: item.text, value: item.value}
+    })
+    data.unshift({text: 'Sin Filtros', value: ''})
+    res.send(data)
+  }
+  catch (error) {
+    return res.status(error.code).send({
+      status: false,
+      message: error.message
+    });
+  }
+}
+
 
 export default {
   getRamos,
@@ -176,5 +193,6 @@ export default {
   getReports,
   getOrigenesApi,
   getCanalesVenta,
-  getSubCanalesVenta
+  getSubCanalesVenta,
+  getProductos
 }

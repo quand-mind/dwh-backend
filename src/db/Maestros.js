@@ -128,6 +128,18 @@ const getSubCanalesVenta = async (ccanal) => {
   }
 }
 
+const getProductos = async () => {
+  try {
+    await sql.connect(sqlConfig)
+    const result = await sql.query`SELECT trim(cproducto) as value, trim(xdescripcion_l) as text FROM Sis2000..maproductos`
+    return result.recordsets[0]
+  }
+  catch (err) {
+    console.log('Error al obtener los productos', err)
+    return err
+  }
+}
+
 export default {
   getAllRamos,
   getGestores,
@@ -135,5 +147,6 @@ export default {
   getReports,
   getOrigenesApi,
   getCanalesVenta,
-  getSubCanalesVenta
+  getSubCanalesVenta,
+  getProductos
 }
