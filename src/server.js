@@ -222,100 +222,100 @@ app.listen(port, async () => {
       
     }
   }
-  cron.schedule('0 0 5 * * *', async () => {
-    console.log('running task: Reportes Diarios');
+  // cron.schedule('0 0 5 * * *', async () => {
+  //   console.log('running task: Reportes Diarios');
     
-    const responseGraphics = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
-      method: "GET",
-      headers: {"Content-type": "application/json;charset=UTF-8"}
-    })
-    const graphicsAll = await responseGraphics.json()
-    const graphics = graphicsAll.filter(graphic => graphic.bexportdiario)
-    let date = new Date(new Date().setDate(new Date().getDate()-1));
-    let emailHtml = `
-      <style>
-        .title {
-          font-size: 16px;
-          font-weight: 700;
-        }
-      </style>
-      <h2>Saludos</h2>    
-      <h4 class="title">En el siguiente correo se envía los reportes diarios de:</h4>            
-    `;
-    const excelFiles = []
-    emailHtml += '<h2>'
-    let x = 1
-    for (const graphic of graphics) {
-      console.log(`running report: ${graphic.xnombre}`); 
-      const responseFilters = await fetch(`${process.env.API_URL_PROD}/graphics/${graphic.id}/getFilters`, {
-        method: "GET",
-        headers: {"Content-type": "application/json;charset=UTF-8"}
-      })
-      const filters = await responseFilters.json()
-      for (const filter of filters) {
-        if(filter.bexport_total_key) {
-          filter.controlValue = date.toLocaleDateString('en-CA')
-          const requestVar = {value: filter.controlValue, key: filter.key, binverso: filter.binverso}
-          const responseExportTotal = await fetch(`${process.env.API_URL_PROD}/graphics/exportTotal`, {
-            method: "POST",
-            headers: {"Content-type": "application/json;charset=UTF-8"},
-            body: JSON.stringify({
-                requestVar: requestVar,
-                id: graphic.id
-            })
-          })
-          const exportTotal = await responseExportTotal.json()
-          const excelFile = await excelService.exportAllToExcel(exportTotal.items, `dwh_reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}`, graphic.xnombre)
-          excelFiles.push({filename: `La Mundial de Seguros C.A, reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}.xlsx`, content: Buffer.from(excelFile)})
-        }
+  //   const responseGraphics = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
+  //     method: "GET",
+  //     headers: {"Content-type": "application/json;charset=UTF-8"}
+  //   })
+  //   const graphicsAll = await responseGraphics.json()
+  //   const graphics = graphicsAll.filter(graphic => graphic.bexportdiario)
+  //   let date = new Date(new Date().setDate(new Date().getDate()-1));
+  //   let emailHtml = `
+  //     <style>
+  //       .title {
+  //         font-size: 16px;
+  //         font-weight: 700;
+  //       }
+  //     </style>
+  //     <h2>Saludos</h2>    
+  //     <h4 class="title">En el siguiente correo se envía los reportes diarios de:</h4>            
+  //   `;
+  //   const excelFiles = []
+  //   emailHtml += '<h2>'
+  //   let x = 1
+  //   for (const graphic of graphics) {
+  //     console.log(`running report: ${graphic.xnombre}`); 
+  //     const responseFilters = await fetch(`${process.env.API_URL_PROD}/graphics/${graphic.id}/getFilters`, {
+  //       method: "GET",
+  //       headers: {"Content-type": "application/json;charset=UTF-8"}
+  //     })
+  //     const filters = await responseFilters.json()
+  //     for (const filter of filters) {
+  //       if(filter.bexport_total_key) {
+  //         filter.controlValue = date.toLocaleDateString('en-CA')
+  //         const requestVar = {value: filter.controlValue, key: filter.key, binverso: filter.binverso}
+  //         const responseExportTotal = await fetch(`${process.env.API_URL_PROD}/graphics/exportTotal`, {
+  //           method: "POST",
+  //           headers: {"Content-type": "application/json;charset=UTF-8"},
+  //           body: JSON.stringify({
+  //               requestVar: requestVar,
+  //               id: graphic.id
+  //           })
+  //         })
+  //         const exportTotal = await responseExportTotal.json()
+  //         const excelFile = await excelService.exportAllToExcel(exportTotal.items, `dwh_reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}`, graphic.xnombre)
+  //         excelFiles.push({filename: `La Mundial de Seguros C.A, reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}.xlsx`, content: Buffer.from(excelFile)})
+  //       }
         
-      }
-      emailHtml += `${graphic.xnombre}`
-      if(x < graphics.length) {
-        emailHtml += ' - '
-      }
-      x++
-    }
-    emailHtml += `</h2>
-    <p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>
-    `
-    const transporter = nodemailer.createTransport({
-      service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
-      auth: {
-        user: 'themultiacount@gmail.com',
-        pass: 'kfgb bnad gqpz etux'
-      }
-    });
-    const mailOptions = {
-      from: 'La Mundial de Seguros',
-      // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
-      to: [
-        'quand.mind@gmail.com',
-        'gidler@lamundialdeseguros.com',
-        'jperez@lamundialdeseguros.com',
-        'fbelisario@lamundialdeseguros.com',
-        'hmartinez@lamundialdeseguros.com',
-        'clorenzo@lamundialdeseguros.com',
-        'jmatute@lamundialdeseguros.com',
-        'lmoreno@lamundialdeseguros.com',
-        'lbarraez@lamundialdeseguros.com',
-        'areyes@lamundialdeseguros.com',
-        'rmunoz@lamundialdeseguros.com',
-        'chernandez@lamundialdeseguros.com'
-      ], // Cambia esto por la dirección de destino
-      subject: `Reportes del día ${date.toLocaleDateString('en-US')}`,
-      html: emailHtml,
-      attachments: excelFiles
-    };
-    try {
-      const response = await transporter.sendMail(mailOptions);
-      console.log('Correo enviado correctamente');
-    } catch (error) {
-      console.error('Error al enviar el correo:', error.message);
-    }
-    // console.log(result);
+  //     }
+  //     emailHtml += `${graphic.xnombre}`
+  //     if(x < graphics.length) {
+  //       emailHtml += ' - '
+  //     }
+  //     x++
+  //   }
+  //   emailHtml += `</h2>
+  //   <p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>
+  //   `
+  //   const transporter = nodemailer.createTransport({
+  //     service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
+  //     auth: {
+  //       user: 'themultiacount@gmail.com',
+  //       pass: 'kfgb bnad gqpz etux'
+  //     }
+  //   });
+  //   const mailOptions = {
+  //     from: 'La Mundial de Seguros',
+  //     // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+  //     to: [
+  //       'quand.mind@gmail.com',
+  //       'gidler@lamundialdeseguros.com',
+  //       'jperez@lamundialdeseguros.com',
+  //       'fbelisario@lamundialdeseguros.com',
+  //       'hmartinez@lamundialdeseguros.com',
+  //       'clorenzo@lamundialdeseguros.com',
+  //       'jmatute@lamundialdeseguros.com',
+  //       'lmoreno@lamundialdeseguros.com',
+  //       'lbarraez@lamundialdeseguros.com',
+  //       'areyes@lamundialdeseguros.com',
+  //       'rmunoz@lamundialdeseguros.com',
+  //       'chernandez@lamundialdeseguros.com'
+  //     ], // Cambia esto por la dirección de destino
+  //     subject: `Reportes del día ${date.toLocaleDateString('en-US')}`,
+  //     html: emailHtml,
+  //     attachments: excelFiles
+  //   };
+  //   try {
+  //     const response = await transporter.sendMail(mailOptions);
+  //     console.log('Correo enviado correctamente');
+  //   } catch (error) {
+  //     console.error('Error al enviar el correo:', error.message);
+  //   }
+  //   // console.log(result);
 
-  });
+  // });
   cron.schedule('0 0 0 1 * *', async() => {
     // Cambiar aqui la funcion    
 
@@ -364,6 +364,8 @@ app.listen(port, async () => {
       to: [
         'quand.mind@gmail.com',
         'andres.quintero@exelixitech.com',
+        'jesus.obando@exelixitech.com',
+        'yennifergrau@grupodigifarm.com',
         'graciela.idler@exelixitech.com',
         'franjhely.araujo@exelixitech.com',
         'gabriel.estacio@exelixitech.com',
@@ -385,72 +387,72 @@ app.listen(port, async () => {
 
   })
   
-  cron.schedule('0 0 9 * * *', async() => {
-    const date = new Date()
-    const finicio = new Date(date.getFullYear(), 1, 1).toLocaleDateString('en-US');
-    const ffin =  new Date().toLocaleDateString('en-US')
+  // cron.schedule('0 0 9 * * *', async() => {
+  //   const date = new Date()
+  //   const finicio = new Date(date.getFullYear(), 1, 1).toLocaleDateString('en-US');
+  //   const ffin =  new Date().toLocaleDateString('en-US')
   
-    let emailHtml = ``
-    //Gestores
-    console.log(`running report: gestores`); 
-    const excelFiles = []
+  //   let emailHtml = ``
+  //   //Gestores
+  //   console.log(`running report: gestores`); 
+  //   const excelFiles = []
     
-    const responsePoliza = await Reports.gestoresPoliza({finicio, ffin})
-    const responseRecibos = await Reports.gestoresRecibos({finicio, ffin})
-    const dataFile = [
-      {label: 'POLIZAS', data: responsePoliza},
-      {label: 'RECIBOS', data: responseRecibos}
-    ]
-    const excelFilePoliza = await excelService.exportAllToExcel(dataFile, `dwh_reporte_total_gestores_poliza-${finicio}-${ffin}`, 'Gestores (Poliza y Recibos)')
-    excelFiles.push({filename: `La Mundial de Seguros C.A, reporte_total_gestores-${finicio}-${ffin}.xlsx`, content: Buffer.from(excelFilePoliza)})
+  //   const responsePoliza = await Reports.gestoresPoliza({finicio, ffin})
+  //   const responseRecibos = await Reports.gestoresRecibos({finicio, ffin})
+  //   const dataFile = [
+  //     {label: 'POLIZAS', data: responsePoliza},
+  //     {label: 'RECIBOS', data: responseRecibos}
+  //   ]
+  //   const excelFilePoliza = await excelService.exportAllToExcel(dataFile, `dwh_reporte_total_gestores_poliza-${finicio}-${ffin}`, 'Gestores (Poliza y Recibos)')
+  //   excelFiles.push({filename: `La Mundial de Seguros C.A, reporte_total_gestores-${finicio}-${ffin}.xlsx`, content: Buffer.from(excelFilePoliza)})
     
-    emailHtml += `
-      <style>
-        .title {
-        font-size: 16px;
-        font-weight: 700;
-        }
-      </style>
-      <h2>Saludos</h2>
-      <h4 class="title">En el siguiente correo se envía el reporte diario de</h4>
-      <h2 class="title">Gestores</h2>
-      <p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>
-    `;
-    const transporter = nodemailer.createTransport({
-      service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
-      auth: {
-        user: 'themultiacount@gmail.com',
-        pass: 'kfgb bnad gqpz etux'
-      }
-    });
-    const mailOptions = {
-      from: 'La Mundial de Seguros',
-      // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
-      to: [
-        'quand.mind@gmail.com',
-        'andres.quintero@exelixitech.com',
-        'gabriel.estacio@exelixitech.com',
-        'hamilton.leon@exelixitech.com',
-        'lmoreno@lamundialdeseguros.com',
-        'carmen.sanz@exelixitech.com',
-        'egarcia@lamundialdeseguros.com',
-        'graciela.idler@exelixitech.com',
-        'jquintero@lamundialdeseguros.com',
-        'jfernandez@lamundialdeseguros.com',
-        'jizquierdo@lamundialdeseguros.com',
-      ],
-      subject: `Reporte de Gestores`,
-      html: emailHtml,
-      attachments: excelFiles
-    };
-    try {
-      const response = await transporter.sendMail(mailOptions);
-      console.log('Correo enviado correctamente');
-    } catch (error) {
-      console.error('Error al enviar el correo:', error.message);
-    }
+  //   emailHtml += `
+  //     <style>
+  //       .title {
+  //       font-size: 16px;
+  //       font-weight: 700;
+  //       }
+  //     </style>
+  //     <h2>Saludos</h2>
+  //     <h4 class="title">En el siguiente correo se envía el reporte diario de</h4>
+  //     <h2 class="title">Gestores</h2>
+  //     <p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>
+  //   `;
+  //   const transporter = nodemailer.createTransport({
+  //     service: 'gmail', // o cualquier otro servicio de correo (e.g., 'yahoo', 'outlook')
+  //     auth: {
+  //       user: 'themultiacount@gmail.com',
+  //       pass: 'kfgb bnad gqpz etux'
+  //     }
+  //   });
+  //   const mailOptions = {
+  //     from: 'La Mundial de Seguros',
+  //     // to: ['quand.mind@gmail.com'], // Cambia esto por la dirección de destino
+  //     to: [
+  //       'quand.mind@gmail.com',
+  //       'andres.quintero@exelixitech.com',
+  //       'gabriel.estacio@exelixitech.com',
+  //       'hamilton.leon@exelixitech.com',
+  //       'lmoreno@lamundialdeseguros.com',
+  //       'carmen.sanz@exelixitech.com',
+  //       'egarcia@lamundialdeseguros.com',
+  //       'graciela.idler@exelixitech.com',
+  //       'jquintero@lamundialdeseguros.com',
+  //       'jfernandez@lamundialdeseguros.com',
+  //       'jizquierdo@lamundialdeseguros.com',
+  //     ],
+  //     subject: `Reporte de Gestores`,
+  //     html: emailHtml,
+  //     attachments: excelFiles
+  //   };
+  //   try {
+  //     const response = await transporter.sendMail(mailOptions);
+  //     console.log('Correo enviado correctamente');
+  //   } catch (error) {
+  //     console.error('Error al enviar el correo:', error.message);
+  //   }
 
-  })
+  // })
 })
 
 
