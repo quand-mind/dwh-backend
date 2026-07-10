@@ -23,11 +23,11 @@ const sqlConfig = {
   }
 }
 
-function compareByCode( a, b ) {
-  if ( a.id < b.id ){
+function compareByCode(a, b) {
+  if (a.id < b.id) {
     return -1;
   }
-  if ( a.id > b.id ){
+  if (a.id > b.id) {
     return 1;
   }
   return 0;
@@ -36,7 +36,7 @@ function compareByCode( a, b ) {
 const setAllClients = async () => {
   try {
     await sql.connect(sqlConfig)
-    if(!countAllClients) {
+    if (!countAllClients) {
       const result = await sql.query(`SELECT COUNT(orden) AS count from lista_clientes`)
       countAllClients = result.recordsets[0][0].count
     }
@@ -56,10 +56,10 @@ const getAllClients = async (firstItem) => {
     let query = `SELECT cid, xnombre, corigen, xorigen, fnacimiento, orden, xtelefono1, xcompania, xcedula FROM lista_clientes`
     query = query + queryRowsA
     const result = await sql.query(`${query}`)
-    
+
     const records = result.recordset
-    if(firstItem) {
-      return {records, query}
+    if (firstItem) {
+      return { records, query }
     } else {
       return records
     }
@@ -69,7 +69,7 @@ const getAllClients = async (firstItem) => {
   }
 }
 const getClientData = async (orden) => {
-  
+
   try {
     clientsData = []
     await sql.connect(sqlConfig)
@@ -79,7 +79,7 @@ const getClientData = async (orden) => {
     records.forEach(item => {
       formatData(item)
     })
-    
+
     return clientsData[0]
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
@@ -88,22 +88,22 @@ const getClientData = async (orden) => {
 }
 
 const formatData = (item) => {
-    clientsData.push(item)
+  clientsData.push(item)
 }
 const getDashboardClientData = async () => {
-  
+
   try {
     // Array de Sistemas
     await sql.connect(sqlConfig)
     const objectItems = [
-      {label: 'Sys2000', value: 1, color: '#000000'},
-      {label: 'ArysAuto', value: 2, color: '#fdb101'},
-      {label: 'ManMar', value: 3, color: '#334ebd'},
-      {label: 'Beeinsurance', value: 4, color: '#F1B592'},
-      {label: 'Pasarela de Ventas', value: 5, color: '#4A80F4'},
-      {label: 'Logistika', value: 6, color: '#FF794B'}
+      { label: 'Sys2000', value: 1, color: '#000000' },
+      { label: 'ArysAuto', value: 2, color: '#fdb101' },
+      { label: 'ManMar', value: 3, color: '#334ebd' },
+      { label: 'Beeinsurance', value: 4, color: '#F1B592' },
+      { label: 'Pasarela de Ventas', value: 5, color: '#4A80F4' },
+      { label: 'Logistika', value: 6, color: '#FF794B' }
     ]
-    
+
     let records1 = []
     let records2 = []
     let recordsData1 = []
@@ -116,24 +116,24 @@ const getDashboardClientData = async () => {
 
     let z = 1
     // Ciclo para obtener la totalidad de valores de cada sistema
-    for(const objectItem of objectItems) {
+    for (const objectItem of objectItems) {
       // Query del 1er gráfico
       queryItems1 += `SUM(CASE When corigen = ${objectItem.value} THEN 1 ELSE 0 END)`
-      if(z<objectItems.length){
+      if (z < objectItems.length) {
         queryItems1 += ','
       }
 
       let actualDate = new Date()
       const year = actualDate.getFullYear()
       let month = actualDate.getMonth()
-      
-      let actualMonth = month +1
+
+      let actualMonth = month + 1
       let actualYear = year - 1
       let x = 0
       let iter = 1
       // Ciclo para generar las fechas de cada mes y obtener los valores por mes
       while (x == 0) {
-        
+
         let lastDate = moment(new Date(actualYear, actualMonth + 1, 0)).format('MM-DD-YYYY');
         let firstDate = moment(new Date(actualYear, actualMonth, 0)).format('MM-DD-YYYY');
         // Query del 2do gráfico
@@ -141,36 +141,36 @@ const getDashboardClientData = async () => {
 
         actualMonth++
         // Cambio de año luego del mes 12 (11 porque el ciclo empieza en 0)
-        if(actualMonth > 11) {
+        if (actualMonth > 11) {
           actualMonth = 0
           actualYear++
         }
-        if(actualMonth == month + 1 && x==0) {
-          if(z<objectItems.length){
-            queryItems2 += ',' 
+        if (actualMonth == month + 1 && x == 0) {
+          if (z < objectItems.length) {
+            queryItems2 += ','
           }
           x++
         } else {
           queryItems2 += ','
         }
-        if (iter == 12 ) {
+        if (iter == 12) {
           x = 1
           // queryItems1 = queryItems1.slice(0, -1)
-          
+
         }
-        iter ++
+        iter++
       }
       z++
     }
-    
+
     var lastChar = queryItems2.substr(queryItems2.length - 1)
-    if(lastChar != ')'){
+    if (lastChar != ')') {
       queryItems2 = queryItems2.slice(0, -1)
     }
     const query1 = `SELECT ${queryItems1} FROM lista_clientes`
     const query2 = `SELECT ${queryItems2} FROM lista_clientes`
-    
-    
+
+
     let result1 = await sql.query(query1)
     records1 = result1.recordset[0]['']
     let result2 = await sql.query(query2)
@@ -178,13 +178,13 @@ const getDashboardClientData = async () => {
 
     let y = 0
     z = 0
-    for(const objectItem of objectItems) {
+    for (const objectItem of objectItems) {
       let actualDate = new Date()
       const year = actualDate.getFullYear()
       let month = actualDate.getMonth()
       let monthData = null
-      
-      let actualMonth = month +1
+
+      let actualMonth = month + 1
       let actualYear = year - 1
       let x = 0
       let item1 = {}
@@ -206,32 +206,32 @@ const getDashboardClientData = async () => {
         let lastDate = new Date(actualYear, actualMonth + 1, 0);
         let firstDate = new Date(actualYear, actualMonth, 0);
 
-        item2.data.push({label: months[actualMonth], data: records2[z], date: Intl.DateTimeFormat('en-US').format(firstDate) + '-' + Intl.DateTimeFormat('en-US').format(lastDate)})
+        item2.data.push({ label: months[actualMonth], data: records2[z], date: Intl.DateTimeFormat('en-US').format(firstDate) + '-' + Intl.DateTimeFormat('en-US').format(lastDate) })
         actualMonth++
-        if(actualMonth > 11) {
+        if (actualMonth > 11) {
           actualMonth = 0
           actualYear++
         }
-        if(actualMonth == month + 1 && x==0) {
+        if (actualMonth == month + 1 && x == 0) {
           x++
         }
         z++
-        if(iter == 12) {
+        if (iter == 12) {
           x = 1
         }
         iter++
       }
       recordsData2.push(item2)
       y++
-      
-      
+
+
     }
     const actualDate = new Date()
     const month = actualDate.getMonth()
     let arr1 = months.slice(0, month + 1);
-    let arr2 = months.slice(month +1, month + months.length);
+    let arr2 = months.slice(month + 1, month + months.length);
     months = arr2.concat(arr1)
-    return {recordsData1, recordsData2, months}
+    return { recordsData1, recordsData2, months }
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err
@@ -246,12 +246,12 @@ const getCountClientsAndSearch = async (string, body) => {
 
   const result = await sql.query(finalQuery)
   let count = 0
-  if(result.recordset[1]){
-    count  = result.recordset[1].count
+  if (result.recordset[1]) {
+    count = result.recordset[1].count
   } else {
-    count  = result.recordset[0].count
+    count = result.recordset[0].count
   }
-  
+
   return count
 }
 const getCompanies = async (table) => {
@@ -295,18 +295,18 @@ const searchWithTable = async (table) => {
 }
 const getSystemData = async (table) => {
   try {
-    let fields = {id:'',email:'',telefono:'',nacimiento:''}
-    if(table == 'Clientes_Sis2000') {
+    let fields = { id: '', email: '', telefono: '', nacimiento: '' }
+    if (table == 'Clientes_Sis2000') {
       fields.id = 'id'; fields.email = 'xcorreo', fields.telefono = 'xtelefono', fields.nacimiento = 'fnacimiento'
-    } else if( table == 'clcliente'){
+    } else if (table == 'clcliente') {
       fields.id = 'ccliente'; fields.email = 'xemail', fields.telefono = 'xtelefono', fields.nacimiento = 'fnacimiento'
-    } else if(table == 'Clientes_ManMar') {
+    } else if (table == 'Clientes_ManMar') {
       fields.id = 'id'; fields.email = 'xcorreo', fields.telefono = 'xtelefono1', fields.nacimiento = 'fnacimiento'
-    } else if(table == 'Clientes_BeeInsurance') {
+    } else if (table == 'Clientes_BeeInsurance') {
       fields.id = 'id'; fields.email = 'xcorreo', fields.telefono = 'xtelefono1', fields.nacimiento = 'fnacimiento'
-    } else if(table == 'Clientes_Pasarela') {
+    } else if (table == 'Clientes_Pasarela') {
       fields.id = 'id_buy'; fields.email = 'xcorreo', fields.telefono = 'xtelefono1', fields.nacimiento = 'fnacimiento'
-    } else if(table == 'Clientes_RMS') {
+    } else if (table == 'Clientes_RMS') {
       fields.id = 'id'; fields.email = 'xcorreo', fields.telefono = 'xtelefono1', fields.nacimiento = 'fnacimiento'
     }
     let query = `
@@ -332,41 +332,39 @@ const getProductsByUser = async (user, page, string, body) => {
 
     const resultClient = await sql.query(`SELECT b.cgestor from seusuarios_portal a inner join magestor b on a.xemail = b.xcorreo WHERE a.cusuario = ${user}`)
     const canal = body.ccanalalt
-    if(resultClient.recordset.length > 0) {
+    if (resultClient.recordset.length > 0) {
       delete body.ccanalalt
-      if(!body.cgestor) {
-        body.cgestor = `${resultClient.recordset[0].cgestor}%(LIKE)` 
+      if (!body.cgestor) {
+        body.cgestor = `${resultClient.recordset[0].cgestor}%(LIKE)`
       } else {
         body.cgestor = `${body.cgestor}%(LIKE)`
       }
-      console.log(body);
       const offsetRows = (page * 10) - 10
       const queryRowsA = queryRows(offsetRows, 'cnpoliza')
 
       let initialQuery = 'SELECT cnpoliza, casegurado, ctenedor, fdesde, fhasta, cplan FROM adpoliza'
       let initialQuery2 = 'SELECT count(*) as total FROM adpoliza'
-
-      let finalQuery = setQuery(string, user.main ? body : {ccanalalt: canal}, initialQuery)
-      let finalQuery2 = setQuery(string, user.main ? body : {ccanalalt: canal}, initialQuery2)
-      console.log(finalQuery);
-      console.log(finalQuery2);
+      const main = body.main
+      delete body.main
+      let finalQuery = setQuery(string, main ? body : { ccanalalt: canal }, initialQuery)
+      let finalQuery2 = setQuery(string, main ? body : { ccanalalt: canal }, initialQuery2)
       // make sure that any items are correctly URL encoded in the connection string    
-      
-      
+
+
       const result = await sql.query(`${finalQuery} ${queryRowsA}`)
       const result2 = await sql.query(`${finalQuery2}`)
       const total = result2.recordset[0].total
       const records = result.recordset
-      return {data:records, total}
+      return { data: records, total }
 
     } else {
-      return {error: 'Usuario No encontrado', code: 403}
+      return { error: 'Usuario No encontrado', code: 403 }
     }
 
-    
+
   } catch (err) {
-   console.log('Error al Obtener los clientes', err)
-   return err
+    console.log('Error al Obtener los clientes', err)
+    return err
   }
 }
 const getAllClientsAndSearch = async (page, string, body) => {
@@ -379,16 +377,16 @@ const getAllClientsAndSearch = async (page, string, body) => {
 
     let finalQuery = setQuery(string, body, initialQuery, 'lista_clientes.')
     // make sure that any items are correctly URL encoded in the connection string    
-    
+
     await sql.connect(sqlConfig)
     const result = await sql.query(`${finalQuery} ${queryRowsA}`)
     const records = result.recordsets[0]
 
-    return {records, query: finalQuery}
-    
+    return { records, query: finalQuery }
+
   } catch (err) {
-   console.log('Error al Obtener los clientes', err)
-   return err
+    console.log('Error al Obtener los clientes', err)
+    return err
   }
 }
 
@@ -396,25 +394,23 @@ const setQuery = (string, body, initialQuery, table) => {
 
   const bodyKeys = Object.keys(body)
 
-    
   let queryFilters = ''
   let x = 0
-  if(bodyKeys.length > 0) {
+  if (bodyKeys.length > 0) {
     for (let key of bodyKeys) {
-      if(x > 0) {
+      if (x > 0) {
         queryFilters += ' AND '
       } else {
         queryFilters += ' WHERE '
       }
       let filterItems = []
-      console.log('jkashdj',body[key]);
-      if(key[0].includes('f')){
+      if (key[0].includes('f')) {
         const value_splitted = body[key].split(' - ')
         let date1, date2 = ''
         key = `CONVERT(date, ${table || ''}${key})`
-        if(value_splitted.length == 1) {
+        if (value_splitted.length == 1) {
           date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
-          if(value_splitted[0].includes('>')) {
+          if (value_splitted[0].includes('>')) {
             queryFilters += `(${key} <= '${date1}')`
           } else {
             queryFilters += `(${key} >= '${date1}')`
@@ -422,70 +418,68 @@ const setQuery = (string, body, initialQuery, table) => {
         } else {
           date2 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
           date1 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
-          if(value_splitted[0].includes('>')) {
+          if (value_splitted[0].includes('>')) {
             queryFilters += `(${key} >= '${date1}')`
-          } else if(value_splitted[1].includes('>')) {
+          } else if (value_splitted[1].includes('>')) {
             queryFilters += `(${key} <= '${date2}')`
           } else {
             queryFilters += `(${key} <= '${date2}' AND ${key} >= '${date1}')`
           }
         }
-      } else if(key.includes('_')){
+      } else if (key.includes('_')) {
         queryFilters += `xcedula NOT IN (SELECT id FROM maVclientes_productos WHERE cramo = ${body[key]})`
-      } else if(typeof body[key] == 'string' && body[key].includes('(LIKE)')) {
+      } else if (typeof body[key] == 'string' && body[key].includes('(LIKE)')) {
         const searchVar = body[key].split('(LIKE)')[0]
         queryFilters += `${table || ''}${key} LIKE '${searchVar}'`
-      } else{
+      } else {
         queryFilters += `${table || ''}${key} = ${body[key]}`
       }
       x++
-      if(x == bodyKeys.length && string != '------') {
+      if (x == bodyKeys.length && string != '------') {
         queryFilters += ' AND '
       }
-      if(table == 'lista_clientes.') {
+      if (table == 'lista_clientes.') {
         clientsData = filterItems
       }
     }
   }
 
 
-  let queryString =''
-  if (string != '------'){
-    if(bodyKeys.length == 0) {
+  let queryString = ''
+  if (string != '------') {
+    if (bodyKeys.length == 0) {
       queryFilters += ' WHERE '
     }
-    if(table == 'lista_clientes.') {
+    if (table == 'lista_clientes.') {
       queryString = `(xcedula LIKE '${string}' + '%' OR xnombre LIKE '${string}' + '%' OR fnacimiento LIKE '${string}' + '%' OR xtelefono1 LIKE '${string}' + '%' OR xcompania LIKE '${string}' + '%')`
     } else {
       queryString = `(cnpoliza LIKE '${string}' + '%' OR casegurado LIKE '${string}' + '%' OR ctenedor LIKE '${string}' + '%' OR cbeneficiario LIKE '${string}' + '%')`
     }
   }
 
-  
+
   let finalQuery = `${initialQuery} ${queryFilters} ${queryString}`
-  
+
   return finalQuery
 }
 const setQueryAdd = (string, body, initialQuery, table) => {
 
   const bodyKeys = Object.keys(body)
 
-    
+
   let queryFilters = ''
   let x = 0
-  console.log(table);
-  if(bodyKeys.length > 0) {
+  if (bodyKeys.length > 0) {
     for (let key of bodyKeys) {
       queryFilters += ' AND '
       let filterItems = []
-      console.log('jkashdj',body[key]);
-      if(key[0].includes('f')){
+      if (key[0].includes('f')) {
         const value_splitted = body[key].split(' - ')
         let date1, date2 = ''
         key = `CONVERT(date, ${table || ''}${key})`
-        if(value_splitted.length == 1) {
+        if (value_splitted.length == 1) {
           date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
-          if(value_splitted[0].includes('>')) {
+          if (value_splitted[0].includes('>')) {
             queryFilters += `(${key} <= '${date1}')`
           } else {
             queryFilters += `(${key} >= '${date1}')`
@@ -493,49 +487,49 @@ const setQueryAdd = (string, body, initialQuery, table) => {
         } else {
           date2 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
           date1 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
-          if(value_splitted[0].includes('>')) {
+          if (value_splitted[0].includes('>')) {
             queryFilters += `(${key} >= '${date1}')`
-          } else if(value_splitted[1].includes('>')) {
+          } else if (value_splitted[1].includes('>')) {
             queryFilters += `(${key} <= '${date2}')`
           } else {
             queryFilters += `(${key} <= '${date2}' AND ${key} >= '${date1}')`
           }
         }
-      } else if(key.includes('_')){
+      } else if (key.includes('_')) {
         queryFilters += `xcedula NOT IN (SELECT id FROM maVclientes_productos WHERE cramo = ${body[key]})`
-      } else if(typeof body[key] == 'string' && body[key].includes('(LIKE)')) {
+      } else if (typeof body[key] == 'string' && body[key].includes('(LIKE)')) {
         const searchVar = body[key].split('(LIKE)')[0]
         queryFilters += `${table || ''}${key} LIKE '${searchVar}'`
-      } else{
+      } else {
         queryFilters += `${table || ''}${key} = ${body[key]}`
       }
     }
   }
 
 
-  let queryString =''
-  if(table == 'lista_clientes.') {
+  let queryString = ''
+  if (table == 'lista_clientes.') {
     queryString = `(xcedula LIKE '${string}' + '%' OR xnombre LIKE '${string}' + '%' OR fnacimiento LIKE '${string}' + '%' OR xtelefono1 LIKE '${string}' + '%' OR xcompania LIKE '${string}' + '%')`
   } else {
     queryString = `(cnpoliza LIKE '${string}' + '%' OR casegurado LIKE '${string}' + '%' OR ctenedor LIKE '${string}' + '%' OR cbeneficiario LIKE '${string}' + '%')`
   }
 
-  
+
   let finalQuery = `${initialQuery} ${queryFilters}`
-  
+
   return finalQuery
 }
 const getClients = async (page) => {
-  
+
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
     const offsetRows = (page * 10) - 10
-    const result = await getAllClients(offsetRows|| null)
+    const result = await getAllClients(offsetRows || null)
     return result
   } catch (err) {
-   console.log('Error al Obtener los clientes', err)
-   return err
+    console.log('Error al Obtener los clientes', err)
+    return err
   }
 }
 
@@ -552,48 +546,47 @@ const countClients = async () => {
 }
 
 const getAllClientsToExport = async () => {
-  
+
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
     const result = await sql.query(`SELECT * from lista_clientes`)
     return result.recordset
   } catch (err) {
-   console.log('Error al Obtener los clientes', err)
-   return err
+    console.log('Error al Obtener los clientes', err)
+    return err
   }
 }
 
 const getProductDetail = async (id) => {
-  
-  try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, (g.cgestor) as cgestor_m, (g.xnombre) as xgestor_m, d.xcanalalt, e.xplan FROM adpoliza a inner join Sis2000..maclient b on a.casegurado = b.cci_rif inner join Sis2000..maclient c on a.ctenedor = c.cci_rif left join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt left join maplanes e on a.cplan = e.cplan and a.cramo = e.cramo left join producto_gestor f on f.cproducto = trim(a.cnpoliza) left join magestor g on f.cgestor = g.cgestor WHERE a.cnpoliza = '${id}'`;
-   console.log(query);
-   const result = await sql.query(query)
-   if(result.recordset.length > 0) {
-    const product = result.recordset[0]
 
-    const query2 = `SELECT * FROM adrecibos WHERE cnpoliza = '${product.cnpoliza}' and fanopol = ${product.fanopol} and fmespol =${product.fmespol}`;
-    const result2 = await sql.query(query2)
-    product.receipts = result2.recordset
-    
-    return product
-   } else {
-    return {error: 'Producto no encontrado', code: 404}
-   }
+  try {
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, (g.cgestor) as cgestor_m, (g.xnombre) as xgestor_m, d.xcanalalt, e.xplan FROM adpoliza a inner join Sis2000..maclient b on a.casegurado = b.cci_rif inner join Sis2000..maclient c on a.ctenedor = c.cci_rif left join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt left join maplanes e on a.cplan = e.cplan and a.cramo = e.cramo left join producto_gestor f on f.cproducto = trim(a.cnpoliza) left join magestor g on f.cgestor = g.cgestor WHERE a.cnpoliza = '${id}'`;
+    const result = await sql.query(query)
+    if (result.recordset.length > 0) {
+      const product = result.recordset[0]
+
+      const query2 = `SELECT * FROM adrecibos WHERE cnpoliza = '${product.cnpoliza}' and fanopol = ${product.fanopol} and fmespol =${product.fmespol}`;
+      const result2 = await sql.query(query2)
+      product.receipts = result2.recordset
+
+      return product
+    } else {
+      return { error: 'Producto no encontrado', code: 404 }
+    }
   } catch (err) {
-   console.log('Error al Obtener los datos del producto', err)
-   return err
+    console.log('Error al Obtener los datos del producto', err)
+    return err
   }
 }
 
 const exportGestorProductsData = async (cgestor, filters) => {
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   let query = `SELECT 
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    let query = `SELECT 
     trim(a.cnpoliza) as 'N° de Póliza',
     convert(varchar(100),FORMAT(convert(date,a.fdesde),'dd/MM/yyyy')) as 'Fecha de Inicio',
     convert(varchar(100),FORMAT(convert(date,a.fhasta),'dd/MM/yyyy')) as 'Fecha Fin',
@@ -673,28 +666,28 @@ const exportGestorProductsData = async (cgestor, filters) => {
 
     delete filters.ccanalalt;
     let finalQuery1, finalQuery2
-    if(filters != {}) {
-      if(query.includes('group by')) {
+    if (filters != {}) {
+      if (query.includes('group by')) {
         const sqlOtrosDetallesD = query.split('group by')
         query = sqlOtrosDetallesD[0]
         finalQuery1 = setQueryAdd('', filters, query, 'a.')
-        if(sqlOtrosDetallesD[1].includes('UNION')) {
+        if (sqlOtrosDetallesD[1].includes('UNION')) {
           const querySplitUnion = sqlOtrosDetallesD[1].split('UNION')
           finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
           sqlOtrosDetallesD[1] = querySplitUnion[1]
           finalQuery2 = setQueryAdd('', filters, sqlOtrosDetallesD[1], 'a.')
-          finalQuery2 =  ' UNION ' + finalQuery2
+          finalQuery2 = ' UNION ' + finalQuery2
           finalQuery1 = finalQuery1 + finalQuery2
         } else {
           finalQuery1 = finalQuery1 + 'group by' + sqlOtrosDetallesD[1]
         }
       } else {
-        if(query.includes('UNION')) {
+        if (query.includes('UNION')) {
           const querySplitUnion = query.split('UNION')
           // console.log(querySplitUnion);
           finalQuery1 = setQueryAdd('', filters, querySplitUnion[0], 'a.')
           finalQuery2 = setQueryAdd('', filters, querySplitUnion[1], 'a.')
-          finalQuery2 =  ' UNION ' + finalQuery2
+          finalQuery2 = ' UNION ' + finalQuery2
         } else {
           finalQuery1 = setQueryAdd('', filters, query, 'a.')
         }
@@ -702,120 +695,119 @@ const exportGestorProductsData = async (cgestor, filters) => {
     } else {
       finalQuery1 = query
     }
-    console.log('aqui', finalQuery1);
     const result = await sql.query(`${finalQuery1} ${finalQuery2}`)
 
     return result.recordset
   } catch (err) {
-   console.log('Error al Obtener los datos del producto', err)
-   return err
+    console.log('Error al Obtener los datos del producto', err)
+    return err
   }
 }
 
 const getAllProducts = async () => {
-  
+
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const query = `SELECT * FROM maVclientes_productos`;
-   const result = await sql.query(query)
-   
-   return result.recordset
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const query = `SELECT * FROM maVclientes_productos`;
+    const result = await sql.query(query)
+
+    return result.recordset
   } catch (err) {
-   console.log('Error al Obtener los productos del cliente', err)
-   return err
+    console.log('Error al Obtener los productos del cliente', err)
+    return err
   }
 }
 
 const getAllRecibos = async () => {
-  
+
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const query = `SELECT * FROM Recibos_All`;
-   const result = await sql.query(query)
-   
-   return result.recordset
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const query = `SELECT * FROM Recibos_All`;
+    const result = await sql.query(query)
+
+    return result.recordset
   } catch (err) {
-   console.log('Error al Obtener los productos del cliente', err)
-   return err
+    console.log('Error al Obtener los productos del cliente', err)
+    return err
   }
 }
 
 const getProducts = async (rif) => {
-  
+
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const query = `SELECT * FROM maVclientes_productos WHERE cci_rif = '${rif}'`;
-   const result = await sql.query(query)
-   
-   return result.recordsets[0]
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const query = `SELECT * FROM maVclientes_productos WHERE cci_rif = '${rif}'`;
+    const result = await sql.query(query)
+
+    return result.recordsets[0]
   } catch (err) {
-   console.log('Error al Obtener los productos del cliente', err)
-   return err
+    console.log('Error al Obtener los productos del cliente', err)
+    return err
   }
 }
 const getObservations = async (orden) => {
-  
+
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const query = `SELECT * FROM clV_Observaciones WHERE orden = ${orden}`;
-   const result = await sql.query(query)
-   
-   return result.recordsets[0]
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const query = `SELECT * FROM clV_Observaciones WHERE orden = ${orden}`;
+    const result = await sql.query(query)
+
+    return result.recordsets[0]
   } catch (err) {
-   console.log('Error al Obtener las observaciones del cliente', err)
-   return err
+    console.log('Error al Obtener las observaciones del cliente', err)
+    return err
   }
 }
 
 const getReceipts = async (cnpoliza) => {
-  
+
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const result = await sql.query(`SELECT xrecibo, mmonto_ext, xcontrato, fdesde, iestadorec FROM Recibos_All WHERE xcontrato = '${cnpoliza}'`)
-   
-   
-   return result.recordsets[0]
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const result = await sql.query(`SELECT xrecibo, mmonto_ext, xcontrato, fdesde, iestadorec FROM Recibos_All WHERE xcontrato = '${cnpoliza}'`)
+
+
+    return result.recordsets[0]
   } catch (err) {
-   console.log('Error al Obtener los recibos de los productos', err)
-   return err
+    console.log('Error al Obtener los recibos de los productos', err)
+    return err
   }
 }
 const addObservation = async (orden, data) => {
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   let date = new Date
-   date = date.toLocaleDateString('en-US')
-   const query = `INSERT into clobservaciones (orden, fobservacion, cusuario, xobservacion, itipoobservacion, cestatus) VALUES (${orden},'${date}', ${data.cusuario}, '${data.xobservacion}', '${data.itipoobservacion}', ${data.cestatus})`
-   const result = await sql.query(query)
-   
-  //  await sql.close()
-   return result.recordsets[0]
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    let date = new Date
+    date = date.toLocaleDateString('en-US')
+    const query = `INSERT into clobservaciones (orden, fobservacion, cusuario, xobservacion, itipoobservacion, cestatus) VALUES (${orden},'${date}', ${data.cusuario}, '${data.xobservacion}', '${data.itipoobservacion}', ${data.cestatus})`
+    const result = await sql.query(query)
+
+    //  await sql.close()
+    return result.recordsets[0]
   } catch (err) {
-   console.log('Error al agregar la Observacion', err)
-   return err
+    console.log('Error al agregar la Observacion', err)
+    return err
   }
 }
 
 const getDataUser = async (ccanal) => {
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   let date = new Date
-   date = date.toLocaleDateString('en-US')
-   const query = `select * from Sis2000..macanalalt where ccanalalt = ${ccanal}`
-   const result = await sql.query(query)
-   
-  //  await sql.close()
-   return result.recordsets[0]
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    let date = new Date
+    date = date.toLocaleDateString('en-US')
+    const query = `select * from Sis2000..macanalalt where ccanalalt = ${ccanal}`
+    const result = await sql.query(query)
+
+    //  await sql.close()
+    return result.recordsets[0]
   } catch (err) {
-   console.log('Error al agregar la Observacion', err)
-   return err
+    console.log('Error al agregar la Observacion', err)
+    return err
   }
 }
 

@@ -11,10 +11,10 @@ const setAllClients = async (req, res) => {
       });
     }
 
-    res.send({count: clients})
-    
+    res.send({ count: clients })
+
   } catch (error) {
-    
+
   }
 }
 const getCountClientsAndSearch = async (req, res) => {
@@ -28,10 +28,10 @@ const getCountClientsAndSearch = async (req, res) => {
       });
     }
 
-    res.send({count: clients})
-    
+    res.send({ count: clients })
+
   } catch (error) {
-    
+
   }
 }
 const getAllClients = async (req, res) => {
@@ -46,10 +46,10 @@ const getAllClients = async (req, res) => {
     }
 
 
-    res.send({data: clients.length})
-    
+    res.send({ data: clients.length })
+
   } catch (error) {
-    
+
   }
 }
 const searchWithTable = async (req, res) => {
@@ -65,9 +65,9 @@ const searchWithTable = async (req, res) => {
 
 
     res.send(clients)
-    
+
   } catch (error) {
-    
+
   }
 }
 const getSystemData = async (req, res) => {
@@ -83,9 +83,9 @@ const getSystemData = async (req, res) => {
 
 
     res.send(tableData)
-    
+
   } catch (error) {
-    
+
   }
 }
 const getCompanies = async (req, res) => {
@@ -99,11 +99,11 @@ const getCompanies = async (req, res) => {
       });
     }
     const companiesF = companies.map(element => {
-      return {text: element.xorigen, value: element.corigen, clients_url: element.xtabla_export, products_url: element.xtabla_export_polizas, receipts_url: element.xtabla_export_recibos}
+      return { text: element.xorigen, value: element.corigen, clients_url: element.xtabla_export, products_url: element.xtabla_export_polizas, receipts_url: element.xtabla_export_recibos }
     });
 
     res.send(companiesF)
-    
+
   } catch (error) {
     console.error(error)
   }
@@ -120,15 +120,15 @@ const getReports = async (req, res) => {
     }
     const reportsF = reports.map(element => {
       let variables = []
-      if(element.xvariables){
+      if (element.xvariables) {
         const vars = JSON.parse(element.xvariables)
         variables = vars.vars
       }
-      return {text: element.xreporte, value: element.id, url: element.xurl, variables}
+      return { text: element.xreporte, value: element.id, url: element.xurl, variables }
     });
 
     res.send(reportsF)
-    
+
   } catch (error) {
     console.error(error)
   }
@@ -150,10 +150,10 @@ const getClientData = async (req, res) => {
     });
     client.observations = observations
 
-    res.send({data: client})
-    
+    res.send({ data: client })
+
   } catch (error) {
-    
+
   }
 }
 const getDashboardClientData = async (req, res) => {
@@ -167,15 +167,14 @@ const getDashboardClientData = async (req, res) => {
       });
     }
     res.send(clients)
-    
+
   } catch (error) {
-    
+
   }
 }
 const getProductsByUser = async (req, res) => {
   try {
     const products = await Client.getProductsByUser(req.params.id, req.params.page, req.params.string, req.body);
-    // console.log(plans)
     if (products.error) {
       return res.status(products.code).send({
         status: false,
@@ -183,16 +182,15 @@ const getProductsByUser = async (req, res) => {
       });
     }
     res.send(products)
-    
+
   } catch (error) {
-    
+
   }
 }
 const getClients = async (req, res) => {
   try {
     const data = await Client.getClients(req.params.page);
     const clients = data.records
-    // console.log(plans)
     if (clients.error) {
       return res.status(clients.code).send({
         status: false,
@@ -203,36 +201,34 @@ const getClients = async (req, res) => {
       const keys = Object.keys(item)
       for (const key of keys) {
         if (key.charAt(0) == 'i') {
-          if(key == 'id') {
-            
-          } else if(key == 'iestado_civil'){
-            item['v'+key] = {values: ['C', 'S', 'N'],format: ['Casado', 'Soltero', 'No especificado']}
-          } else if(key == 'isexo') {
-            item['v'+key] = {values: ['M','F', 'N'], format:['Masculino', 'Femenino', 'No especificado']}
-          } else if(key == 'iestado'){
-            item['v'+key] = {values: ['V', 'E'], format:['Venezolano', 'Extranjero']}
-          } 
+          if (key == 'id') {
+
+          } else if (key == 'iestado_civil') {
+            item['v' + key] = { values: ['C', 'S', 'N'], format: ['Casado', 'Soltero', 'No especificado'] }
+          } else if (key == 'isexo') {
+            item['v' + key] = { values: ['M', 'F', 'N'], format: ['Masculino', 'Femenino', 'No especificado'] }
+          } else if (key == 'iestado') {
+            item['v' + key] = { values: ['V', 'E'], format: ['Venezolano', 'Extranjero'] }
+          }
         }
       }
     }
-    res.send({clients, query: data.query})
-    
+    res.send({ clients, query: data.query })
+
   } catch (error) {
-    
+
   }
 }
 const getAllClientsToExport = async (req, res) => {
   try {
-    let data = {clientes: null, productos: null, recibos: null}
+    let data = { clientes: null, productos: null, recibos: null }
     data.clientes = await Client.getAllClientsToExport();
-    // console.log(plans)
     if (data.clientes.error) {
       return res.status(data.clientes.code).send({
         status: false,
         message: data.clientes.error
       });
     }
-    console.log('ya se obtuvieron todos los clientes');
     data.productos = await Client.getAllProducts();
 
     if (data.productos.error) {
@@ -241,22 +237,20 @@ const getAllClientsToExport = async (req, res) => {
         message: data.productos.error
       });
     }
-    console.log('ya se obtuvieron todos los productos');
 
     data.recibos = await Client.getAllRecibos();
-    
+
     if (data.recibos.error) {
       return res.status(data.recibos.code).send({
         status: false,
         message: data.recibos.error
       });
     }
-    console.log('ya se obtuvieron todos los recibos');
-    
+
     res.send(data)
-    
+
   } catch (error) {
-    
+
   }
 }
 const getAllClientsAndSearch = async (req, res) => {
@@ -269,12 +263,12 @@ const getAllClientsAndSearch = async (req, res) => {
         message: clients.error
       });
     }
-    
 
-    res.send({clients, query: data.query})
-    
+
+    res.send({ clients, query: data.query })
+
   } catch (error) {
-    
+
   }
 }
 const countClients = async (req, res) => {
@@ -286,11 +280,11 @@ const countClients = async (req, res) => {
         message: clientsCount.error
       });
     }
-    
-    res.send(clientsCount) 
-    
+
+    res.send(clientsCount)
+
   } catch (error) {
-    
+
   }
 }
 
@@ -314,11 +308,11 @@ const getProducts = async (req, res) => {
       }
       product.receipts = receipts
     }
-    
-    res.send(products) 
-    
+
+    res.send(products)
+
   } catch (error) {
-    
+
   }
 }
 const getProductDetail = async (req, res) => {
@@ -330,11 +324,11 @@ const getProductDetail = async (req, res) => {
         message: productData.error
       });
     }
-    
-    res.send(productData) 
-    
+
+    res.send(productData)
+
   } catch (error) {
-    
+
   }
 }
 const getObservations = async (orden) => {
@@ -346,11 +340,11 @@ const getObservations = async (orden) => {
         message: observations.error
       });
     }
-    
-    return observations 
-    
+
+    return observations
+
   } catch (error) {
-    
+
   }
 }
 const addObservation = async (req, res) => {
@@ -362,11 +356,11 @@ const addObservation = async (req, res) => {
         message: observation.error
       });
     }
-    
-    res.send(observation) 
-    
+
+    res.send(observation)
+
   } catch (error) {
-    
+
   }
 }
 
@@ -379,11 +373,11 @@ const getDataUser = async (req, res) => {
         message: data.error
       });
     }
-    
-    res.send(data) 
-    
+
+    res.send(data)
+
   } catch (error) {
-    
+
   }
 }
 const exportGestorProductsData = async (req, res) => {
@@ -395,11 +389,11 @@ const exportGestorProductsData = async (req, res) => {
         message: data.error
       });
     }
-    
-    res.send(data) 
-    
+
+    res.send(data)
+
   } catch (error) {
-    
+
   }
 }
 
