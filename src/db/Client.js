@@ -342,8 +342,13 @@ const getProductsByUser = async (user, page, string, body) => {
       const offsetRows = (page * 10) - 10
       const queryRowsA = queryRows(offsetRows, 'cnpoliza')
 
-      let initialQuery = 'SELECT cnpoliza, casegurado, ctenedor, fdesde, fhasta, cplan FROM adpoliza'
-      let initialQuery2 = 'SELECT count(*) as total FROM adpoliza'
+      let initialQuery = `SELECT cnpoliza, casegurado, (select trim(xcliente) from Sis2000..maclient where cci_rif = adpoliza.casegurado) xasegurado, cgestor, (select xgestor from Sis2000..magestor where cgestor = adpoliza.cgestor) xgestor, fdesde, fhasta, (select CONVERT(varchar(20), sum(mprimabrutaext)) from Sis2000..adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol) as mprimaext, (
+      CASE WHEN 
+        (SELECT COUNT(*) FROM adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol and iestadorec = 'C') = (SELECT COUNT(*) FROM adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol) THEN 'Cobrada'
+      WHEN 
+        (SELECT COUNT(*) FROM adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol and iestadorec = 'A') = (SELECT COUNT(*) FROM adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol) THEN 'Anulada'
+      ELSE 'Pendiente' END) as estado_pag, fanopol, fmespol FROM Sis2000..adpoliza`
+      let initialQuery2 = 'SELECT count(*) as total FROM Sis2000..adpoliza'
       const main = body.main
       delete body.main
       let finalQuery = setQuery(string, main ? body : { ccanalalt: canal }, initialQuery)
@@ -558,12 +563,12 @@ const getAllClientsToExport = async () => {
   }
 }
 
-const getProductDetail = async (id) => {
+const getProductDetail = async (id, fano, fmes) => {
 
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, (g.cgestor) as cgestor_m, (g.xnombre) as xgestor_m, d.xcanalalt, e.xplan FROM adpoliza a inner join Sis2000..maclient b on a.casegurado = b.cci_rif inner join Sis2000..maclient c on a.ctenedor = c.cci_rif left join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt left join maplanes e on a.cplan = e.cplan and a.cramo = e.cramo left join producto_gestor f on f.cproducto = trim(a.cnpoliza) left join magestor g on f.cgestor = g.cgestor WHERE a.cnpoliza = '${id}'`;
+    const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, (g.cgestor) as cgestor_m, (g.xnombre) as xgestor_m, d.xcanalalt, e.xplan FROM adpoliza a inner join Sis2000..maclient b on a.casegurado = b.cci_rif inner join Sis2000..maclient c on a.ctenedor = c.cci_rif left join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt left join maplanes e on a.cplan = e.cplan and a.cramo = e.cramo left join producto_gestor f on f.cproducto = trim(a.cnpoliza) left join magestor g on f.cgestor = g.cgestor WHERE a.cnpoliza = '${id}' and a.fanopol = ${fano} and fmespol = ${fmes}`;
     const result = await sql.query(query)
     if (result.recordset.length > 0) {
       const product = result.recordset[0]

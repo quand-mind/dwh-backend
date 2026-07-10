@@ -21,9 +21,9 @@ router
     .post("/countClients", clientController.countClients)
     .get("/getCompanies", clientController.getCompanies)
     .get("/getReports", clientController.getReports)
-    .get("/getProductDetail/:id", clientController.getProductDetail)
+    .get("/getProductDetail/:id/:fano/:fmes", clientController.getProductDetail)
     .get("/getDataUser/:ccanal", clientController.getDataUser)
     .post("/exportGestorProductsData", clientController.exportGestorProductsData)
 
-    
+
 export default router;
