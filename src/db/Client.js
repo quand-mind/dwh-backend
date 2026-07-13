@@ -351,10 +351,13 @@ const getProductsByUser = async (user, page, string, body) => {
       let initialQuery2 = 'SELECT count(*) as total FROM Sis2000..adpoliza'
       const main = body.main
       delete body.main
-      let finalQuery = setQuery(string, main ? { ccanalalt: canal } : body, initialQuery)
-      let finalQuery2 = setQuery(string, main ? { ccanalalt: canal } : body, initialQuery2)
+      if (main) {
+        delete body.cgestor
+        body.ccanalalt = canal
+      }
+      let finalQuery = setQuery(string, body, initialQuery)
+      let finalQuery2 = setQuery(string, body, initialQuery2)
       // make sure that any items are correctly URL encoded in the connection string    
-
 
       const result = await sql.query(`${finalQuery} ${queryRowsA}`)
       const result2 = await sql.query(`${finalQuery2}`)
@@ -635,7 +638,7 @@ const exportGestorProductsData = async (cgestor, filters) => {
     left join producto_gestor f on f.cproducto = trim(a.cnpoliza)
     left join magestor g on f.cgestor = g.cgestor
     WHERE
-    ${filters.ccanalalt ? `a.ccanalalt = ${filters.ccanalalt}` : `g.cgestor like '${cgestor}%'`}
+    ${filters.ccanalalt && !cgestor ? `a.ccanalalt = ${filters.ccanalalt}` : `g.cgestor like '${cgestor}%'`}
     UNION
     SELECT
     'ZZZTotal' 'N° de Póliza',
