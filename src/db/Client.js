@@ -351,8 +351,8 @@ const getProductsByUser = async (user, page, string, body) => {
       let initialQuery2 = 'SELECT count(*) as total FROM Sis2000..adpoliza'
       const main = body.main
       delete body.main
-      let finalQuery = setQuery(string, main ? body : { ccanalalt: canal }, initialQuery)
-      let finalQuery2 = setQuery(string, main ? body : { ccanalalt: canal }, initialQuery2)
+      let finalQuery = setQuery(string, main ? { ccanalalt: canal } : body, initialQuery)
+      let finalQuery2 = setQuery(string, main ? { ccanalalt: canal } : body, initialQuery2)
       // make sure that any items are correctly URL encoded in the connection string    
 
 
@@ -597,12 +597,12 @@ const exportGestorProductsData = async (cgestor, filters) => {
     convert(varchar(100),FORMAT(convert(date,a.fhasta),'dd/MM/yyyy')) as 'Fecha Fin',
     trim(b.xcliente) as 'Asegurado',
     trim(b.cid) as 'Doc_Asegurado',
-    trim((select xtelefono from Sis2000..maclient_tel where cci_rif = b.cci_rif)) as 'Telefono_Asegurado',
-    trim((select xcorreo from Sis2000..maclient_correo where cci_rif = b.cci_rif)) as 'Correo_Asegurado',
+    trim((select TOP 1 xtelefono from Sis2000..maclient_tel where cci_rif = b.cci_rif)) as 'Telefono_Asegurado',
+    trim((select TOP 1 xcorreo from Sis2000..maclient_correo where cci_rif = b.cci_rif)) as 'Correo_Asegurado',
     trim(c.xcliente) as 'Tomador',
     trim(c.cid) as 'Doc_Tomador',
-    trim((select xtelefono from Sis2000..maclient_tel where cci_rif = c.cci_rif)) as 'Telefono_Tomador',
-    trim((select xcorreo from Sis2000..maclient_correo where cci_rif = c.cci_rif)) as 'Correo_Tomador',
+    trim((select TOP 1 xtelefono from Sis2000..maclient_tel where cci_rif = c.cci_rif)) as 'Telefono_Tomador',
+    trim((select TOP 1 xcorreo from Sis2000..maclient_correo where cci_rif = c.cci_rif)) as 'Correo_Tomador',
     trim(z.xdescripcion_l) as 'Ramo',
     d.xcanalalt as 'Canal',
     e.xplan as 'Plan',
