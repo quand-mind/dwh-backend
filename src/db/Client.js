@@ -631,7 +631,7 @@ const exportGestorProductsData = async (cgestor, filters) => {
     FROM adpoliza a 
     inner join Sis2000..maclient b on a.casegurado = b.cci_rif
     inner join Sis2000..maclient c on a.ctenedor = c.cci_rif
-    inner join Sis2000..adrecibos x on a.cnpoliza = x.cnpoliza
+    inner join Sis2000..adrecibos x on a.cnpoliza = x.cnpoliza and x.fanopol = a.fanopol and x.fmespol = a.fmespol
     left join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt
     inner join Sis2000..maramos z on a.cramo = z.cramo
     left join maplanes e on a.cplan = e.cplan and a.cramo = e.cramo
@@ -666,7 +666,7 @@ const exportGestorProductsData = async (cgestor, filters) => {
     null 'Fecha de Cobro',
     null 'Tasa de Cobro'
     FROM adpoliza a 
-    inner join Sis2000..adrecibos x on a.cnpoliza = x.cnpoliza
+    inner join Sis2000..adrecibos x on a.cnpoliza = x.cnpoliza and x.fanopol = a.fanopol and x.fmespol = a.fmespol
     left join producto_gestor f on f.cproducto = trim(a.cnpoliza)
     left join magestor g on f.cgestor = g.cgestor
     WHERE 
