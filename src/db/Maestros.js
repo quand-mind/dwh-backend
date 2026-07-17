@@ -20,111 +20,111 @@ const sqlConfig = {
 }
 
 const getAllRamos = async () => {
-  
+
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const result = await sql.query`SELECT * FROM maramos`
-   
-   const records = result.recordsets[0]
-   
-   return records
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const result = await sql.query`SELECT * FROM Sis2000..maramos`
+
+    const records = result.recordsets[0]
+
+    return records
   } catch (err) {
-   console.log('Error al obtener los ramos', err)
-   return err
+    console.log('Error al obtener los ramos', err)
+    return err
   }
 }
 
 const getGestores = async (ccanal) => {
-  
+
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   console.log(`SELECT * FROM magestor WHERE ccanalalt = ${ccanal}`);
-   const result = await sql.query(`SELECT * FROM magestor WHERE ccanalalt = ${ccanal}`)
-   
-   const records = result.recordset
-   
-   return records
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    console.log(`SELECT * FROM Sis2000..magestor WHERE ccanalalt = ${ccanal}`);
+    const result = await sql.query(`SELECT * FROM Sis2000..magestor WHERE ccanalalt = ${ccanal}`)
+
+    const records = result.recordset
+
+    return records
   } catch (err) {
-   console.log('Error al obtener los ramos', err)
-   return err
+    console.log('Error al obtener los ramos', err)
+    return err
   }
 }
 const getOrigenes = async () => {
-  
+
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const result = await sql.query`SELECT * FROM maorigen where bactivo = 1`
-   
-   const records = result.recordsets[0]
-   
-   return records
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const result = await sql.query`SELECT * FROM maorigen where bactivo = 1`
+
+    const records = result.recordsets[0]
+
+    return records
   } catch (err) {
-   console.log('Error al obtener los origenes', err)
-   return err
+    console.log('Error al obtener los origenes', err)
+    return err
   }
 }
 const getReports = async () => {
-  
+
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const result = await sql.query`SELECT * FROM mareportes where bactivo = 1`
-   
-   const records = result.recordsets[0]
-   
-   return records
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const result = await sql.query`SELECT * FROM mareportes where bactivo = 1`
+
+    const records = result.recordsets[0]
+
+    return records
   } catch (err) {
-   console.log('Error al obtener los reportes', err)
-   return err
+    console.log('Error al obtener los reportes', err)
+    return err
   }
 }
 const getOrigenesApi = async () => {
-  
+
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const result = await sql.query`select distinct(LTRIM(RTRIM(xcanal_venta))) as text, LTRIM(RTRIM(corigen_rel)) as value from Sis2000..maclient_api`
-   
-   const records = result.recordsets[0]
-   
-   return records
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const result = await sql.query`select distinct(LTRIM(RTRIM(xcanal_venta))) as text, LTRIM(RTRIM(corigen_rel)) as value from Sis2000..maclient_api`
+
+    const records = result.recordsets[0]
+
+    return records
   } catch (err) {
-   console.log('Error al obtener los origenes', err)
-   return err
+    console.log('Error al obtener los origenes', err)
+    return err
   }
 }
 const getCanalesVenta = async () => {
-  
+
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   console.log(`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from Sis2000..macanalalt where ctipocanal <> 'T' and bgrafico = 1`)
-   const result = await sql.query`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from Sis2000..macanalalt where ctipocanal <> 'T' and bgrafico = 1`
-   
-   const records = result.recordsets[0]
-   
-   return records
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    console.log(`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from Sis2000..macanalalt where ctipocanal <> 'T' and bgrafico = 1`)
+    const result = await sql.query`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from Sis2000..macanalalt where ctipocanal <> 'T' and bgrafico = 1`
+
+    const records = result.recordsets[0]
+
+    return records
   } catch (err) {
-   console.log('Error al obtener los canales', err)
-   return err
+    console.log('Error al obtener los canales', err)
+    return err
   }
 }
 const getSubCanalesVenta = async (ccanal) => {
-  
+
   try {
-   // make sure that any items are correctly URL encoded in the connection string
-   await sql.connect(sqlConfig)
-   const result = await sql.query`select TRIM(xdescripcion) as text, cscanalalt as value, ccanalalt as depends from Sis2000..mascanalalt where ccanalalt = ${Number(ccanal)}`
-   
-   const records = result.recordsets[0]
-   
-   return records
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const result = await sql.query`select TRIM(xdescripcion) as text, cscanalalt as value, ccanalalt as depends from Sis2000..mascanalalt where ccanalalt = ${Number(ccanal)}`
+
+    const records = result.recordsets[0]
+
+    return records
   } catch (err) {
-   console.log('Error al obtener los canales', err)
-   return err
+    console.log('Error al obtener los canales', err)
+    return err
   }
 }
 
