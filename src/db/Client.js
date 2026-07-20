@@ -596,6 +596,7 @@ const exportGestorProductsData = async (cgestor, filters) => {
     await sql.connect(sqlConfig)
     let query = `SELECT 
     trim(a.cnpoliza) as 'N° de Póliza',
+    convert(varchar(100),FORMAT(convert(date,a.fingreso),'dd/MM/yyyy')) as 'Fecha de Emisión',
     convert(varchar(100),FORMAT(convert(date,a.fdesde),'dd/MM/yyyy')) as 'Fecha de Inicio',
     convert(varchar(100),FORMAT(convert(date,a.fhasta),'dd/MM/yyyy')) as 'Fecha Fin',
     trim(b.xcliente) as 'Asegurado',
