@@ -643,6 +643,7 @@ const exportGestorProductsData = async (cgestor, filters) => {
     UNION
     SELECT
     'ZZZTotal' 'N° de Póliza',
+    null 'Fecha de Ingreso',
     null 'Fecha de Incio',
     null 'Fecha Fin',
     '' 'Asegurado',
