@@ -39,7 +39,7 @@ const gestoresRecibos = async (body) => {
   const request = pool.request();
 
   const inputs = { 
-    estado : {type : sql.Char(4) , value : null},
+    estado : {type : sql.Char(4) , value : body?.estado ? body.estado : null},
     fdesdePol : {type : sql.Date , value : `${body?.finicio}`},
     fhastaPol : {type : sql.Date , value : `${body?.ffin}`},
     ramo : {type : sql.Int , value : null},
@@ -65,7 +65,7 @@ const gestoresRecibosProducto = async (body) => {
   const request = pool.request();
   console.log('aqui');
   const inputs = { 
-    estado : {type : sql.Char(4) , value : null},
+    estado : {type : sql.Char(4) , value : body?.estado ? body.estado : null},
     fdesdePol : {type : sql.Date , value : `${body?.finicio}`},
     fhastaPol : {type : sql.Date , value : `${body?.ffin}`},
     ramo : {type : sql.Int , value : null},
