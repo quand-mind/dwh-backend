@@ -326,11 +326,11 @@ const getSystemData = async (table) => {
   }
 
 }
-const getProductsByUser = async (user, page, string, body) => {
+const getProductsByUser = async (email, page, string, body) => {
   try {
     await sql.connect(sqlConfig)
 
-    const resultClient = await sql.query(`SELECT b.cgestor from seusuarios_portal a inner join magestor b on a.xemail = b.xcorreo WHERE a.cusuario = ${user}`)
+    const resultClient = await sql.query(`SELECT b.cgestor from seusuarios_portal a inner join magestor b on a.xemail = b.xcorreo WHERE a.xemail = '${email}'`)
     const canal = body.ccanalalt
     if (resultClient.recordset.length > 0) {
       delete body.ccanalalt
