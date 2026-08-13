@@ -7,7 +7,7 @@ const router = express.Router();
 router
     // .get("/getAll/:first", clientController.getAllClients)
     .get("/setAll", clientController.setAllClients)
-    .post("/getByUser/:id/:page/:string", clientController.getProductsByUser)
+    .post("/getByUser/:email/:page/:string", clientController.getProductsByUser)
     .get("/getDashboardClientData", clientController.getDashboardClientData)
     .get("/get/:page", clientController.getClients)
     .get("/getAllToExport", clientController.getAllClientsToExport)

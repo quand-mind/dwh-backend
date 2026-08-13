@@ -174,7 +174,7 @@ const getDashboardClientData = async (req, res) => {
 }
 const getProductsByUser = async (req, res) => {
   try {
-    const products = await Client.getProductsByUser(req.params.id, req.params.page, req.params.string, req.body);
+    const products = await Client.getProductsByUser(req.params.email, req.params.page, req.params.string, req.body);
     if (products.error) {
       return res.status(products.code).send({
         status: false,
