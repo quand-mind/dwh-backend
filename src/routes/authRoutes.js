@@ -11,5 +11,9 @@ router
     .post("/checkToken", authController.checkToken)
     .post("/checkGestor", authController.checkGestor)
     .post("/registerGestor", authController.registerGestor)
+    .post("/checkRecover", authController.checkRecover)
+    .post("/resetPassword", authController.resetPassword)
+    .post("/sendCode", authController.sendVerificationCode)
+    .post("/validateCode", authController.validateVerificationCode)
 
 export default router;

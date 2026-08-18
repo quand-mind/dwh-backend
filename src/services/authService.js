@@ -52,9 +52,12 @@ const createJWT = (user) => {
 }
 
 const checkToken = (token) => {
-    var decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(decoded)
-    return decoded
+    try {
+        var decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded;
+    } catch (error) {
+        return { error: 'Token inválido o expirado', code: 401 };
+    }
 }
 
 const getOneUser = async (xlogin) => {
