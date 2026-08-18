@@ -9,5 +9,7 @@ router
     .post("/signIn", authController.createJWT)
     .post("/user-modules", authController.getUserModules)
     .post("/checkToken", authController.checkToken)
+    .post("/checkGestor", authController.checkGestor)
+    .post("/registerGestor", authController.registerGestor)
 
 export default router;

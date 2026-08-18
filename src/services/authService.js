@@ -24,6 +24,23 @@ const verifyIfPasswordMatchs = async (xlogin, xcontrasena) => {
     return verifiedPassword;
 };
 
+const encryptItem = (password) => {
+    const payload = {
+        cusuario: user.CUSUARIO,
+        xemail: user.XEMAIL,
+        iat: moment().unix(),
+        exp: moment().add(1, 'day').unix(),
+    }
+    return jwt.sign(payload, process.env.JWT_SECRET)
+}
+
+const createToken = (data, days) => {
+    data.iat = moment().unix()
+    data.exp = moment().add(days, 'day').unix()
+
+    return jwt.sign(data, process.env.JWT_SECRET)
+}
+
 const createJWT = (user) => {
     const payload = {
         cusuario: user.CUSUARIO,
@@ -34,9 +51,10 @@ const createJWT = (user) => {
     return jwt.sign(payload, process.env.JWT_SECRET)
 }
 
-const checkToken = (token) => { 
+const checkToken = (token) => {
     var decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log(decoded)
+    return decoded
 }
 
 const getOneUser = async (xlogin) => {
@@ -58,5 +76,7 @@ export default {
     verifyIfPasswordMatchs,
     createJWT,
     getOneUser,
-    checkToken
+    checkToken,
+    encryptItem,
+    createToken
 }

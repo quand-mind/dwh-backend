@@ -9,15 +9,15 @@ const sqlConfig = {
     requestTimeout: 150000,
     server: process.env.DB_server,
     pool: {
-      max: 10,
-      min: 0,
-      idleTimeoutMillis: 150000
+        max: 10,
+        min: 0,
+        idleTimeoutMillis: 150000
     },
     options: {
-      encrypt: true, // for azure
-      trustServerCertificate: true // change to true for local dev / self-signed certs
+        encrypt: true, // for azure
+        trustServerCertificate: true // change to true for local dev / self-signed certs
     }
-  }
+}
 
 const verifyIfUsernameExists = async (xlogin) => {
     try {
@@ -25,9 +25,9 @@ const verifyIfUsernameExists = async (xlogin) => {
         let result = await pool.request()
             .input('xemail', sql.NVarChar, xlogin)
             .query('select cusuario, xemail, xnombre from seusuarios_portal where xemail = @xemail and bactivo = 1')
-            await pool.close();
-        return { 
-            result: result 
+        await pool.close();
+        return {
+            result: result
         };
     }
     catch (error) {
@@ -40,10 +40,8 @@ const verifyIfPasswordMatchs = async (xlogin, xcontrasena) => {
     try {
         let pool = await sql.connect(sqlConfig);
         let result = await pool.request()
-            .input('xemail', sql.NVarChar, xlogin)
-            .input('xcontrasena', sql.NVarChar, xcontrasena)
-            .query('select cusuario from seusuarios_portal where xemail = @xemail and xcontrasena = @xcontrasena')
-            await pool.close();
+            .query(`select cusuario from seusuarios_portal where xemail = '${xlogin}' and ( xcontrasena = '${xcontrasena}' AND xcontrasena is not null)`)
+        await pool.close();
         return { result: result };
     }
     catch (error) {
@@ -56,8 +54,8 @@ const getOneUser = async (xlogin) => {
     try {
         let pool = await sql.connect(sqlConfig);
         let result = await pool.request()
-           .input('xemail', sql.NVarChar, xlogin)
-           .query('select * from seusuarios_portal where xemail = @xemail')
+            .input('xemail', sql.NVarChar, xlogin)
+            .query('select * from seusuarios_portal where xemail = @xemail')
         if (result.rowsAffected < 1) {
             return false;
         }
@@ -66,7 +64,43 @@ const getOneUser = async (xlogin) => {
             result.recordset[0].cgestor = gestor.recordset[0].cgestor;
             result.recordset[0].ccanalalt = gestor.recordset[0].ccanalalt;
         }
-        if((gestor.recordset[0]?.ccanalalt) && !(gestor.recordset[0]?.cscanalalt)) { result.recordset[0].main = true } else { result.recordset[0].main = false }
+        if ((gestor.recordset[0]?.ccanalalt) && !(gestor.recordset[0]?.cscanalalt)) { result.recordset[0].main = true } else { result.recordset[0].main = false }
+
+        await pool.close();
+        return result.recordset[0];
+    }
+    catch (error) {
+        console.log(error.message)
+        return { error: error.message };
+    }
+}
+
+const registerGestor = async (code, password) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        let result = await pool.request().query(`SELECT * from Sis2000_QA..magestor where cgestor = '${code}'`)
+        if (result.rowsAffected < 1) {
+            return { error: 'Gestor no encontrado' };
+        }
+        const gestor = await await pool.request().query(`UPDATE Sis2000_QA..magestor set contrasena = '${password}' where cgestor = '${code}'`)
+
+        await pool.close();
+        return { message: 'Gestor registrado correctamente' };
+    }
+    catch (error) {
+        console.log(error.message)
+        return { error: error.message };
+    }
+}
+
+const checkGestor = async (email) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        let result = await pool.request().query(`SELECT cgestor, xcorreo, xgestor from Sis2000_QA..magestor where xcorreo = '${email}' and contrasena IS NULL`)
+
+        if (result.rowsAffected < 1) {
+            return { error: 'Correo inválido' };
+        }
 
         await pool.close();
         return result.recordset[0];
@@ -81,5 +115,7 @@ const getOneUser = async (xlogin) => {
 export default {
     verifyIfUsernameExists,
     verifyIfPasswordMatchs,
-    getOneUser
+    getOneUser,
+    registerGestor,
+    checkGestor
 }
