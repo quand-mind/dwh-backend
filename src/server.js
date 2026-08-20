@@ -9,6 +9,7 @@ import sql from 'mssql'
 import mysql from 'mysql'
 import cron from 'node-cron'
 import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import Excel from "exceljs";
 import fetch from 'node-fetch';
 // import {ReportManager, ReportExecutionUrl, ReportService} from 'mssql-ssrs';
@@ -25,7 +26,7 @@ import reportsController from './controllers/reportsController.js';
 import Reports from './db/Reports.js';
 
 const { diskStorage } = multer;
-const app = express(); 
+const app = express();
 dotenv;
 
 const sqlConfig = {
@@ -51,17 +52,17 @@ const sqlConfig = {
 //   optionsSuccessStatus: 204,
 //   credentials: true ,
 //   allowedHeaders: ['Content-Type', 'Authorization', 'x-client-channel'],
-  
+
 // }));
 
-if(process.env.AMBIENTE == 'LOCAL'){
+if (process.env.AMBIENTE == 'LOCAL') {
   app.use(cors());
-} 
+}
 app.use(express.json({ limit: '10mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-const port = process.env.PORT || 3000; 
+const port = process.env.PORT || 3000;
 
 const DOCUMENTS_PATH = './public/documents';
 
@@ -110,7 +111,7 @@ app.listen(port, async () => {
 
   // await ssrs.start(url, auth, null, null);
   // await reportService.start(url, auth, null, null);
-  
+
   // var re = new ReportExecutionUrl(url, auth, null, null);
 
   // var params = await reportService.getReportParams(reportPath);
@@ -145,11 +146,11 @@ app.listen(port, async () => {
 
   // 0 20 0 * * *
   const avisos = await Surveillance.getAvisos()
-  if(avisos?.length > 0){
+  if (avisos?.length > 0) {
     for (const aviso of avisos) {
       const frecuencias = aviso.xfrecuencia.split(',')
       for (const frecuencia of frecuencias) {
-        cron.schedule(frecuencia, async() => {
+        cron.schedule(frecuencia, async () => {
           console.log('running task:', aviso.xnombre);
           console.log(aviso.xmensaje, frecuencia);
           await sql.connect(sqlConfig)
@@ -157,8 +158,8 @@ app.listen(port, async () => {
           const userResult = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre, xemail, xcedula from seusuario where cusuario = ${userGuard.recordset[0].cusuario}`)
           // console.log(userResult);
           const result = await sql.query(aviso.xsqlaviso)
-          if(result.recordset[0].return == 0) {
-            
+          if (result.recordset[0].return == 0) {
+
             let emailHtml = `
               <style>
                 .title {
@@ -172,7 +173,7 @@ app.listen(port, async () => {
               <p>Por favor, revise el proceso en la brevedad posible para solventar los problemas presentados.</p>
               </h2>
             `
-            if(aviso.xsqlreporte) {
+            if (aviso.xsqlreporte) {
               const querys = aviso.xsqlreporte.split('-----')
               emailHtml += `<h5>Aquí algunos detalles del problema encontrado</h5>`
               for (const query of querys) {
@@ -190,7 +191,7 @@ app.listen(port, async () => {
                 }
                 emailHtml += `</div>`
               }
-              
+
             }
             emailHtml += `<p>De parte del equipo de  <b style="font-weight: 700px; font-style:italic;">Exelixi</b></p>`
             const transporter = nodemailer.createTransport({
@@ -210,7 +211,7 @@ app.listen(port, async () => {
             try {
               const response = await transporter.sendMail(mailOptions);
               console.log('Correo enviado correctamente');
-              if(aviso.bcorreccion){
+              if (aviso.bcorreccion) {
                 await Surveillance.correccionSQL(aviso.xsqlcorreccion)
               }
             } catch (error) {
@@ -219,12 +220,12 @@ app.listen(port, async () => {
           }
         })
       }
-      
+
     }
   }
   // cron.schedule('0 0 5 * * *', async () => {
   //   console.log('running task: Reportes Diarios');
-    
+
   //   const responseGraphics = await fetch(process.env.API_URL_PROD + '/graphics/getData/1', {
   //     method: "GET",
   //     headers: {"Content-type": "application/json;charset=UTF-8"}
@@ -268,7 +269,7 @@ app.listen(port, async () => {
   //         const excelFile = await excelService.exportAllToExcel(exportTotal.items, `dwh_reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}`, graphic.xnombre)
   //         excelFiles.push({filename: `La Mundial de Seguros C.A, reporte_total_${graphic.xidgrafico}-${date.toLocaleDateString('en-US')}.xlsx`, content: Buffer.from(excelFile)})
   //       }
-        
+
   //     }
   //     emailHtml += `${graphic.xnombre}`
   //     if(x < graphics.length) {
@@ -316,15 +317,15 @@ app.listen(port, async () => {
   //   // console.log(result);
 
   // });
-  cron.schedule('0 0 0 1 * *', async() => {
+  cron.schedule('0 0 0 1 * *', async () => {
     // Cambiar aqui la funcion    
 
     // let correctedStartDate = new Date(date.setDate(date.getDate()+1)) 
-    
+
     console.log('running task: Definicion de Guardias');
 
     let emailHtml = ``
-      
+
     const weeks = 4
     let newDate = null
     for (let week = 1; week <= weeks; week++) {
@@ -332,7 +333,7 @@ app.listen(port, async () => {
       let object = await Surveillance.getAvailableGuards(week)
       let userAvailable = object.user
       newDate = object.date
-      if(week == 1) {
+      if (week == 1) {
         emailHtml = `
           <style>
           .title {
@@ -345,7 +346,7 @@ app.listen(port, async () => {
           `;
       }
       const userGuard = await Surveillance.setGuard(await userAvailable.cusuario, newDate)
-      console.log('Usuario que tiene que estar de guardia:',await userAvailable.xnombre);
+      console.log('Usuario que tiene que estar de guardia:', await userAvailable.xnombre);
       emailHtml += `
       <h5>Usuario asignado para estar de guardia entre los dias ${userGuard.fdesde} y ${userGuard.fhasta}: <b style="text-transfrom: uppercase;">${userAvailable.xnombre}</b></h5>
       `
@@ -386,17 +387,17 @@ app.listen(port, async () => {
     }
 
   })
-  
+
   // cron.schedule('0 0 9 * * *', async() => {
   //   const date = new Date()
   //   const finicio = new Date(date.getFullYear(), 1, 1).toLocaleDateString('en-US');
   //   const ffin =  new Date().toLocaleDateString('en-US')
-  
+
   //   let emailHtml = ``
   //   //Gestores
   //   console.log(`running report: gestores`); 
   //   const excelFiles = []
-    
+
   //   const responsePoliza = await Reports.gestoresPoliza({finicio, ffin})
   //   const responseRecibos = await Reports.gestoresRecibos({finicio, ffin})
   //   const dataFile = [
@@ -405,7 +406,7 @@ app.listen(port, async () => {
   //   ]
   //   const excelFilePoliza = await excelService.exportAllToExcel(dataFile, `dwh_reporte_total_gestores_poliza-${finicio}-${ffin}`, 'Gestores (Poliza y Recibos)')
   //   excelFiles.push({filename: `La Mundial de Seguros C.A, reporte_total_gestores-${finicio}-${ffin}.xlsx`, content: Buffer.from(excelFilePoliza)})
-    
+
   //   emailHtml += `
   //     <style>
   //       .title {

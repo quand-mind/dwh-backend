@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "axios": "^1.7.7",
     "bcrypt": "^6.0.0",
     "body-parser": "^1.20.2",

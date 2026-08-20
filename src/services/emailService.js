@@ -1,18 +1,8 @@
-import nodemailer from 'nodemailer';
-
-const createTransporter = () => {
-    return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER || 'themultiacount@gmail.com',
-            pass: process.env.EMAIL_PASS || 'kfgb bnad gqpz etux'
-        }
-    });
-};
+import sgMail from '@sendgrid/mail';
 
 const sendVerificationCodeEmail = async (toEmail, code, userName = '') => {
     try {
-        const transporter = createTransporter();
+        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
         const greeting = userName ? `Hola, <strong>${userName}</strong>` : 'Hola';
 
@@ -55,17 +45,26 @@ const sendVerificationCodeEmail = async (toEmail, code, userName = '') => {
         </div>
         `;
 
-        const mailOptions = {
-            from: '"La Mundial de Seguros" <themultiacount@gmail.com>',
+        const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'themultiacount@gmail.com';
+
+        const msg = {
             to: toEmail,
+            from: {
+                name: 'La Mundial de Seguros',
+                email: fromEmail
+            },
             subject: `${code} es tu código de verificación - La Mundial de Seguros`,
+            text: `Tu código de verificación es: ${code}. Este código es válido por 10 minutos.`,
             html: htmlContent
         };
 
-        const info = await transporter.sendMail(mailOptions);
-        return { success: true, messageId: info.messageId };
+        const [response] = await sgMail.send(msg);
+        return { success: true, statusCode: response.statusCode };
     } catch (error) {
-        console.error('Error al enviar correo de verificación:', error);
+        console.error('Error al enviar correo de verificación con SendGrid:', error);
+        if (error.response) {
+            console.error('SendGrid error body:', error.response.body);
+        }
         return { error: error.message };
     }
 };
