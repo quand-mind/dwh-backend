@@ -78,11 +78,11 @@ const getOneUser = async (xlogin) => {
 const registerGestor = async (code, password) => {
     try {
         let pool = await sql.connect(sqlConfig);
-        let result = await pool.request().query(`SELECT * from Sis2000_QA..magestor where cgestor = '${code}'`)
+        let result = await pool.request().query(`SELECT * from Sis2000..magestor where cgestor = '${code}'`)
         if (result.rowsAffected < 1) {
             return { error: 'Gestor no encontrado' };
         }
-        const gestor = await await pool.request().query(`UPDATE Sis2000_QA..magestor set contrasena = '${password}' where cgestor = '${code}'`)
+        const gestor = await await pool.request().query(`UPDATE Sis2000..magestor set contrasena = '${password}' where cgestor = '${code}'`)
 
         await pool.close();
         return { message: 'Gestor registrado correctamente' };
@@ -96,7 +96,7 @@ const registerGestor = async (code, password) => {
 const checkGestor = async (email) => {
     try {
         let pool = await sql.connect(sqlConfig);
-        let result = await pool.request().query(`SELECT cgestor, xcorreo, xgestor from Sis2000_QA..magestor where xcorreo = '${email}' and contrasena IS NULL`)
+        let result = await pool.request().query(`SELECT cgestor, xcorreo, xgestor from Sis2000..magestor where xcorreo = '${email}' and contrasena IS NULL`)
 
         if (result.rowsAffected < 1) {
             return { error: 'Correo inválido' };
@@ -136,7 +136,7 @@ const checkUserForRecovery = async (identifier) => {
         let gestorResult = await pool.request()
             .input('searchVal', sql.NVarChar, emailOrCode)
             .input('origId', sql.NVarChar, strId)
-            .query('SELECT cgestor, xcorreo, xgestor, ccanalalt FROM Sis2000_QA..magestor WHERE xcorreo = @searchVal');
+            .query('SELECT cgestor, xcorreo, xgestor, ccanalalt FROM Sis2000..magestor WHERE xcorreo = @searchVal');
 
         let gestor = gestorResult.recordset.length > 0 ? gestorResult.recordset[0] : null;
 
@@ -175,11 +175,11 @@ const updateUserPassword = async (identifier, password) => {
             .input('password', sql.NVarChar, password)
             .query('UPDATE seusuario SET XCONTRASENA = @password, FMODIFICACION = GETDATE() WHERE XEMAIL = @identifier OR CAST(CUSUARIO AS VARCHAR) = @identifier');
 
-        // 2. Update in Sis2000_QA..magestor
+        // 2. Update in Sis2000..magestor
         const gestorUpdate = await pool.request()
             .input('identifier', sql.NVarChar, strId)
             .input('password', sql.NVarChar, password)
-            .query('UPDATE Sis2000_QA..magestor SET contrasena = @password, fultmod = GETDATE() WHERE xcorreo = @identifier OR CAST(cgestor AS VARCHAR) = @identifier');
+            .query('UPDATE Sis2000..magestor SET contrasena = @password, fultmod = GETDATE() WHERE xcorreo = @identifier OR CAST(cgestor AS VARCHAR) = @identifier');
 
         await pool.close();
 
