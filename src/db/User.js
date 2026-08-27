@@ -59,25 +59,25 @@ const getOneUser = async (xlogin) => {
         if (result.rowsAffected < 1) {
             return false;
         }
-        const gestor = await await pool.request().query(`select * from magestor where xcorreo = '${xlogin}'`)
+        const gestor = await await pool.request().query(`select * from sis2000..magestor where xcorreo = '${xlogin}'`)
         if (gestor.recordset.length > 0) {
             result.recordset[0].cgestor = gestor.recordset[0].cgestor;
             result.recordset[0].ccanalalt = gestor.recordset[0].ccanalalt;
-        }
-        const gestorSplit = gestor.recordset[0].cgestor.split('-');
-        console.log(gestorSplit)
-        if ((gestor.recordset[0]?.ccanalalt) && !(gestor.recordset[0]?.cscanalalt)) {
-            result.recordset[0].main = true
+            const gestorSplit = gestor.recordset[0].cgestor.split('-');
+            console.log(gestorSplit)
+            if ((gestor.recordset[0]?.ccanalalt) && !(gestor.recordset[0]?.cscanalalt)) {
+                result.recordset[0].main = true
 
-        } else {
-            result.recordset[0].main = false
+            } else {
+                result.recordset[0].main = false
+            }
+            if ((gestorSplit.length === 1) || (gestor.recordset[0]?.ccanalalt) && !(gestor.recordset[0]?.cscanalalt)) {
+                result.recordset[0].mainItem = true
+            } else {
+                result.recordset[0].mainItem = false
+            }
+            result.recordset[0].citem = gestor.recordset[0]?.ccanalalt || gestorSplit[0]
         }
-        if ((gestorSplit.length === 1) || (gestor.recordset[0]?.ccanalalt) && !(gestor.recordset[0]?.cscanalalt)) {
-            result.recordset[0].mainItem = true
-        } else {
-            result.recordset[0].mainItem = false
-        }
-        result.recordset[0].citem = gestor.recordset[0]?.ccanalalt || gestorSplit[0]
 
         await pool.close();
         return result.recordset[0];
