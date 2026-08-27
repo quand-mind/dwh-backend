@@ -35,13 +35,13 @@ const getAllRamos = async () => {
   }
 }
 
-const getGestores = async (ccanal) => {
+const getGestores = async (citem) => {
 
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    console.log(`SELECT * FROM Sis2000..magestor WHERE ccanalalt = ${ccanal}`);
-    const result = await sql.query(`SELECT * FROM Sis2000..magestor WHERE ccanalalt = ${ccanal}`)
+    console.log(`SELECT * FROM Sis2000..magestor WHERE cgestor like '${citem}%'`);
+    const result = await sql.query(`SELECT * FROM Sis2000..magestor WHERE cgestor like '${citem}%'`);
 
     const records = result.recordset
 

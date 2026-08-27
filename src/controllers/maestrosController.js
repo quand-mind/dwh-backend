@@ -1,10 +1,10 @@
 import Maestros from '../db/Maestros.js';
 
-function compare( a, b ) {
-  if ( a.text < b.text ){
+function compare(a, b) {
+  if (a.text < b.text) {
     return -1;
   }
-  if ( a.text > b.text ){
+  if (a.text > b.text) {
     return 1;
   }
   return 0;
@@ -15,13 +15,13 @@ const getRamos = async (req, res) => {
     const ramos = await Maestros.getAllRamos();
 
     const data = ramos.map(item => {
-      return {text: item.xdescripcion_l, value: item.cramo}
+      return { text: item.xdescripcion_l, value: item.cramo }
     })
-    
+
 
     data.sort(compare);
 
-    data.unshift({text: 'Sin Filtros', value: ''})
+    data.unshift({ text: 'Sin Filtros', value: '' })
 
     if (ramos.error) {
       return res.status(ramos.code).send({
@@ -30,24 +30,23 @@ const getRamos = async (req, res) => {
       });
     }
     res.send(data)
-    
+
   } catch (error) {
-    
+
   }
 }
 const getGestores = async (req, res) => {
   try {
-    console.log(req.params.ccanal);
-    const gestores = await Maestros.getGestores(req.params.ccanal);
+    const gestores = await Maestros.getGestores(req.params.citem);
 
     const data = gestores.map(item => {
-      return {text: item.xnombre, value: item.cgestor}
+      return { text: item.xgestor, value: item.cgestor }
     })
-    
+
 
     data.sort(compare);
 
-    data.unshift({text: 'Sin Filtros', value: ''})
+    data.unshift({ text: 'Sin Filtros', value: '' })
 
     if (gestores.error) {
       return res.status(gestores.code).send({
@@ -56,9 +55,9 @@ const getGestores = async (req, res) => {
       });
     }
     res.send(data)
-    
+
   } catch (error) {
-    
+
   }
 }
 
@@ -67,9 +66,9 @@ const getOrigenes = async (req, res) => {
     const origenes = await Maestros.getOrigenes();
 
     const data = origenes.map(item => {
-      return {text: item.xorigen, value: item.corigen}
+      return { text: item.xorigen, value: item.corigen }
     })
-    data.unshift({text: 'Sin Filtros', value: ''})
+    data.unshift({ text: 'Sin Filtros', value: '' })
 
     if (origenes.error) {
       return res.status(origenes.code).send({
@@ -78,9 +77,9 @@ const getOrigenes = async (req, res) => {
       });
     }
     res.send(data)
-    
+
   } catch (error) {
-    
+
   }
 }
 const getReports = async (req, res) => {
@@ -88,9 +87,9 @@ const getReports = async (req, res) => {
     const reports = await Maestros.getReports();
 
     const data = reports.map(item => {
-      return {text: item.xreporte, value: item.id, url: item.xurl, variables: item.variables}
+      return { text: item.xreporte, value: item.id, url: item.xurl, variables: item.variables }
     })
-    data.unshift({text: 'Sin Filtros', value: null, url: null, xvariables: null})
+    data.unshift({ text: 'Sin Filtros', value: null, url: null, xvariables: null })
 
     if (reports.error) {
       return res.status(reports.code).send({
@@ -99,9 +98,9 @@ const getReports = async (req, res) => {
       });
     }
     res.send(data)
-    
+
   } catch (error) {
-    
+
   }
 }
 const getOrigenesApi = async (req, res) => {
@@ -109,9 +108,9 @@ const getOrigenesApi = async (req, res) => {
     const origenes = await Maestros.getOrigenesApi();
 
     const data = origenes.map(item => {
-      return {text: item.text, value: item.value}
+      return { text: item.text, value: item.value }
     })
-    data.unshift({text: 'Sin Filtros', value: ''})
+    data.unshift({ text: 'Sin Filtros', value: '' })
 
     if (origenes.error) {
       return res.status(origenes.code).send({
@@ -120,9 +119,9 @@ const getOrigenesApi = async (req, res) => {
       });
     }
     res.send(data)
-    
+
   } catch (error) {
-    
+
   }
 }
 const getCanalesVenta = async (req, res) => {
@@ -130,9 +129,9 @@ const getCanalesVenta = async (req, res) => {
     const canales = await Maestros.getCanalesVenta();
 
     const data = canales.map(item => {
-      return {text: item.text, value: item.value}
+      return { text: item.text, value: item.value }
     })
-    data.unshift({text: 'Sin Filtros', value: ''})
+    data.unshift({ text: 'Sin Filtros', value: '' })
 
     if (canales.error) {
       return res.status(canales.code).send({
@@ -141,9 +140,9 @@ const getCanalesVenta = async (req, res) => {
       });
     }
     res.send(data)
-    
+
   } catch (error) {
-    
+
   }
 }
 const getSubCanalesVenta = async (req, res) => {
@@ -151,9 +150,9 @@ const getSubCanalesVenta = async (req, res) => {
     const subcanales = await Maestros.getSubCanalesVenta(req.params.ccanal);
 
     const data = subcanales.map(item => {
-      return {text: item.text, value: item.value, depends: item.depends}
+      return { text: item.text, value: item.value, depends: item.depends }
     })
-    data.unshift({text: 'Sin Filtros', value: '', depends: null})
+    data.unshift({ text: 'Sin Filtros', value: '', depends: null })
 
     if (subcanales.error) {
       return res.status(subcanales.code).send({
@@ -162,9 +161,9 @@ const getSubCanalesVenta = async (req, res) => {
       });
     }
     res.send(data)
-    
+
   } catch (error) {
-    
+
   }
 }
 
@@ -172,9 +171,9 @@ const getProductos = async (req, res) => {
   try {
     const productos = await Maestros.getProductos();
     const data = productos.map(item => {
-      return {text: item.text, value: item.value}
+      return { text: item.text, value: item.value }
     })
-    data.unshift({text: 'Sin Filtros', value: ''})
+    data.unshift({ text: 'Sin Filtros', value: '' })
     res.send(data)
   }
   catch (error) {

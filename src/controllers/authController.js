@@ -46,6 +46,8 @@ const createJWT = async (req, res) => {
                 ccanal: user.ccanalalt,
                 cgestor: user.cgestor,
                 main: user.main,
+                citem: user.citem,
+                mainItem: user.mainItem,
                 // bcrear: user.bcrear,
                 // bconsultar: user.bconsultar,
                 // bmodificar: user.bmodificar,

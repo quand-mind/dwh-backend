@@ -9,10 +9,10 @@ router
     .get("/origenes", maestrosController.getOrigenes)
     .get("/reports", maestrosController.getReports)
     .get("/productos", maestrosController.getProductos)
-    .get("/gestores/:ccanal", maestrosController.getGestores)
+    .get("/gestores/:citem", maestrosController.getGestores)
     .get("/origenesApi", maestrosController.getOrigenesApi)
     .get("/canalesVenta", maestrosController.getCanalesVenta)
     .get("/subcanales/:ccanal", maestrosController.getSubCanalesVenta)
 
-    
+
 export default router;
