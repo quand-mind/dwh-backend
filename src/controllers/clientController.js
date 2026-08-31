@@ -174,7 +174,7 @@ const getDashboardClientData = async (req, res) => {
 }
 const getProductsByUser = async (req, res) => {
   try {
-    const products = await Client.getProductsByUser(req.params.email, req.params.page, req.params.string, req.body);
+    const products = await Client.getProductsByUser(req.params.cgestor, req.params.page, req.params.string, req.body);
     if (products.error) {
       return res.status(products.code).send({
         status: false,
@@ -366,7 +366,7 @@ const addObservation = async (req, res) => {
 
 const getDataUser = async (req, res) => {
   try {
-    const data = await Client.getDataUser(req.params.ccanal);
+    const data = await Client.getDataUser(req.params.citem, req.params.centidad);
     if (data.error) {
       return res.status(data.code).send({
         status: false,

@@ -76,6 +76,11 @@ const getOneUser = async (xlogin) => {
             } else {
                 result.recordset[0].mainItem = false
             }
+            if (gestor.recordset[0]?.ccanalalt) {
+                result.recordset[0].centidad = 'C';
+            } else {
+                result.recordset[0].centidad = 'P';
+            }
             result.recordset[0].citem = gestor.recordset[0]?.ccanalalt || gestorSplit[0]
         }
 

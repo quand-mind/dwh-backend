@@ -326,18 +326,17 @@ const getSystemData = async (table) => {
   }
 
 }
-const getProductsByUser = async (email, page, string, body) => {
+const getProductsByUser = async (cgestor, page, string, body) => {
   try {
     await sql.connect(sqlConfig)
 
-    const resultClient = await sql.query(`SELECT b.cgestor from seusuarios_portal a inner join magestor b on a.xemail = b.xcorreo WHERE a.xemail = '${email}'`)
-    const canal = body.ccanalalt
+    const resultClient = await sql.query(`SELECT cgestor from Sis2000..magestor WHERE cgestor = '${cgestor}'`)
+
     if (resultClient.recordset.length > 0) {
-      delete body.ccanalalt
-      if (!body.cgestor) {
-        body.cgestor = `${resultClient.recordset[0].cgestor}%(LIKE)`
-      } else {
+      if (body.cgestor) {
         body.cgestor = `${body.cgestor}%(LIKE)`
+      } else {
+        body.cgestor = `${cgestor}%(LIKE)`
       }
       const offsetRows = (page * 10) - 10
       const queryRowsA = queryRows(offsetRows, 'cnpoliza')
@@ -353,11 +352,18 @@ const getProductsByUser = async (email, page, string, body) => {
       delete body.main
       if (main) {
         delete body.cgestor
-        body.ccanalalt = canal
+        if (body.centidad == 'C') {
+          body.ccanalalt = body.citem
+        } else {
+          body.cproductor = body.citem
+        }
       }
+      delete body.citem
+      delete body.centidad
       let finalQuery = setQuery(string, body, initialQuery)
       let finalQuery2 = setQuery(string, body, initialQuery2)
       // make sure that any items are correctly URL encoded in the connection string    
+      console.log(`${finalQuery} ${queryRowsA}`)
 
       const result = await sql.query(`${finalQuery} ${queryRowsA}`)
       const result2 = await sql.query(`${finalQuery2}`)
@@ -804,13 +810,18 @@ const addObservation = async (orden, data) => {
   }
 }
 
-const getDataUser = async (ccanal) => {
+const getDataUser = async (citem, centidad) => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
     let date = new Date
     date = date.toLocaleDateString('en-US')
-    const query = `select * from Sis2000..macanalalt where ccanalalt = ${ccanal}`
+    let query = ''
+    if (centidad == 'C') {
+      query = `select TRIM(xcanalalt) xuser, * from Sis2000..macanalalt where ccanalalt = ${citem}`
+    } else {
+      query = `select TRIM(xproductor) xuser,  * from Sis2000..maproduc where cproductor = ${citem}`
+    }
     const result = await sql.query(query)
 
     //  await sql.close()
