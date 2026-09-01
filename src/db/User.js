@@ -4,7 +4,7 @@ import sql from "mssql";
 const sqlConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PWD,
-    database: process.env.DB_NAME,
+    database: process.env.SYS_DB_NAME,
     connectionTimeout: 150000,
     requestTimeout: 150000,
     server: process.env.DB_server,
@@ -59,7 +59,7 @@ const getOneUser = async (xlogin) => {
         if (result.rowsAffected < 1) {
             return false;
         }
-        const gestor = await await pool.request().query(`select * from ${process.env.DB_NAME}..magestor where xcorreo = '${xlogin}'`)
+        const gestor = await await pool.request().query(`select * from ${process.env.SYS_DB_NAME}..magestor where xcorreo = '${xlogin}'`)
         if (gestor.recordset.length > 0) {
             result.recordset[0].cgestor = gestor.recordset[0].cgestor;
             result.recordset[0].ccanalalt = gestor.recordset[0].ccanalalt;
@@ -96,11 +96,11 @@ const getOneUser = async (xlogin) => {
 const registerGestor = async (code, password) => {
     try {
         let pool = await sql.connect(sqlConfig);
-        let result = await pool.request().query(`SELECT * from ${process.env.DB_NAME}..magestor where cgestor = '${code}'`)
+        let result = await pool.request().query(`SELECT * from ${process.env.SYS_DB_NAME}..magestor where cgestor = '${code}'`)
         if (result.rowsAffected < 1) {
             return { error: 'Gestor no encontrado' };
         }
-        const gestor = await await pool.request().query(`UPDATE ${process.env.DB_NAME}..magestor set contrasena = '${password}' where cgestor = '${code}'`)
+        const gestor = await await pool.request().query(`UPDATE ${process.env.SYS_DB_NAME}..magestor set contrasena = '${password}' where cgestor = '${code}'`)
 
         await pool.close();
         return { message: 'Gestor registrado correctamente' };
@@ -114,7 +114,7 @@ const registerGestor = async (code, password) => {
 const checkGestor = async (email) => {
     try {
         let pool = await sql.connect(sqlConfig);
-        let result = await pool.request().query(`SELECT cgestor, xcorreo, xgestor from ${process.env.DB_NAME}..magestor where xcorreo = '${email}' and contrasena IS NULL`)
+        let result = await pool.request().query(`SELECT cgestor, xcorreo, xgestor from ${process.env.SYS_DB_NAME}..magestor where xcorreo = '${email}' and contrasena IS NULL`)
 
         if (result.rowsAffected < 1) {
             return { error: 'Correo inválido' };
@@ -154,7 +154,7 @@ const checkUserForRecovery = async (identifier) => {
         let gestorResult = await pool.request()
             .input('searchVal', sql.NVarChar, emailOrCode)
             .input('origId', sql.NVarChar, strId)
-            .query(`SELECT cgestor, xcorreo, xgestor, ccanalalt FROM ${process.env.DB_NAME}..magestor WHERE xcorreo = @searchVal`);
+            .query(`SELECT cgestor, xcorreo, xgestor, ccanalalt FROM ${process.env.SYS_DB_NAME}..magestor WHERE xcorreo = @searchVal`);
 
         let gestor = gestorResult.recordset.length > 0 ? gestorResult.recordset[0] : null;
 
@@ -197,7 +197,7 @@ const updateUserPassword = async (identifier, password) => {
         const gestorUpdate = await pool.request()
             .input('identifier', sql.NVarChar, strId)
             .input('password', sql.NVarChar, password)
-            .query(`UPDATE ${process.env.DB_NAME}..magestor SET contrasena = @password, fultmod = GETDATE() WHERE xcorreo = @identifier OR CAST(cgestor AS VARCHAR) = @identifier`);
+            .query(`UPDATE ${process.env.SYS_DB_NAME}..magestor SET contrasena = @password, fultmod = GETDATE() WHERE xcorreo = @identifier OR CAST(cgestor AS VARCHAR) = @identifier`);
 
         await pool.close();
 
