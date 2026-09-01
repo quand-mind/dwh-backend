@@ -24,7 +24,7 @@ const getAllRamos = async () => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * FROM Sis2000..maramos`
+    const result = await sql.query`SELECT * FROM ${process.env.DB_NAME}..maramos`
 
     const records = result.recordsets[0]
 
@@ -40,8 +40,8 @@ const getGestores = async (citem) => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    console.log(`SELECT * FROM Sis2000..magestor WHERE cgestor like '${citem}%'`);
-    const result = await sql.query(`SELECT * FROM Sis2000..magestor WHERE cgestor like '${citem}%'`);
+    console.log(`SELECT * FROM ${process.env.DB_NAME}..magestor WHERE cgestor like '${citem}%'`);
+    const result = await sql.query(`SELECT * FROM ${process.env.DB_NAME}..magestor WHERE cgestor like '${citem}%'`);
 
     const records = result.recordset
 
@@ -86,7 +86,7 @@ const getOrigenesApi = async () => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    const result = await sql.query`select distinct(LTRIM(RTRIM(xcanal_venta))) as text, LTRIM(RTRIM(corigen_rel)) as value from Sis2000..maclient_api`
+    const result = await sql.query`select distinct(LTRIM(RTRIM(xcanal_venta))) as text, LTRIM(RTRIM(corigen_rel)) as value from ${process.env.DB_NAME}..maclient_api`
 
     const records = result.recordsets[0]
 
@@ -101,8 +101,8 @@ const getCanalesVenta = async () => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    console.log(`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from Sis2000..macanalalt where ctipocanal <> 'T' and bgrafico = 1`)
-    const result = await sql.query`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from Sis2000..macanalalt where ctipocanal <> 'T' and bgrafico = 1`
+    console.log(`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from ${process.env.DB_NAME}..macanalalt where ctipocanal <> 'T' and bgrafico = 1`)
+    const result = await sql.query`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from ${process.env.DB_NAME}..macanalalt where ctipocanal <> 'T' and bgrafico = 1`
 
     const records = result.recordsets[0]
 
@@ -117,7 +117,7 @@ const getSubCanalesVenta = async (ccanal) => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    const result = await sql.query`select TRIM(xdescripcion) as text, cscanalalt as value, ccanalalt as depends from Sis2000..mascanalalt where ccanalalt = ${Number(ccanal)}`
+    const result = await sql.query`select TRIM(xdescripcion) as text, cscanalalt as value, ccanalalt as depends from ${process.env.DB_NAME}..mascanalalt where ccanalalt = ${Number(ccanal)}`
 
     const records = result.recordsets[0]
 
@@ -131,7 +131,7 @@ const getSubCanalesVenta = async (ccanal) => {
 const getProductos = async () => {
   try {
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT trim(cproducto) as value, trim(xdescripcion_l) as text FROM Sis2000..maproductos`
+    const result = await sql.query`SELECT trim(cproducto) as value, trim(xdescripcion_l) as text FROM ${process.env.DB_NAME}..maproductos`
     return result.recordsets[0]
   }
   catch (err) {

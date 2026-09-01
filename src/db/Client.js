@@ -330,7 +330,7 @@ const getProductsByUser = async (cgestor, page, string, body) => {
   try {
     await sql.connect(sqlConfig)
 
-    const resultClient = await sql.query(`SELECT cgestor from Sis2000..magestor WHERE cgestor = '${cgestor}'`)
+    const resultClient = await sql.query(`SELECT cgestor from ${process.env.SYS_DB_NAME}..magestor WHERE cgestor = '${cgestor}'`)
 
     if (resultClient.recordset.length > 0) {
       if (body.cgestor) {
@@ -341,13 +341,13 @@ const getProductsByUser = async (cgestor, page, string, body) => {
       const offsetRows = (page * 10) - 10
       const queryRowsA = queryRows(offsetRows, 'cnpoliza')
 
-      let initialQuery = `SELECT cnpoliza, casegurado, (select trim(xcliente) from Sis2000..maclient where cci_rif = adpoliza.casegurado) xasegurado, cgestor, (select xgestor from Sis2000..magestor where cgestor = adpoliza.cgestor) xgestor, fdesde, fhasta, (select CONVERT(varchar(20), sum(mprimabrutaext)) from Sis2000..adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol) as mprimaext, (
+      let initialQuery = `SELECT cnpoliza, casegurado, (select trim(xcliente) from ${process.env.DB_NAME}..maclient where cci_rif = adpoliza.casegurado) xasegurado, cgestor, (select xgestor from ${process.env.DB_NAME}..magestor where cgestor = adpoliza.cgestor) xgestor, fdesde, fhasta, (select CONVERT(varchar(20), sum(mprimabrutaext)) from ${process.env.DB_NAME}..adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol) as mprimaext, (
       CASE WHEN 
-        (SELECT COUNT(*) FROM adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol and iestadorec = 'C') = (SELECT COUNT(*) FROM adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol) THEN 'Cobrada'
+        (SELECT COUNT(*) FROM ${process.env.DB_NAME}..adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol and iestadorec = 'C') = (SELECT COUNT(*) FROM ${process.env.DB_NAME}..adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol) THEN 'Cobrada'
       WHEN 
-        (SELECT COUNT(*) FROM adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol and iestadorec = 'A') = (SELECT COUNT(*) FROM adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol) THEN 'Anulada'
-      ELSE 'Pendiente' END) as estado_pag, fanopol, fmespol FROM Sis2000..adpoliza`
-      let initialQuery2 = 'SELECT count(*) as total FROM Sis2000..adpoliza'
+        (SELECT COUNT(*) FROM ${process.env.DB_NAME}..adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol and iestadorec = 'A') = (SELECT COUNT(*) FROM ${process.env.DB_NAME}..adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol) THEN 'Anulada'
+      ELSE 'Pendiente' END) as estado_pag, fanopol, fmespol FROM ${process.env.DB_NAME}..adpoliza`
+      let initialQuery2 = `SELECT count(*) as total FROM ${process.env.DB_NAME}..adpoliza`
       const main = body.main
       delete body.main
       if (main) {
@@ -577,12 +577,12 @@ const getProductDetail = async (id, fano, fmes) => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, (g.cgestor) as cgestor_m, (g.xnombre) as xgestor_m, d.xcanalalt, e.xplan FROM adpoliza a inner join Sis2000..maclient b on a.casegurado = b.cci_rif inner join Sis2000..maclient c on a.ctenedor = c.cci_rif left join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt left join maplanes e on a.cplan = e.cplan and a.cramo = e.cramo left join producto_gestor f on f.cproducto = trim(a.cnpoliza) left join magestor g on f.cgestor = g.cgestor WHERE a.cnpoliza = '${id}' and a.fanopol = ${fano} and fmespol = ${fmes}`;
+    const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, (g.cgestor) as cgestor_m, (g.xnombre) as xgestor_m, d.xcanalalt, e.xplan FROM adpoliza a inner join ${process.env.DB_NAME}..maclient b on a.casegurado = b.cci_rif inner join ${process.env.DB_NAME}..maclient c on a.ctenedor = c.cci_rif left join ${process.env.DB_NAME}..macanalalt d on a.ccanalalt = d.ccanalalt left join maplanes e on a.cplan = e.cplan and a.cramo = e.cramo left join producto_gestor f on f.cproducto = trim(a.cnpoliza) left join magestor g on f.cgestor = g.cgestor WHERE a.cnpoliza = '${id}' and a.fanopol = ${fano} and fmespol = ${fmes}`;
     const result = await sql.query(query)
     if (result.recordset.length > 0) {
       const product = result.recordset[0]
 
-      const query2 = `SELECT * FROM adrecibos WHERE cnpoliza = '${product.cnpoliza}' and fanopol = ${product.fanopol} and fmespol =${product.fmespol}`;
+      const query2 = `SELECT * FROM ${process.env.DB_NAME}..adrecibos WHERE cnpoliza = '${product.cnpoliza}' and fanopol = ${product.fanopol} and fmespol =${product.fmespol}`;
       const result2 = await sql.query(query2)
       product.receipts = result2.recordset
 
@@ -607,12 +607,12 @@ const exportGestorProductsData = async (cgestor, filters) => {
     convert(varchar(100),FORMAT(convert(date,a.fhasta),'dd/MM/yyyy')) as 'Fecha Fin',
     trim(b.xcliente) as 'Asegurado',
     trim(b.cid) as 'Doc_Asegurado',
-    trim((select TOP 1 xtelefono from Sis2000..maclient_tel where cci_rif = b.cci_rif)) as 'Telefono_Asegurado',
-    trim((select TOP 1 xcorreo from Sis2000..maclient_correo where cci_rif = b.cci_rif)) as 'Correo_Asegurado',
+    trim((select TOP 1 xtelefono from ${process.env.DB_NAME}..maclient_tel where cci_rif = b.cci_rif)) as 'Telefono_Asegurado',
+    trim((select TOP 1 xcorreo from ${process.env.DB_NAME}..maclient_correo where cci_rif = b.cci_rif)) as 'Correo_Asegurado',
     trim(c.xcliente) as 'Tomador',
     trim(c.cid) as 'Doc_Tomador',
-    trim((select TOP 1 xtelefono from Sis2000..maclient_tel where cci_rif = c.cci_rif)) as 'Telefono_Tomador',
-    trim((select TOP 1 xcorreo from Sis2000..maclient_correo where cci_rif = c.cci_rif)) as 'Correo_Tomador',
+    trim((select TOP 1 xtelefono from ${process.env.DB_NAME}..maclient_tel where cci_rif = c.cci_rif)) as 'Telefono_Tomador',
+    trim((select TOP 1 xcorreo from ${process.env.DB_NAME}..maclient_correo where cci_rif = c.cci_rif)) as 'Correo_Tomador',
     trim(z.xdescripcion_l) as 'Ramo',
     d.xcanalalt as 'Canal',
     e.xplan as 'Plan',
@@ -636,11 +636,11 @@ const exportGestorProductsData = async (cgestor, filters) => {
     convert(varchar(100),FORMAT(convert(date,x.fcobro), 'dd/MM/yyyy')) as 'Fecha de Cobro',
     x.ptasamon_pago as 'Tasa de Cobro'
     FROM adpoliza a 
-    inner join Sis2000..maclient b on a.casegurado = b.cci_rif
-    inner join Sis2000..maclient c on a.ctenedor = c.cci_rif
-    inner join Sis2000..adrecibos x on a.cnpoliza = x.cnpoliza and x.fanopol = a.fanopol and x.fmespol = a.fmespol
-    left join Sis2000..macanalalt d on a.ccanalalt = d.ccanalalt
-    inner join Sis2000..maramos z on a.cramo = z.cramo
+    inner join ${process.env.DB_NAME}..maclient b on a.casegurado = b.cci_rif
+    inner join ${process.env.DB_NAME}..maclient c on a.ctenedor = c.cci_rif
+    inner join ${process.env.DB_NAME}..adrecibos x on a.cnpoliza = x.cnpoliza and x.fanopol = a.fanopol and x.fmespol = a.fmespol
+    left join ${process.env.DB_NAME}..macanalalt d on a.ccanalalt = d.ccanalalt
+    inner join ${process.env.DB_NAME}..maramos z on a.cramo = z.cramo
     left join maplanes e on a.cplan = e.cplan and a.cramo = e.cramo
     left join producto_gestor f on f.cproducto = trim(a.cnpoliza)
     left join magestor g on f.cgestor = g.cgestor
@@ -674,7 +674,7 @@ const exportGestorProductsData = async (cgestor, filters) => {
     null 'Fecha de Cobro',
     null 'Tasa de Cobro'
     FROM adpoliza a 
-    inner join Sis2000..adrecibos x on a.cnpoliza = x.cnpoliza and x.fanopol = a.fanopol and x.fmespol = a.fmespol
+    inner join ${process.env.DB_NAME}..adrecibos x on a.cnpoliza = x.cnpoliza and x.fanopol = a.fanopol and x.fmespol = a.fmespol
     left join producto_gestor f on f.cproducto = trim(a.cnpoliza)
     left join magestor g on f.cgestor = g.cgestor
     WHERE 
@@ -818,9 +818,9 @@ const getDataUser = async (citem, centidad) => {
     date = date.toLocaleDateString('en-US')
     let query = ''
     if (centidad == 'C') {
-      query = `select TRIM(xcanalalt) xuser, * from Sis2000..macanalalt where ccanalalt = ${citem}`
+      query = `select TRIM(xcanalalt) xuser, * from ${process.env.DB_NAME}..macanalalt where ccanalalt = ${citem}`
     } else {
-      query = `select TRIM(xproductor) xuser,  * from Sis2000..maproduc where cproductor = ${citem}`
+      query = `select TRIM(xproductor) xuser,  * from ${process.env.DB_NAME}..maproduc where cproductor = ${citem}`
     }
     const result = await sql.query(query)
 
