@@ -63,6 +63,10 @@ const getOneUser = async (xlogin) => {
         if (gestor.recordset.length > 0) {
             result.recordset[0].cgestor = gestor.recordset[0].cgestor;
             result.recordset[0].ccanalalt = gestor.recordset[0].ccanalalt;
+
+            result.recordset[0].id_adviser = gestor.recordset[0].id_adviser;
+            result.recordset[0].id_agency = gestor.recordset[0].id_agency;
+
             const gestorSplit = gestor.recordset[0].cgestor.split('-');
             console.log(gestorSplit)
             if ((gestor.recordset[0]?.ccanalalt) && !(gestor.recordset[0]?.cscanalalt)) {
@@ -71,7 +75,7 @@ const getOneUser = async (xlogin) => {
             } else {
                 result.recordset[0].main = false
             }
-            if ((gestorSplit.length === 1) || (gestor.recordset[0]?.ccanalalt) && !(gestor.recordset[0]?.cscanalalt)) {
+            if (gestorSplit.length === 1) {
                 result.recordset[0].mainItem = true
             } else {
                 result.recordset[0].mainItem = false
