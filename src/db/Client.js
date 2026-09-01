@@ -8,7 +8,7 @@ let countAllClients = 0
 const sqlConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PWD,
-  database: process.env.SYS_DB_NAME,
+  database: process.env.DB_NAME,
   connectionTimeout: 150000,
   requestTimeout: 150000,
   server: process.env.DB_server,
