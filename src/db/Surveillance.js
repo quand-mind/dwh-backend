@@ -21,7 +21,7 @@ const sqlConfig = {
 const getAvisos = async () => {
   try {
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * from maavisos where bactivo = 1`
+    const result = await sql.query(`SELECT * from maavisos where bactivo = 1`)
     return result.recordset
   } catch (err) {
     console.log('Error al Obtener los avisos', err)
@@ -32,7 +32,7 @@ const getAvisos = async () => {
 const getSurveillances = async (fdate) => {
   try {
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * from prguardias where fdesde <= '${fdate}' AND fhasta >='${fdate}'`
+    const result = await sql.query(`SELECT * from prguardias where fdesde <= '${fdate}' AND fhasta >='${fdate}'`)
     return result.recordset
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
@@ -56,18 +56,18 @@ const getAvailableGuards = async (week) => {
     await sql.connect(sqlConfig)
     let date = null
     // if(week == 1){
-      const getAvailableDate = await sql.query(`select top(1) fhasta from prguardias order by fhasta desc`)
-      if(getAvailableDate.recordset[0]){
-        console.log(getAvailableDate.recordset[0].fhasta)
-        const actualDate = new Date(getAvailableDate.recordset[0].fhasta)
-        date = new Date(actualDate.setDate(actualDate.getDate()+1))
-      }
+    const getAvailableDate = await sql.query(`select top(1) fhasta from prguardias order by fhasta desc`)
+    if (getAvailableDate.recordset[0]) {
+      console.log(getAvailableDate.recordset[0].fhasta)
+      const actualDate = new Date(getAvailableDate.recordset[0].fhasta)
+      date = new Date(actualDate.setDate(actualDate.getDate() + 1))
+    }
     // }
     const getNewUsers = await sql.query(`select cusuario, xnombre + ' ' + xapellido as xnombre from seusuario where bactivo =1 and CROL = 2 and cusuario NOT IN(select distinct(cusuario) from prguardias)`)
-    if(getNewUsers.recordset.length > 0){
+    if (getNewUsers.recordset.length > 0) {
 
       const users = getNewUsers.recordset.map(user => user.cusuario)
-      const random = getRandomInt(users.length-1)
+      const random = getRandomInt(users.length - 1)
 
       result = getNewUsers.recordset.find(user => user.cusuario == users[random])
     } else {
@@ -79,7 +79,7 @@ const getAvailableGuards = async (week) => {
       `)
       result = getLastUser.recordset[0]
     }
-    return {user: result, date: date}
+    return { user: result, date: date }
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err
@@ -88,19 +88,19 @@ const getAvailableGuards = async (week) => {
 const setGuard = async (user, date) => {
   try {
     await sql.connect(sqlConfig)
-    console.log('fecha ya esta buena la guachafita',date);
+    console.log('fecha ya esta buena la guachafita', date);
     let newDateDesde = new Date(date)
     let newDateHasta = new Date(date)
     newDateHasta.setDate(newDateHasta.getDate() + 6)
-    
+
     console.log('fecha ya esta buena la guachafita locura', newDateHasta);
-    
-    const query = `insert into prguardias (cusuario, fdesde, fhasta) values (${user}, '${newDateDesde.toLocaleDateString('en-US', {timeZone: "Asia/kolkata"})}', '${newDateHasta.toLocaleDateString('en-US', {timeZone: "Asia/kolkata"})}')`
+
+    const query = `insert into prguardias (cusuario, fdesde, fhasta) values (${user}, '${newDateDesde.toLocaleDateString('en-US', { timeZone: "Asia/kolkata" })}', '${newDateHasta.toLocaleDateString('en-US', { timeZone: "Asia/kolkata" })}')`
 
     console.log('query', query);
-    
+
     await sql.query(query)
-    return {id: user, fdesde: newDateDesde.toLocaleDateString('en-GB', {timeZone: "Asia/kolkata"}), fhasta: newDateHasta.toLocaleDateString('en-GB', {timeZone: "Asia/kolkata"})}
+    return { id: user, fdesde: newDateDesde.toLocaleDateString('en-GB', { timeZone: "Asia/kolkata" }), fhasta: newDateHasta.toLocaleDateString('en-GB', { timeZone: "Asia/kolkata" }) }
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
     return err

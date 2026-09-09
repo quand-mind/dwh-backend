@@ -24,7 +24,7 @@ const getAllRamos = async () => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * FROM ${process.env.SYS_DB_NAME}..maramos`
+    const result = await sql.query(`SELECT * FROM ${process.env.SYS_DB_NAME}..maramos`)
 
     const records = result.recordsets[0]
 
@@ -55,13 +55,16 @@ const getOrigenes = async () => {
 
   try {
     // make sure that any items are correctly URL encoded in the connection string
+
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * FROM maorigen where bactivo = 1`
+    const result = await sql.query(`SELECT * FROM maorigen where bactivo = 1`)
+    console.log(result)
 
     const records = result.recordsets[0]
 
     return records
   } catch (err) {
+    console.log(sqlConfig)
     console.log('Error al obtener los origenes', err)
     return err
   }
@@ -71,7 +74,7 @@ const getReports = async () => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * FROM mareportes where bactivo = 1`
+    const result = await sql.query(`SELECT * FROM mareportes where bactivo = 1`)
 
     const records = result.recordsets[0]
 
@@ -86,7 +89,7 @@ const getOrigenesApi = async () => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    const result = await sql.query`select distinct(LTRIM(RTRIM(xcanal_venta))) as text, LTRIM(RTRIM(corigen_rel)) as value from ${process.env.SYS_DB_NAME}..maclient_api`
+    const result = await sql.query(`select distinct(LTRIM(RTRIM(xcanal_venta))) as text, LTRIM(RTRIM(corigen_rel)) as value from ${process.env.SYS_DB_NAME}..maclient_api`)
 
     const records = result.recordsets[0]
 
@@ -101,8 +104,8 @@ const getCanalesVenta = async () => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    console.log(`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from ${process.env.SYS_DB_NAME}..macanalalt where ctipocanal <> 'T' and bgrafico = 1`)
-    const result = await sql.query`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from ${process.env.SYS_DB_NAME}..macanalalt where ctipocanal <> 'T' and bgrafico = 1`
+
+    const result = await sql.query(`select distinct(LTRIM(RTRIM(xcanalalt))) as text, LTRIM(RTRIM(ccanalalt)) as value from ${process.env.SYS_DB_NAME}..macanalalt where ctipocanal <> 'T' and bgrafico = 1`)
 
     const records = result.recordsets[0]
 
@@ -117,7 +120,7 @@ const getSubCanalesVenta = async (ccanal) => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
-    const result = await sql.query`select TRIM(xdescripcion) as text, cscanalalt as value, ccanalalt as depends from ${process.env.SYS_DB_NAME}..mascanalalt where ccanalalt = ${Number(ccanal)}`
+    const result = await sql.query(`select TRIM(xdescripcion) as text, cscanalalt as value, ccanalalt as depends from ${process.env.SYS_DB_NAME}..mascanalalt where ccanalalt = ${Number(ccanal)}`)
 
     const records = result.recordsets[0]
 
@@ -131,7 +134,7 @@ const getSubCanalesVenta = async (ccanal) => {
 const getProductos = async () => {
   try {
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT trim(cproducto) as value, trim(xdescripcion_l) as text FROM ${process.env.SYS_DB_NAME}..maproductos`
+    const result = await sql.query(`SELECT trim(cproducto) as value, trim(xdescripcion_l) as text FROM ${process.env.SYS_DB_NAME}..maproductos`)
     return result.recordsets[0]
   }
   catch (err) {

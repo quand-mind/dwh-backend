@@ -23,7 +23,7 @@ const sqlConfig = {
 const getGraphicCompanies = async () => {
   try {
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * from maorigen WHERE igraficos = 1`
+    const result = await sql.query(`SELECT * from maorigen WHERE igraficos = 1`)
     return result.recordset
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
@@ -33,7 +33,7 @@ const getGraphicCompanies = async () => {
 const getGraphicsById = async (id) => {
   try {
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * from magraficos WHERE corigen = ${id} and bactivo = 1`
+    const result = await sql.query(`SELECT * from magraficos WHERE corigen = ${id} and bactivo = 1`)
     return result.recordset
   } catch (err) {
     console.log('Error al Obtener los graficos', err)
@@ -41,7 +41,7 @@ const getGraphicsById = async (id) => {
   }
 }
 const setBg = () => {
-  const randomColor = Math.floor(Math.random()*16777215).toString(16);
+  const randomColor = Math.floor(Math.random() * 16777215).toString(16);
   return "#" + randomColor;
 }
 
@@ -54,11 +54,11 @@ const getItems = async (id) => {
     const graph = await sql.query(`select * from magraficos where id = ${id}`)
     let queryItems = graph.recordset[0].xsqlitems
     let queryTotal = graph.recordset[0].xsqltotales
-    if(graph.recordset.type == 'line') {
+    if (graph.recordset.type == 'line') {
       const items = await sql.query(`${queryItems}`)
     } else {
 
-      if(graph.recordset[0].xvalordefecto) {
+      if (graph.recordset[0].xvalordefecto) {
         const defaultValue = await sql.query(graph.recordset[0].xvalordefecto)
         queryTotal = queryTotal.replaceAll('@2var', `'${defaultValue.recordset[0].default_value}'`)
       }
@@ -68,7 +68,7 @@ const getItems = async (id) => {
       const variables = await sql.query(`select* from mavaloresgraficos where cgrafico = ${id}`)
       for (const value of valuesToSearch) {
         let newQueryTotal = ''
-        if(value.value) { 
+        if (value.value) {
           newQueryTotal = queryTotal.replaceAll('@var', `'${value.value}'`)
         } else {
           value.label = 'No especificado'
@@ -79,13 +79,13 @@ const getItems = async (id) => {
         }
         const values = await sql.query(`${newQueryTotal}`)
         const valueF = values.recordset[0].value
-        result.push({color: setBg(), data: valueF, label: value.label, id: value.value})
+        result.push({ color: setBg(), data: valueF, label: value.label, id: value.value })
         total += valueF
         x++
       }
     }
-    data.push({data: result, total: total})
-    return {data: data}
+    data.push({ data: result, total: total })
+    return { data: data }
   } catch (err) {
     console.log('Error al Obtener los graficos', err)
     return err
@@ -105,7 +105,7 @@ const getItemsFiltered = async (filters, filtersInvert, id) => {
     let type = graph.recordset[0].xtipografico
 
     let defaultValue = null
-    if(graph.recordset[0].xvalordefecto) {
+    if (graph.recordset[0].xvalordefecto) {
       defaultValue = await sql.query(graph.recordset[0].xvalordefecto)
       queryTotal = queryTotal.replaceAll('@2var', `'${defaultValue.recordset[0].default_value}'`)
     }
@@ -119,20 +119,20 @@ const getItemsFiltered = async (filters, filtersInvert, id) => {
     }
     let varQueryArr = queryTotal.split('count(')
     let varQuery = varQueryArr[1].split(')')[0]
-    
+
     const variables = await sql.query(`select* from mavaloresgraficos where cgrafico = ${id}`)
-    
+
     const bodyEntries = Object.entries(filters)
-    if(type == 'bar') {
-      
+    if (type == 'bar') {
+
       result = []
       resultsApart = []
       let x = 0
       let result2 = []
       for (const value of valuesToSearch) {
-        
+
         let newQueryTotal = queryTotal
-        if(value.value) { 
+        if (value.value) {
           newQueryTotal = queryTotal.replaceAll('@var', `'${value.value}'`)
         } else {
           value.label = 'No especificado'
@@ -141,10 +141,10 @@ const getItemsFiltered = async (filters, filtersInvert, id) => {
 
         // const values = await sql.query(`${newQueryTotal}`)
         // let valueF = values.recordset[0].value
-        
+
         const bodyKeys = Object.keys(filters)
         let finalQuery = ''
-        if(bodyKeys.length > 0) {
+        if (bodyKeys.length > 0) {
           // for (const key of bodyKeys) {
           //   // console.log(key);
           //   let finalQuery = setQuery(key, filters[key], newQueryTotal, varQuery)
@@ -161,8 +161,8 @@ const getItemsFiltered = async (filters, filtersInvert, id) => {
           // }
 
           for (const variable of variables.recordset) {
-            const keyIndex = bodyEntries.findIndex(key=> key[0] = variable.xllave)
-            if(keyIndex != -1) {
+            const keyIndex = bodyEntries.findIndex(key => key[0] = variable.xllave)
+            if (keyIndex != -1) {
               newQueryTotal = newQueryTotal.replaceAll(variable.xidentificador, `'${bodyEntries[keyIndex][1]}'`)
             } else {
               newQueryTotal = newQueryTotal.replaceAll(variable.xidentificador, `'${variable.xllavevalor}'`)
@@ -178,48 +178,48 @@ const getItemsFiltered = async (filters, filtersInvert, id) => {
         const values2 = await sql.query(`${finalQuery}`)
         let valueF2 = values2.recordset[0].value
         total += valueF2
-        result.push({color: setBg(), data: valueF2, label: value.label, id: value.value})
-        
+        result.push({ color: setBg(), data: valueF2, label: value.label, id: value.value })
+
         // result.push({color: setBg(), data: valueF, label: value.label, id: value.value})
         // total += valueF
       }
-      data.push({data: result, total: total})
-      if(resultsApart.length > 0) {
+      data.push({ data: result, total: total })
+      if (resultsApart.length > 0) {
         resultsApart.forEach(result2A => {
-          data.push({data: result2A.result, total: total, label: result2A.label})   
+          data.push({ data: result2A.result, total: total, label: result2A.label })
         });
-        
+
       }
     } else {
       result = []
       let x = 0
       for (const value of valuesToSearch) {
         let newQueryTotal = ''
-        if(value.value) { 
+        if (value.value) {
           newQueryTotal = queryTotal.replaceAll('@var', `'${value.value}'`)
         } else {
           value.label = 'No especificado'
           newQueryTotal = queryTotal.replaceAll('=@var', `'IS NULL'`)
         }
         for (const variable of variables.recordset) {
-          const keyIndex = bodyEntries.findIndex(key=> key[0] = variable.xllave)
-          if(keyIndex != -1) {
+          const keyIndex = bodyEntries.findIndex(key => key[0] = variable.xllave)
+          if (keyIndex != -1) {
             newQueryTotal = newQueryTotal.replaceAll(variable.xidentificador, `'${bodyEntries[keyIndex][1]}'`)
           } else {
             newQueryTotal = newQueryTotal.replaceAll(variable.xidentificador, `'${variable.xllavevalor}'`)
           }
         }
         let finalQuery = setQueryArray(filters, filtersInvert, newQueryTotal, varQuery)
-        
+
         const values2 = await sql.query(`${finalQuery}`)
         let valueF2 = values2.recordset[0].value
         total += valueF2
-        result.push({color: setBg(), data: valueF2, label: value.label, id: value.value})
+        result.push({ color: setBg(), data: valueF2, label: value.label, id: value.value })
         x++
       }
-      data.push({data: result, total: total})
+      data.push({ data: result, total: total })
     }
-    return {data:data}
+    return { data: data }
   } catch (err) {
     console.log('Error al Obtener los graficos', err)
     return err
@@ -229,7 +229,7 @@ const getItemsFiltered = async (filters, filtersInvert, id) => {
 const getFilters = async (id) => {
   try {
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * from mafiltros WHERE cgrafico = ${parseInt(id)}`
+    const result = await sql.query(`SELECT * from mafiltros WHERE cgrafico = ${parseInt(id)}`)
     return result.recordset
   } catch (err) {
     console.log('Error al Obtener los graficos', err)
@@ -242,24 +242,24 @@ const setQuery = (key, value, initialQuery, mainVar, grouped) => {
   // const bodyKeys = Object.keys(body)
 
   let queryFilters = ''
-    // for (const key of bodyKeys) {
+  // for (const key of bodyKeys) {
   queryFilters += ' AND '
-  if(key[0].includes('f')){
-    if(grouped) {
-      key = grouped + key 
+  if (key[0].includes('f')) {
+    if (grouped) {
+      key = grouped + key
     }
     const value_splitted = value.split(' - ')
     let date1, date2 = ''
-    if(value_splitted.length == 1) {
+    if (value_splitted.length == 1) {
       date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
       const dateNow = moment(new Date()).format('MM-DD-YYYY');
-      
-      if(value_splitted[0].includes('>')) {
+
+      if (value_splitted[0].includes('>')) {
         queryFilters += `convert(date,${key}) <= '${date1}'`
-      } else if(value_splitted[0].includes('<')){
+      } else if (value_splitted[0].includes('<')) {
         queryFilters += `convert(date,${key}) >= '${date1}'`
       } else {
-        if(date1 > dateNow) {
+        if (date1 > dateNow) {
           queryFilters += `convert(date,${key}) <= '${date1}'`
         } else {
           queryFilters += `convert(date,${key}) >= '${date1}'`
@@ -268,16 +268,16 @@ const setQuery = (key, value, initialQuery, mainVar, grouped) => {
     } else {
       date2 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
       date1 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
-      if(value_splitted[0].includes('>')) {
+      if (value_splitted[0].includes('>')) {
         queryFilters += `convert(date,${key}) >= '${date1}'`
-      } else if(value_splitted[1].includes('>')) {
+      } else if (value_splitted[1].includes('>')) {
         queryFilters += `convert(date,${key}) <= '${date2}'`
-      } else if(value_splitted[0].includes('<')) {
+      } else if (value_splitted[0].includes('<')) {
         queryFilters += `convert(date,${key}) <= '${date1}'`
-      } else if(value_splitted[1].includes('<')){
+      } else if (value_splitted[1].includes('<')) {
         queryFilters += `convert(date,${key}) >= '${date2}'`
       } else {
-        if(date2 > date1) {
+        if (date2 > date1) {
           queryFilters += `convert(date,${key}) between '${date1}' AND '${date2}'`
         } else {
           queryFilters += `convert(date,${key}) between '${date2}' AND '${date1}'`
@@ -285,23 +285,23 @@ const setQuery = (key, value, initialQuery, mainVar, grouped) => {
         }
       }
     }
-  } else if(key.includes('/?/')){
-    
+  } else if (key.includes('/?/')) {
+
     const keySplit = key.split('/?/')
     let keyFilter = ''
-    if(keySplit[1].includes('f')){
+    if (keySplit[1].includes('f')) {
       const value_splitted = value.split(' - ')
       let date1, date2 = ''
-      if(value_splitted.length == 1) {
+      if (value_splitted.length == 1) {
         date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
         const dateNow = moment(new Date()).format('MM-DD-YYYY');
 
-        if(value_splitted[0].includes('>')) {
+        if (value_splitted[0].includes('>')) {
           keyFilter = `convert(date,${keySplit[1]}) <= '${date1}'`
-        } else if(value_splitted[0].includes('<')){
+        } else if (value_splitted[0].includes('<')) {
           keyFilter = `convert(date,${keySplit[1]}) >= '${date1}'`
         } else {
-          if(date1 > dateNow) {
+          if (date1 > dateNow) {
             keyFilter += `convert(date,${keySplit[1]}) <= '${date1}'`
           } else {
             keyFilter += `convert(date,${keySplit[1]}) >= '${date1}'`
@@ -310,16 +310,16 @@ const setQuery = (key, value, initialQuery, mainVar, grouped) => {
       } else {
         date2 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
         date1 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
-        if(value_splitted[0].includes('>')) {
+        if (value_splitted[0].includes('>')) {
           keyFilter += `(${keySplit[1]} >= '${date1}')`
-        } else if(value_splitted[1].includes('>')) {
+        } else if (value_splitted[1].includes('>')) {
           keyFilter = `(${keySplit[1]} <= '${date2}')`
-        } else if(value_splitted[0].includes('<')) {
+        } else if (value_splitted[0].includes('<')) {
           keyFilter += `(${keySplit[1]} <= '${date1}')`
-        } else if(value_splitted[1].includes('<')){
+        } else if (value_splitted[1].includes('<')) {
           keyFilter += `(${keySplit[1]} >= '${date2}')`
         } else {
-          if(date2 > date1) {
+          if (date2 > date1) {
             keyFilter += `convert(date,${keySplit[1]}) between '${date1}' AND '${date2}'`
           } else {
             keyFilter += `(convert(date,${keySplit[1]}) between '${date2}' AND '${date1}'))`
@@ -327,48 +327,48 @@ const setQuery = (key, value, initialQuery, mainVar, grouped) => {
         }
       }
     } else {
-      keyFilter =`${keySplit[1]} = ${value}`
+      keyFilter = `${keySplit[1]} = ${value}`
     }
-    if(grouped) {
+    if (grouped) {
       queryFilters += `${grouped}${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
     } else {
       queryFilters += `${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
     }
-  } else{
-    if(grouped) {
-      key = grouped + key 
+  } else {
+    if (grouped) {
+      key = grouped + key
     }
     queryFilters += `${key} = ${value}`
-  }  
+  }
   let finalQuery = `${initialQuery} ${queryFilters}`
-  
+
   return finalQuery
 }
 const setQueryArray = (filters, filtersInvert, initialQuery, mainVar, grouped) => {
 
   const bodyKeys = Object.keys(filters)
-    
+
   let queryFilters = ''
   let x = 0
-  if(bodyKeys.length > 0) {
+  if (bodyKeys.length > 0) {
     for (let key of bodyKeys) {
       queryFilters += ' AND '
       let value = filters[key]
-      if(filtersInvert[x] == null){
-        if(key[0].includes('f')){
+      if (filtersInvert[x] == null) {
+        if (key[0].includes('f')) {
           let date1 = new Date(value).toLocaleDateString('en-CA');
-          if(grouped) {
-            key = grouped + key 
+          if (grouped) {
+            key = grouped + key
           }
           queryFilters += `convert(date,${key}) = '${date1}'`
-        } else if(key.includes('/?/')){
+        } else if (key.includes('/?/')) {
           const keySplit = key.split('/?/')
           let keyFilter = ''
-          if(keySplit[1].includes('f')){
+          if (keySplit[1].includes('f')) {
             const value_splitted = value.split(' - ')
-            if(value_splitted.length == 1) {
+            if (value_splitted.length == 1) {
               date1 = new Date(value_splitted[0]).toLocaleDateString('en-CA');
-              if(value_splitted[0].includes('>')) {
+              if (value_splitted[0].includes('>')) {
                 keyFilter = `convert(date,${keySplit[1]}) <= '${date1}'`
               } else {
                 keyFilter = `convert(date,${keySplit[1]}) >= '${date1}'`
@@ -378,33 +378,33 @@ const setQueryArray = (filters, filtersInvert, initialQuery, mainVar, grouped) =
               keyFilter += `convert(date,${keySplit[1]}) = '${date1}'`
             }
           } else {
-            keyFilter =`convert(date,${keySplit[1]}) = ${value}`
+            keyFilter = `convert(date,${keySplit[1]}) = ${value}`
           }
-          if(grouped) {
+          if (grouped) {
             queryFilters += `${grouped}${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
           } else {
             queryFilters += `${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
           }
-        } else{
-          queryFilters += `${grouped? grouped : ''}${key} = ${value}`
+        } else {
+          queryFilters += `${grouped ? grouped : ''}${key} = ${value}`
         }
       } else {
-        if(key[0].includes('f')){
-          if(grouped) {
-            key = grouped + key 
+        if (key[0].includes('f')) {
+          if (grouped) {
+            key = grouped + key
           }
           const value_splitted = value.split(' - ')
           let date1, date2 = ''
-          if(value_splitted.length == 1) {
+          if (value_splitted.length == 1) {
             date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
             const dateNow = moment(new Date()).format('MM-DD-YYYY');
-            
-            if(value_splitted[0].includes('>')) {
+
+            if (value_splitted[0].includes('>')) {
               queryFilters += `convert(date,${key}) <= '${date1}'`
-            } else if(value_splitted[0].includes('<')){
+            } else if (value_splitted[0].includes('<')) {
               queryFilters += `convert(date,${key}) >= '${date1}'`
             } else {
-              if(date1 > dateNow) {
+              if (date1 > dateNow) {
                 queryFilters += `convert(date,${key}) <= '${date1}'`
               } else {
                 queryFilters += `convert(date,${key}) >= '${date1}'`
@@ -413,32 +413,32 @@ const setQueryArray = (filters, filtersInvert, initialQuery, mainVar, grouped) =
           } else {
             date2 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
             date1 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
-            if(value_splitted[0].includes('>')) {
+            if (value_splitted[0].includes('>')) {
               queryFilters += `convert(date,${key}) >= '${date1}'`
-            } else if(value_splitted[1].includes('>')) {
+            } else if (value_splitted[1].includes('>')) {
               queryFilters += `convert(date,${key}) <= '${date2}'`
-            } else if(value_splitted[0].includes('<')) {
+            } else if (value_splitted[0].includes('<')) {
               queryFilters += `convert(date,${key}) <= '${date1}'`
-            } else if(value_splitted[1].includes('<')){
+            } else if (value_splitted[1].includes('<')) {
               queryFilters += `convert(date,${key}) >= '${date2}'`
             } else {
-              if(date2 > date1) {
+              if (date2 > date1) {
                 queryFilters += `convert(date,${key}) between '${date1}' AND '${date2}'`
               } else {
                 queryFilters += `convert(date,${key}) between '${date2}' AND '${date1}'`
-  
+
               }
             }
           }
-        } else if(key.includes('/?/')){
+        } else if (key.includes('/?/')) {
           const keySplit = key.split('/?/')
           let keyFilter = ''
-          if(keySplit[1].includes('f')){
+          if (keySplit[1].includes('f')) {
             const value_splitted = value.split(' - ')
             let date1, date2 = ''
-            if(value_splitted.length == 1) {
+            if (value_splitted.length == 1) {
               date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
-              if(value_splitted[0].includes('>')) {
+              if (value_splitted[0].includes('>')) {
                 keyFilter = `convert(date,${keySplit[1]}) <= '${date1}'`
               } else {
                 keyFilter = `convert(date,${keySplit[1]}) >= '${date1}'`
@@ -446,24 +446,24 @@ const setQueryArray = (filters, filtersInvert, initialQuery, mainVar, grouped) =
             } else {
               date2 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
               date1 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
-              if(value_splitted[0].includes('>')) {
+              if (value_splitted[0].includes('>')) {
                 keyFilter += `convert(date,${keySplit[1]}) >= '${date1}'`
-              } else if(value_splitted[1].includes('>')) {
+              } else if (value_splitted[1].includes('>')) {
                 keyFilter = `convert(date,${keySplit[1]}) <= '${date2}'`
               } else {
                 keyFilter = `convert(date,${keySplit[1]}) between '${date2}' AND '${date1}'`
               }
             }
           } else {
-            keyFilter =`convert(date,${keySplit[1]}) = ${value}`
+            keyFilter = `convert(date,${keySplit[1]}) = ${value}`
           }
-          if(grouped) {
+          if (grouped) {
             queryFilters += `${grouped}${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
           } else {
             queryFilters += `${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
           }
-        } else{
-          queryFilters += `${grouped? grouped : ''}${key} = ${value}`
+        } else {
+          queryFilters += `${grouped ? grouped : ''}${key} = ${value}`
         }
       }
       x++
@@ -475,27 +475,27 @@ const setQueryArray = (filters, filtersInvert, initialQuery, mainVar, grouped) =
 const setQueryArrayTotal = (filters, filtersInvert, initialQuery, mainVar, grouped) => {
 
   const bodyKeys = Object.keys(filters)
-    
+
   let queryFilters = ''
   let x = 0
-  if(bodyKeys.length > 0) {
+  if (bodyKeys.length > 0) {
     for (let key of bodyKeys) {
       queryFilters += ' AND '
-      if(filtersInvert[x] == null){
-        if(key[0].includes('f')){
+      if (filtersInvert[x] == null) {
+        if (key[0].includes('f')) {
           let date1 = filters[key];
-          if(grouped) {
-            key = grouped + key 
+          if (grouped) {
+            key = grouped + key
           }
           queryFilters += `convert(date,${key}) = '${date1}'`
-        } else if(key.includes('/?/')){
+        } else if (key.includes('/?/')) {
           const keySplit = key.split('/?/')
           let keyFilter = ''
-          if(keySplit[1].includes('f')){
+          if (keySplit[1].includes('f')) {
             const value_splitted = value.split(' - ')
-            if(value_splitted.length == 1) {
+            if (value_splitted.length == 1) {
               date1 = value_splitted[0];
-              if(value_splitted[0].includes('>')) {
+              if (value_splitted[0].includes('>')) {
                 keyFilter = `convert(date,${keySplit[1]}) <= '${date1}'`
               } else {
                 keyFilter = `convert(date,${keySplit[1]}) >= '${date1}'`
@@ -505,33 +505,33 @@ const setQueryArrayTotal = (filters, filtersInvert, initialQuery, mainVar, group
               keyFilter += `convert(date,${keySplit[1]}) = '${date1}'`
             }
           } else {
-            keyFilter =`convert(date,${keySplit[1]}) = ${value}`
+            keyFilter = `convert(date,${keySplit[1]}) = ${value}`
           }
-          if(grouped) {
+          if (grouped) {
             queryFilters += `${grouped}${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
           } else {
             queryFilters += `${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
           }
-        } else{
+        } else {
           queryFilters += `${key} = ${value}`
         }
       } else {
-        if(key[0].includes('f')){
-          if(grouped) {
-            key = grouped + key 
+        if (key[0].includes('f')) {
+          if (grouped) {
+            key = grouped + key
           }
           const value_splitted = filters[key].split(' - ')
           let date1, date2 = ''
-          if(value_splitted.length == 1) {
+          if (value_splitted.length == 1) {
             date1 = value_splitted[0];
             const dateNow = moment(new Date()).format('MM-DD-YYYY');
-            
-            if(value_splitted[0].includes('>')) {
+
+            if (value_splitted[0].includes('>')) {
               queryFilters += `convert(date,${key}) <= '${date1}'`
-            } else if(value_splitted[0].includes('<')){
+            } else if (value_splitted[0].includes('<')) {
               queryFilters += `convert(date,${key}) >= '${date1}'`
             } else {
-              if(date1 > dateNow) {
+              if (date1 > dateNow) {
                 queryFilters += `convert(date,${key}) <= '${date1}'`
               } else {
                 queryFilters += `convert(date,${key}) >= '${date1}'`
@@ -540,56 +540,56 @@ const setQueryArrayTotal = (filters, filtersInvert, initialQuery, mainVar, group
           } else {
             date2 = value_splitted[0];
             date1 = value_splitted[1];
-            if(value_splitted[0].includes('>')) {
+            if (value_splitted[0].includes('>')) {
               queryFilters += `convert(date,${key}) >= '${date1}'`
-            } else if(value_splitted[1].includes('>')) {
+            } else if (value_splitted[1].includes('>')) {
               queryFilters += `convert(date,${key}) <= '${date2}'`
-            } else if(value_splitted[0].includes('<')) {
+            } else if (value_splitted[0].includes('<')) {
               queryFilters += `convert(date,${key}) <= '${date1}'`
-            } else if(value_splitted[1].includes('<')){
+            } else if (value_splitted[1].includes('<')) {
               queryFilters += `convert(date,${key}) >= '${date2}'`
             } else {
-              if(date2 > date1) {
+              if (date2 > date1) {
                 queryFilters += `convert(date,${key}) between '${date1}' AND '${date2}'`
               } else {
                 queryFilters += `convert(date,${key}) between '${date2}' AND '${date1}'`
-  
+
               }
             }
           }
-        } else if(key.includes('/?/')){
+        } else if (key.includes('/?/')) {
           const keySplit = key.split('/?/')
           let keyFilter = ''
-          if(keySplit[1].includes('f')){
+          if (keySplit[1].includes('f')) {
             const value_splitted = value.split(' - ')
             let date1, date2 = ''
-            if(value_splitted.length == 1) {
+            if (value_splitted.length == 1) {
               date1 = value_splitted[0];
-              if(value_splitted[0].includes('>')) {
+              if (value_splitted[0].includes('>')) {
                 keyFilter = `convert(date,${keySplit[1]}) <= '${date1}'`
               } else {
                 keyFilter = `convert(date,${keySplit[1]}) >= '${date1}'`
               }
             } else {
               date2 = value_splitted[0];
-              date1 =value_splitted[1];
-              if(value_splitted[0].includes('>')) {
+              date1 = value_splitted[1];
+              if (value_splitted[0].includes('>')) {
                 keyFilter += `convert(date,${keySplit[1]}) >= '${date1}'`
-              } else if(value_splitted[1].includes('>')) {
+              } else if (value_splitted[1].includes('>')) {
                 keyFilter = `convert(date,${keySplit[1]}) <= '${date2}'`
               } else {
                 keyFilter = `convert(date,${keySplit[1]}) between '${date2}' AND '${date1}'`
               }
             }
           } else {
-            keyFilter =`convert(date,${keySplit[1]}) = ${value}`
+            keyFilter = `convert(date,${keySplit[1]}) = ${value}`
           }
-          if(grouped) {
+          if (grouped) {
             queryFilters += `${grouped}${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
           } else {
             queryFilters += `${mainVar} IN (SELECT ${mainVar} FROM ${keySplit[0]} WHERE ${keyFilter})`
           }
-        } else{
+        } else {
           queryFilters += `${key} = ${value}`
         }
       }
@@ -602,24 +602,24 @@ const setQueryArrayTotal = (filters, filtersInvert, initialQuery, mainVar, group
 
 const getDetails = async (id, filter, requestVar, filterInverso) => {
   try {
-    await sql.connect(sqlConfig)    
-    
+    await sql.connect(sqlConfig)
+
     const result = await sql.query(`SELECT * from magraficos WHERE id = ${parseInt(id)}`)
     const graphic = result.recordset[0]
     let response = null
     let resultDetails = null
     let resultOtherDetails = null
-    if(graphic) {
+    if (graphic) {
       response = {}
       const bodyKeys = Object.keys(filter)
 
       let finalQuery1 = ''
       let sqlOtrosDetalles = graphic.xsqlotrosdetalles.replaceAll('@var', `'${requestVar}'`)
 
-      if(bodyKeys.length> 0) {
-        if(graphic.xtipografico == 'bar'){
+      if (bodyKeys.length > 0) {
+        if (graphic.xtipografico == 'bar') {
           const checkGroup = sqlOtrosDetalles.split('adpoliza')
-          if(sqlOtrosDetalles.includes('group by')) {
+          if (sqlOtrosDetalles.includes('group by')) {
             const sqlOtrosDetallesD = sqlOtrosDetalles.split('group by')
             sqlOtrosDetalles = sqlOtrosDetallesD[0]
             console.log('filter', filter);
@@ -630,7 +630,7 @@ const getDetails = async (id, filter, requestVar, filterInverso) => {
             finalQuery1 = setQueryArray(filter, filterInverso, sqlOtrosDetalles, graphic.xllave)
           }
         } else {
-          if(sqlOtrosDetalles.includes('group by')) {
+          if (sqlOtrosDetalles.includes('group by')) {
             const sqlOtrosDetallesD = sqlOtrosDetalles.split('group by')
             sqlOtrosDetalles = sqlOtrosDetallesD[0]
             finalQuery1 = setQueryArray(filter, filterInverso, sqlOtrosDetalles, graphic.xllave, 'a.')
@@ -643,7 +643,7 @@ const getDetails = async (id, filter, requestVar, filterInverso) => {
       } else {
         finalQuery1 = sqlOtrosDetalles
       }
-      resultOtherDetails = await sql.query(finalQuery1) 
+      resultOtherDetails = await sql.query(finalQuery1)
       response = {}
       // for (const item of resultOtherDetails.recordset) {
       //   const itemFindedIndex = resultDetails.recordset.findIndex(element => item[graphic.xllave] == element[graphic.xllave])
@@ -673,74 +673,74 @@ const exportDetails = async (filters, filtersInverso, requestVar, id) => {
     const graphic = resultA.recordset[0]
     let response = null
 
-    if(graphic) {
+    if (graphic) {
       response = {}
       let finalQuery1 = ''
       let finalQuery2 = ''
       let sqlOtrosDetalles = graphic.xsqlexportdetalles.replaceAll('@var', `'${requestVar}'`)
-      if(graphic.xtipografico == 'bar') {
+      if (graphic.xtipografico == 'bar') {
         // if(filters.length > 0) {
-          // for (const filter of filters) {
-            if(sqlOtrosDetalles.includes('group by')) {
-              const sqlOtrosDetallesD = sqlOtrosDetalles.split('group by')
-              sqlOtrosDetalles = sqlOtrosDetallesD[0]
-              finalQuery1 = setQueryArray(filters, filtersInverso, sqlOtrosDetalles, graphic.xllave, 'a.')
-              if(sqlOtrosDetallesD[1].includes('UNION')) {
-                const querySplitUnion = sqlOtrosDetallesD[1].split('UNION')
-                finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
-                sqlOtrosDetallesD[1] = querySplitUnion[1]
-                finalQuery2 = setQueryArray(filters, filtersInverso, sqlOtrosDetallesD[1], graphic.xllave, 'a.')
-                finalQuery2 =  ' UNION ' + finalQuery2
-                finalQuery1 = finalQuery1 + finalQuery2
-              } else {
-                finalQuery1 = finalQuery1 + ' group by' + sqlOtrosDetallesD[1]
-              }
-            } else {
-              if(sqlOtrosDetalles[1].includes('UNION')) {
-                const querySplitUnion = sqlOtrosDetalles.split('UNION')
-                finalQuery1 = setQueryArray(filters, filtersInverso, sqlOtrosDetalles, graphic.xllave)
-                querySplitGrouped[1] = querySplitUnion[1]
-                finalQuery2 = setQueryArray(filters, filtersInverso,querySplitGrouped[1], graphic.xllave)
-                finalQuery2 =  ' UNION ' + finalQuery2
-              } else {
-                finalQuery1 = setQueryArray(filters, filtersInverso, sqlOtrosDetalles, graphic.xllave)
-              }
-            }
-            
-          // }
+        // for (const filter of filters) {
+        if (sqlOtrosDetalles.includes('group by')) {
+          const sqlOtrosDetallesD = sqlOtrosDetalles.split('group by')
+          sqlOtrosDetalles = sqlOtrosDetallesD[0]
+          finalQuery1 = setQueryArray(filters, filtersInverso, sqlOtrosDetalles, graphic.xllave, 'a.')
+          if (sqlOtrosDetallesD[1].includes('UNION')) {
+            const querySplitUnion = sqlOtrosDetallesD[1].split('UNION')
+            finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
+            sqlOtrosDetallesD[1] = querySplitUnion[1]
+            finalQuery2 = setQueryArray(filters, filtersInverso, sqlOtrosDetallesD[1], graphic.xllave, 'a.')
+            finalQuery2 = ' UNION ' + finalQuery2
+            finalQuery1 = finalQuery1 + finalQuery2
+          } else {
+            finalQuery1 = finalQuery1 + ' group by' + sqlOtrosDetallesD[1]
+          }
+        } else {
+          if (sqlOtrosDetalles[1].includes('UNION')) {
+            const querySplitUnion = sqlOtrosDetalles.split('UNION')
+            finalQuery1 = setQueryArray(filters, filtersInverso, sqlOtrosDetalles, graphic.xllave)
+            querySplitGrouped[1] = querySplitUnion[1]
+            finalQuery2 = setQueryArray(filters, filtersInverso, querySplitGrouped[1], graphic.xllave)
+            finalQuery2 = ' UNION ' + finalQuery2
+          } else {
+            finalQuery1 = setQueryArray(filters, filtersInverso, sqlOtrosDetalles, graphic.xllave)
+          }
+        }
+
+        // }
         // } else {
         //   finalQuery1 = sqlOtrosDetalles
         // }
       } else {
         // if(filters.length > 0) {
-          const filtersInverso = filters.map(filter => filter.binverso)
-          let filtersToCheck = {} 
-          for (const filter of filters) {
-            filtersToCheck[filter.key] = filter.controlValue
-          } 
-          if(sqlOtrosDetalles.includes('group by')) {
-            const querySplitGrouped = sqlOtrosDetalles.split('group by')
-            sqlOtrosDetalles = querySplitGrouped[0]
-            finalQuery1 = setQueryArrayTotal(filtersToCheck, filtersInverso, sqlOtrosDetalles, graphic.xllave, 'a.')
-            if(querySplitGrouped[1].includes('UNION')) {
-              const querySplitUnion = querySplitGrouped[1].split('UNION')
-              finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
-              querySplitGrouped[1] = querySplitUnion[1]
-              finalQuery2 = setQueryArrayTotal(filtersToCheck, filtersInverso, querySplitGrouped[1], graphic.xllave, 'a.')
-              finalQuery2 =  ' UNION ' + finalQuery2
-              finalQuery1
-            } else {
-              finalQuery1 = finalQuery1 + 'group by' + querySplitGrouped[1]
-            }
+        const filtersInverso = filters.map(filter => filter.binverso)
+        let filtersToCheck = {}
+        for (const filter of filters) {
+          filtersToCheck[filter.key] = filter.controlValue
+        }
+        if (sqlOtrosDetalles.includes('group by')) {
+          const querySplitGrouped = sqlOtrosDetalles.split('group by')
+          sqlOtrosDetalles = querySplitGrouped[0]
+          finalQuery1 = setQueryArrayTotal(filtersToCheck, filtersInverso, sqlOtrosDetalles, graphic.xllave, 'a.')
+          if (querySplitGrouped[1].includes('UNION')) {
+            const querySplitUnion = querySplitGrouped[1].split('UNION')
+            finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
+            querySplitGrouped[1] = querySplitUnion[1]
+            finalQuery2 = setQueryArrayTotal(filtersToCheck, filtersInverso, querySplitGrouped[1], graphic.xllave, 'a.')
+            finalQuery2 = ' UNION ' + finalQuery2
+            finalQuery1
           } else {
-            if(sqlOtrosDetalles.includes('UNION')) {
-              const querySplitUnion = sqlOtrosDetalles.split('UNION')
-              finalQuery1 = setQueryArrayTotal(filtersToCheck, filtersInverso, sqlOtrosDetalles, graphic.xllave, 'a.')
-              querySplitGrouped[1] = querySplitUnion[1]
-              finalQuery2 = setQueryArrayTotal(filtersToCheck, filtersInverso,querySplitGrouped[1], graphic.xllave, 'a.')
-            }
+            finalQuery1 = finalQuery1 + 'group by' + querySplitGrouped[1]
           }
-          finalQuery1 = finalQuery1 + finalQuery2
+        } else {
+          if (sqlOtrosDetalles.includes('UNION')) {
+            const querySplitUnion = sqlOtrosDetalles.split('UNION')
+            finalQuery1 = setQueryArrayTotal(filtersToCheck, filtersInverso, sqlOtrosDetalles, graphic.xllave, 'a.')
+            querySplitGrouped[1] = querySplitUnion[1]
+            finalQuery2 = setQueryArrayTotal(filtersToCheck, filtersInverso, querySplitGrouped[1], graphic.xllave, 'a.')
+          }
+        }
+        finalQuery1 = finalQuery1 + finalQuery2
         // } else {
         //   finalQuery1 = sqlOtrosDetalles
         // }
@@ -749,14 +749,14 @@ const exportDetails = async (filters, filtersInverso, requestVar, id) => {
       const resultOtherDetails = await sql.query(`${finalQuery1}`)
       result = resultOtherDetails.recordset
     }
-    return {result: result, graphic:graphic}
+    return { result: result, graphic: graphic }
   } catch (err) {
     console.log('Error al Obtener los graficos', err)
     return err
   }
 }
 const getGraphic = async (id) => {
-  try{
+  try {
     await sql.connect(sqlConfig)
     const result = await sql.query(`SELECT * FROM magraficos where id = ${id}`)
     return result.recordset[0]
@@ -766,7 +766,7 @@ const getGraphic = async (id) => {
   }
 }
 const getTotals = async (requestVar, query) => {
-  try{
+  try {
     await sql.connect(sqlConfig)
 
     let queryNew = query.replaceAll('@2var', `'${requestVar.value}'`)
@@ -778,7 +778,7 @@ const getTotals = async (requestVar, query) => {
   }
 }
 const getItemsTotals = async (query) => {
-  try{
+  try {
     await sql.connect(sqlConfig)
 
     const result = await sql.query(`${query}`)
@@ -789,31 +789,31 @@ const getItemsTotals = async (query) => {
   }
 }
 const getDetailsTotal = async (values, requestVar, query, xllave, detailsLetter) => {
-  try{
+  try {
     await sql.connect(sqlConfig)
     let queryDetails = query
     let items = []
     let finalQuery1 = ''
     let finalQuery2 = ''
-    if(queryDetails.includes('group by')) {
+    if (queryDetails.includes('group by')) {
       const querySplitGrouped = queryDetails.split('group by')
       queryDetails = querySplitGrouped[0]
-      finalQuery1 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso], queryDetails, xllave, detailsLetter)
-      if(querySplitGrouped[1].includes('UNION')) {
+      finalQuery1 = setQueryArrayTotal({ [requestVar.key]: requestVar.value }, [requestVar.binverso], queryDetails, xllave, detailsLetter)
+      if (querySplitGrouped[1].includes('UNION')) {
         const querySplitUnion = querySplitGrouped[1].split('UNION')
         finalQuery1 = finalQuery1 + 'group by' + querySplitUnion[0]
         querySplitGrouped[1] = querySplitUnion[1]
-        finalQuery2 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso], querySplitGrouped[1], xllave, detailsLetter)
-        finalQuery2 =  ' UNION ' + finalQuery2
+        finalQuery2 = setQueryArrayTotal({ [requestVar.key]: requestVar.value }, [requestVar.binverso], querySplitGrouped[1], xllave, detailsLetter)
+        finalQuery2 = ' UNION ' + finalQuery2
       } else {
         finalQuery1 = finalQuery1 + 'group by' + querySplitGrouped[1]
       }
     } else {
-      if(queryDetails.includes('UNION')) {
+      if (queryDetails.includes('UNION')) {
         const querySplitUnion = queryDetails.split('UNION')
-        finalQuery1 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso], queryDetails, xllave, detailsLetter)
+        finalQuery1 = setQueryArrayTotal({ [requestVar.key]: requestVar.value }, [requestVar.binverso], queryDetails, xllave, detailsLetter)
         querySplitGrouped[1] = querySplitUnion[1]
-        finalQuery2 = setQueryArrayTotal({[requestVar.key]: requestVar.value}, [requestVar.binverso],querySplitGrouped[1], xllave, detailsLetter)
+        finalQuery2 = setQueryArrayTotal({ [requestVar.key]: requestVar.value }, [requestVar.binverso], querySplitGrouped[1], xllave, detailsLetter)
       }
     }
     queryDetails = finalQuery1 + finalQuery2
@@ -823,7 +823,7 @@ const getDetailsTotal = async (values, requestVar, query, xllave, detailsLetter)
       // const keys = Object.keys(result.recordset[0])
       // result.recordset.unshift({[keys[0]]: value})
       // items = [...items, {[keys[0]]: value.label}, ...result.recordset]
-      items.push({label: `Detalles ${value.label}`, data: result.recordset})
+      items.push({ label: `Detalles ${value.label}`, data: result.recordset })
 
     }
 
@@ -834,10 +834,10 @@ const getDetailsTotal = async (values, requestVar, query, xllave, detailsLetter)
   }
 }
 const getDataTotal = async (query) => {
-  try{
+  try {
     await sql.connect(sqlConfig)
     const result = await sql.query(`${query}`)
-    
+
     return result.recordset
   } catch {
     console.log('Error al Obtener los graficos', err)

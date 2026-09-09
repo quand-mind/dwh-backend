@@ -21,7 +21,7 @@ const sqlConfig = {
 const getCampaignsCompanies = async () => {
   try {
     await sql.connect(sqlConfig)
-    const result = await sql.query`SELECT * from maorigen WHERE imercadeo = 1`
+    const result = await sql.query(`SELECT * from maorigen WHERE imercadeo = 1`)
     return result.recordset
   } catch (err) {
     console.log('Error al Obtener los clientes', err)
@@ -43,18 +43,18 @@ const setQuery = (body, initialQuery) => {
 
   const bodyKeys = Object.keys(body)
 
-    
+
   let queryFilters = ''
   let x = 0
-  if(bodyKeys.length > 0) {
+  if (bodyKeys.length > 0) {
     for (const key of bodyKeys) {
       queryFilters += ' AND '
-      if(key[0].includes('f')){
+      if (key[0].includes('f')) {
         const value_splitted = body[key].split(' - ')
         let date1, date2 = ''
-        if(value_splitted.length == 1) {
+        if (value_splitted.length == 1) {
           date1 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
-          if(value_splitted[0].includes('>')) {
+          if (value_splitted[0].includes('>')) {
             queryFilters += `(${key} <= '${date1}')`
           } else {
             queryFilters += `(${key} >= '${date1}')`
@@ -62,33 +62,33 @@ const setQuery = (body, initialQuery) => {
         } else {
           date2 = moment(new Date(value_splitted[0])).format('MM-DD-YYYY');
           date1 = moment(new Date(value_splitted[1])).format('MM-DD-YYYY');
-          if(value_splitted[0].includes('>')) {
+          if (value_splitted[0].includes('>')) {
             queryFilters += `(${key} >= '${date1}')`
-          } else if(value_splitted[1].includes('>')) {
+          } else if (value_splitted[1].includes('>')) {
             queryFilters += `(${key} <= '${date2}')`
           } else {
             queryFilters += `(${key} <= '${date2}' AND ${key} >= '${date1}')`
           }
         }
-      } else if(key.includes('_')){
+      } else if (key.includes('_')) {
         queryFilters += `xcedula NOT IN (SELECT id FROM maVclientes_productos WHERE cramo = ${body[key]})`
-      } else{
+      } else {
         queryFilters += `${key} = ${body[key]}`
       }
       x++
     }
   }
 
-  
+
   let finalQuery = `${initialQuery} ${queryFilters}`
-  
+
   return finalQuery
 }
 
 const getClientsProduct = async (corigen, cramo, data) => {
   try {
-    
-    
+
+
     await sql.connect(sqlConfig)
     const initialQuery = `SELECT orden, xnombre, cid FROM lista_clientes WHERE xcedula NOT IN (SELECT id FROM maVclientes_productos WHERE cramo = ${cramo}) AND corigen = ${corigen} AND orden NOT IN (SELECT orden FROM clVobservaciones WHERE cramo = ${cramo})`
     let finalQuery = setQuery(data, initialQuery, null)
@@ -98,7 +98,7 @@ const getClientsProduct = async (corigen, cramo, data) => {
     console.log('Error al Obtener los clientes', err)
     return err
   }
-  
+
 }
 const getClientsData = async (data) => {
   try {
@@ -109,7 +109,7 @@ const getClientsData = async (data) => {
     console.log('Error al Obtener los clientes', err)
     return err
   }
-  
+
 }
 const setCampaignClients = async (data) => {
   try {
@@ -124,19 +124,19 @@ const setCampaignClients = async (data) => {
     let result = null
     for (const item of body) {
       bodyQuery += `(${item.orden}, '${date}', ${cusuario}, '${item.xobservacion.trim()}', '${item.itipoobservacion}', 14)`
-      
-      if(x != body.length) {
-        
+
+      if (x != body.length) {
+
         x++
-        if(x % 100 == 0 || x == body.length) {
+        if (x % 100 == 0 || x == body.length) {
           console.log(`${initialQuery} ${bodyQuery} `);
           result = await sql.query(`${initialQuery} ${bodyQuery} `)
           bodyQuery = ''
-        } else{
+        } else {
           bodyQuery += `,`
         }
       }
-      
+
     }
     return result
     // return body
@@ -144,7 +144,7 @@ const setCampaignClients = async (data) => {
     console.log('Error al Obtener los clientes', err)
     return err
   }
-  
+
 }
 const getProductsPlan = async (corigen, cramo, data) => {
   try {
@@ -157,7 +157,7 @@ const getProductsPlan = async (corigen, cramo, data) => {
     console.log('Error al Obtener los clientes', err)
     return err
   }
-  
+
 }
 
 export default {
