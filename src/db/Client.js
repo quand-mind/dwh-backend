@@ -652,7 +652,7 @@ const exportGestorProductsData = async (cgestor, filters) => {
     left join producto_gestor f on f.cproducto = trim(a.cnpoliza)
     left join magestor g on f.cgestor = g.cgestor
     WHERE
-    ${filters.ccanalalt && !cgestor ? `a.ccanalalt = ${filters.ccanalalt}` : `g.cgestor like '${cgestor}%'`}
+    ${!cgestor ? filters.centidad == 'C' ? `a.ccanalalt = ${filters.citem}` : `a.cproductor = ${filters.citem}` : `g.cgestor like '${cgestor}%'`}
     UNION
     SELECT
     'ZZZTotal' 'N° de Póliza',
@@ -686,9 +686,12 @@ const exportGestorProductsData = async (cgestor, filters) => {
     left join producto_gestor f on f.cproducto = trim(a.cnpoliza)
     left join magestor g on f.cgestor = g.cgestor
     WHERE 
-    ${filters.ccanalalt ? `a.ccanalalt = ${filters.ccanalalt}` : `g.cgestor like '${cgestor}%'`}`;
+    ${!cgestor ? filters.centidad == 'C' ? `a.ccanalalt = ${filters.citem}` : `a.cproductor = ${filters.citem}` : `g.cgestor like '${cgestor}%'`}`;
 
-    delete filters.ccanalalt;
+
+
+    delete filters.citem;
+    delete filters.centidad;
     let finalQuery1, finalQuery2
     if (filters != {}) {
       if (query.includes('group by')) {
@@ -719,6 +722,8 @@ const exportGestorProductsData = async (cgestor, filters) => {
     } else {
       finalQuery1 = query
     }
+
+    console.log(`${finalQuery1} ${finalQuery2}`)
     const result = await sql.query(`${finalQuery1} ${finalQuery2}`)
 
     return result.recordset
