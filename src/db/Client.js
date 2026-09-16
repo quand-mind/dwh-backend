@@ -616,6 +616,14 @@ const exportGestorProductsData = async (cgestor, filters) => {
     d.xcanalalt as 'Canal',
     e.xplan as 'Plan',
     case 
+      when a.ifrecuencia = 'A' then 'ANUAL'
+      when a.ifrecuencia = 'S' then 'SEMESTRAL'
+      when a.ifrecuencia = 'T' then 'TRIMESTRAL'
+      when a.ifrecuencia = 'C' then 'CUATRIMESTRAL'
+      when a.ifrecuencia = 'M' then 'MENSUAL'
+      else 'No especificado'
+    end as 'Frecuencia',
+    case 
       when a.corigen_rel = '07' then 'TARJETAS'
       when a.corigen_rel = '01' then 'PASARELA'
       when (corigen_rel <> '07' OR corigen_rel <> '01') and corigen_rel is not null then 'API'
@@ -663,6 +671,7 @@ const exportGestorProductsData = async (cgestor, filters) => {
     '' 'Canal',
     '' 'Plan',
     '' 'Origen',
+    '' 'Frecuencia',
     '' 'Gestor',
     '' 'N° de Recibo',
     '' 'Estatus del Recibo',
