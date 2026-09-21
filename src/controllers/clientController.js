@@ -317,6 +317,7 @@ const getProducts = async (req, res) => {
 }
 const getProductDetail = async (req, res) => {
   try {
+    console.log('asdask')
     const productData = await Client.getProductDetail(req.params.id, req.params.fano, req.params.fmes);
     if (productData.error) {
       return res.status(productData.code).send({
