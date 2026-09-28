@@ -577,7 +577,7 @@ const getProductDetail = async (id, fano, fmes) => {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(sqlConfig)
     // const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, (g.cgestor) as cgestor_m, (g.xnombre) as xgestor_m, d.xcanalalt, e.xplan FROM adpoliza a left join ${process.env.SYS_DB_NAME}..maclient b on a.casegurado = b.cci_rif left join ${process.env.SYS_DB_NAME}..maclient c on a.ctenedor = c.cci_rif left join ${process.env.SYS_DB_NAME}..macanalalt d on a.ccanalalt = d.ccanalalt left join maplanes e on a.cplan = e.cplan and a.cramo = e.cramo left join producto_gestor f on f.cproducto = trim(a.cnpoliza) left join magestor g on f.cgestor = g.cgestor WHERE a.cnpoliza = '${id}' and a.fanopol = ${fano} and fmespol = ${fmes}`;
-    const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, (g.cgestor) as cgestor_m, (g.xnombre) as xgestor_m, d.xcanalalt, e.xplan FROM ${process.env.SYS_DB_NAME}..adpoliza a left join ${process.env.SYS_DB_NAME}..maclient b on a.casegurado = b.cci_rif left join ${process.env.SYS_DB_NAME}..maclient c on a.ctenedor = c.cci_rif left join ${process.env.SYS_DB_NAME}..macanalalt d on a.ccanalalt = d.ccanalalt left join ${process.env.SYS_DB_NAME}..maplanes e on a.cplan = e.cplan and a.cramo = e.cramo left join ${process.env.SYS_DB_NAME}..magestor g on a.cgestor = g.cgestor WHERE a.cnpoliza = '${id}' and a.fanopol = ${fano} and a.fmespol = ${fmes}`;
+    const query = `SELECT a.*, b.xcliente as xasegurado, trim(b.cid) as cidasegurado, c.xcliente as xtenedor, trim(b.cid) as cidtenedor, (g.cgestor) as cgestor_m, (g.xgestor) as xgestor_m, d.xcanalalt, e.xplan FROM ${process.env.SYS_DB_NAME}..adpoliza a left join ${process.env.SYS_DB_NAME}..maclient b on a.casegurado = b.cci_rif left join ${process.env.SYS_DB_NAME}..maclient c on a.ctenedor = c.cci_rif left join ${process.env.SYS_DB_NAME}..macanalalt d on a.ccanalalt = d.ccanalalt left join ${process.env.SYS_DB_NAME}..maplanes e on a.cplan = e.cplan and a.cramo = e.cramo left join ${process.env.SYS_DB_NAME}..magestor g on a.cgestor = g.cgestor WHERE a.cnpoliza = '${id}' and a.fanopol = ${fano} and a.fmespol = ${fmes}`;
     console.log(query)
     const result = await sql.query(query)
     if (result.recordset.length > 0) {
@@ -635,7 +635,7 @@ const exportGestorProductsData = async (cgestor, filters) => {
         else 'WEB'
       end
     end as 'Origen',
-    concat(g.xnombre,' (', g.cgestor, ')') as 'Gestor',
+    concat(g.xgestor,' (', g.cgestor, ')') as 'Gestor',
     trim(x.cnrecibo) as 'N° de Recibo',
     case when x.iestadorec = 'P' then 'Pendiente' when x.iestadorec = 'C' then 'Cobrado' when x.iestadorec = 'A' then 'Anulado' when x.iestadorec = 'N' then 'Notificado' else 'N/A' end as 'Estatus del Recibo',
     CONVERT(varchar, CAST(x.mprimabruta AS money), 1) as 'Monto Prima',
@@ -650,9 +650,8 @@ const exportGestorProductsData = async (cgestor, filters) => {
     inner join ${process.env.SYS_DB_NAME}..adrecibos x on a.cnpoliza = x.cnpoliza and x.fanopol = a.fanopol and x.fmespol = a.fmespol
     left join ${process.env.SYS_DB_NAME}..macanalalt d on a.ccanalalt = d.ccanalalt
     inner join ${process.env.SYS_DB_NAME}..maramos z on a.cramo = z.cramo
-    left join maplanes e on a.cplan = e.cplan and a.cramo = e.cramo
-    left join producto_gestor f on f.cproducto = trim(a.cnpoliza)
-    left join magestor g on f.cgestor = g.cgestor
+    left join ${process.env.SYS_DB_NAME}..maplanes e on a.cplan = e.cplan and a.cramo = e.cramo
+    left join ${process.env.SYS_DB_NAME}..magestor g on a.cgestor = g.cgestor
     WHERE
     ${!cgestor ? filters.centidad == 'C' ? `a.ccanalalt = ${filters.citem}` : `a.cproductor = ${filters.citem}` : `g.cgestor like '${cgestor}%'`}
     UNION
