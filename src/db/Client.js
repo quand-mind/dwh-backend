@@ -330,14 +330,31 @@ const getProductsByUser = async (cgestor, page, string, body) => {
   try {
     await sql.connect(sqlConfig)
 
-    const resultClient = await sql.query(`SELECT cgestor from ${process.env.SYS_DB_NAME}..magestor WHERE cgestor = '${cgestor}'`)
+    let userCheckQuery = ''
+    if (body.main === false || body.main === 'false' || (!body.main && !body.centidad)) {
+      const gestorCode = (body.cgestor && body.cgestor !== null) ? body.cgestor : cgestor
+      userCheckQuery = `SELECT cgestor FROM ${process.env.SYS_DB_NAME}..magestor WHERE cgestor = '${gestorCode}'`
+      body.cgestor = `${gestorCode}%(LIKE)`
+      delete body.citem
+      delete body.centidad
+    } else {
+      delete body.cgestor
+      const itemCode = body.citem || cgestor
+      if (body.centidad == 'C') {
+        body.ccanalalt = itemCode
+        userCheckQuery = `SELECT ccanalalt FROM ${process.env.SYS_DB_NAME}..macanalalt WHERE ccanalalt = '${itemCode}'`
+      } else {
+        body.cproductor = itemCode
+        userCheckQuery = `SELECT cproductor FROM ${process.env.SYS_DB_NAME}..maproduc WHERE cproductor = '${itemCode}'`
+      }
+      delete body.citem
+      delete body.centidad
+    }
+    delete body.main
+
+    const resultClient = await sql.query(userCheckQuery)
 
     if (resultClient.recordset.length > 0) {
-      if (body.cgestor) {
-        body.cgestor = `${body.cgestor}%(LIKE)`
-      } else {
-        body.cgestor = `${cgestor}%(LIKE)`
-      }
       const offsetRows = (page * 10) - 10
       const queryRowsA = queryRows(offsetRows, 'cnpoliza')
 
@@ -348,18 +365,7 @@ const getProductsByUser = async (cgestor, page, string, body) => {
         (SELECT COUNT(*) FROM ${process.env.SYS_DB_NAME}..adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol and iestadorec = 'A') = (SELECT COUNT(*) FROM ${process.env.SYS_DB_NAME}..adrecibos where cpoliza = adpoliza.cpoliza and fanopol = adpoliza.fanopol and fmespol = adpoliza.fmespol) THEN 'Anulada'
       ELSE 'Pendiente' END) as estado_pag, fanopol, fmespol FROM ${process.env.SYS_DB_NAME}..adpoliza`
       let initialQuery2 = `SELECT count(*) as total FROM ${process.env.SYS_DB_NAME}..adpoliza`
-      const main = body.main
-      delete body.main
-      if (main) {
-        delete body.cgestor
-        if (body.centidad == 'C') {
-          body.ccanalalt = body.citem
-        } else {
-          body.cproductor = body.citem
-        }
-      }
-      delete body.citem
-      delete body.centidad
+
       let finalQuery = setQuery(string, body, initialQuery)
       let finalQuery2 = setQuery(string, body, initialQuery2)
       // make sure that any items are correctly URL encoded in the connection string    
